@@ -52,9 +52,13 @@
     "setup:hooks": "npx husky install && npx husky add .husky/pre-commit 'npx lint-staged'",
     "bootstrap": "npm run setup && npm run build && npm run test:unit",
     "audit:security": "npm audit && npx osv-scanner -r .",
-    "check:all": "npm run lint && npm run format:check && npm run build && npm run test:unit"
+    "check:all": "npm run lint && npm run format:check && npm run build && npm run test:unit",
+    "sbom:generate": "npx @cyclonedx/cdxgen -o sbom.json --type npm .",
+    "licenses:check": "npx license-checker --summary",
+    "licenses:report": "npx license-checker --json > licenses.json && npx license-checker --csv > licenses.csv"
   },
   "devDependencies": {
+    "@cyclonedx/cdxgen": "^10.0.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.0",
@@ -67,6 +71,7 @@
     "eslint": "^8.50.0",
     "glob": "^11.0.3",
     "husky": "^8.0.3",
+    "license-checker": "^25.0.1",
     "lint-staged": "^15.2.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",

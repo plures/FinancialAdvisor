@@ -1,0 +1,57 @@
+---
+name: Feature Request
+about: Suggest an idea for the Financial Advisor extension
+title: '[FEATURE] '
+labels: ['enhancement', 'feature-request']
+assignees: []
+---
+
+## Feature Description
+A clear and concise description of the feature you'd like to see added.
+
+## Problem Statement
+What problem does this feature solve? Describe the pain point or limitation you're experiencing.
+
+## Proposed Solution
+Describe the solution you'd like to see implemented.
+
+## Alternative Solutions
+Describe any alternative solutions or features you've considered.
+
+## Use Cases
+Describe specific scenarios where this feature would be useful:
+1. Use case 1: ...
+2. Use case 2: ...
+
+## Implementation Ideas
+If you have ideas about how this could be implemented, share them here.
+
+## Financial Domain
+Which area of financial management does this relate to?
+- [ ] Budget Management
+- [ ] Investment Planning
+- [ ] Expense Tracking
+- [ ] Financial Goals
+- [ ] Market Analysis
+- [ ] Risk Assessment
+- [ ] Tax Planning
+- [ ] Other: ___________
+
+## Priority
+How important is this feature to you?
+- [ ] Critical - I can't use the extension effectively without this
+- [ ] High - This would significantly improve my workflow
+- [ ] Medium - This would be a nice addition
+- [ ] Low - This is a minor enhancement
+
+## Mockups/Examples
+If applicable, add mockups, sketches, or examples to help explain your feature request.
+
+## Additional Context
+Add any other context, screenshots, or examples about the feature request here.
+
+## Checklist
+- [ ] I have searched for existing feature requests before creating this one
+- [ ] I have clearly described the problem this feature would solve
+- [ ] I have considered how this fits with the extension's goals
+- [ ] I have provided use cases for this feature

@@ -1,0 +1,96 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":automergeDigest",
+    ":automergeBranch"
+  ],
+  "timezone": "UTC",
+  "schedule": ["before 6am on monday"],
+  "assignees": ["@plures"],
+  "reviewers": ["@plures"],
+  "labels": ["dependencies"],
+  "commitMessagePrefix": "⬆️",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "schedule": ["before 6am on monday"]
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "reviewers": ["@plures"],
+      "labels": ["dependencies", "major-update"]
+    },
+    {
+      "matchPackageNames": ["@types/**"],
+      "automerge": true,
+      "minimumReleaseAge": "0 days"
+    },
+    {
+      "matchPackageNames": ["typescript", "@typescript-eslint/**"],
+      "groupName": "TypeScript",
+      "automerge": false,
+      "schedule": ["before 6am on monday"]
+    },
+    {
+      "matchPackageNames": ["eslint", "eslint-**", "@typescript-eslint/**"],
+      "groupName": "ESLint",
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchPackageNames": ["@vscode/**", "vscode"],
+      "groupName": "VSCode",
+      "automerge": false,
+      "reviewers": ["@plures"]
+    },
+    {
+      "matchPackageNames": ["@modelcontextprotocol/**"],
+      "groupName": "MCP SDK",
+      "automerge": false,
+      "reviewers": ["@plures"],
+      "labels": ["dependencies", "mcp"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["at any time"],
+    "labels": ["security", "vulnerability"]
+  },
+  "osvVulnerabilityAlerts": true,
+  "npm": {
+    "minimumReleaseAge": "3 days"
+  },
+  "prHourlyLimit": 3,
+  "prConcurrentLimit": 5,
+  "branchConcurrentLimit": 10,
+  "rebaseWhen": "behind-base-branch",
+  "dependencyDashboardTitle": "🤖 Dependency Dashboard",
+  "dependencyDashboardHeader": "This issue lists Renovate updates and detected dependencies. Read the [Dependency Dashboard](https://docs.renovatebot.com/key-concepts/dashboard/) docs to learn more.",
+  "ignorePaths": [
+    "node_modules/**",
+    "out/**",
+    "coverage/**",
+    ".nyc_output/**"
+  ]
+}
