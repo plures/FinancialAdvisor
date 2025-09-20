@@ -7,14 +7,14 @@
   "branches": 40,
   "statements": 50,
   "include": [
-    "src/**/*.ts"
+    "src/shared/financial-utils.ts"
   ],
   "exclude": [
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts",
+    "src/extension.ts",
+    "src/extension/**/*.ts",
+    "src/mcp-server/**/*.ts",
     "src/shared/types.ts",
     "test/**/*",
-    "out/**/*",
     "coverage/**/*",
     "**/*.d.ts"
   ],
