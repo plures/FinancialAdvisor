@@ -1,0 +1,47 @@
+# VSCode Extension Ignore File
+# Exclude files that shouldn't be packaged with the extension
+
+# Source files
+src/**
+test/**
+tsconfig*.json
+.eslintrc.js
+.prettierrc
+.pre-commit-config.yaml
+Makefile
+
+# Build artifacts
+.nyc_output/
+coverage/
+*.vsix
+
+# Dependencies
+node_modules/
+
+# Development files
+.github/
+.git/
+.gitignore
+.vscode/
+.husky/
+
+# Documentation source (keep README.md)
+docs/
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+
+# Configuration files
+.nycrc.json
+tsconfig.test.json
+
+# Temporary files
+tmp/
+temp/
+*.log
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
