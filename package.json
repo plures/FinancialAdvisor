@@ -1,43 +1,208 @@
 {
-  "name": "@financialadvisor/root",
-  "version": "1.0.0",
-  "description": "Personal AI Financial Advisor - Monorepo",
-  "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
-  "scripts": {
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
-    "dev": "npm run dev --workspaces",
-    "clean": "npm run clean --workspaces && rm -rf node_modules",
-    "install:all": "npm install",
-    "setup": "npm run install:all && npm run build"
-  },
-  "keywords": [
-    "financial",
-    "advisor",
-    "ai",
-    "vscode",
-    "mcp",
-    "personal-finance",
-    "budgeting",
-    "investment"
-  ],
-  "author": "FinancialAdvisor Team",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "eslint": "^8.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "prettier": "^3.0.0"
-  },
+
+  "name": "financial-advisor",
+
+  "displayName": "Financial Advisor",
+
+  "description": "Personal AI Financial Advisor - VSCode Extension with MCP Server",
+
+  "version": "0.1.0",
+
+  "publisher": "plures",
+
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+
+    "vscode": "^1.85.0",
+
+    "node": ">=18.0.0"
+
+  },
+
+  "categories": [
+
+    "Other"
+
+  ],
+
+  "keywords": [
+
+    "ai",
+
+    "finance",
+
+    "advisor",
+
+    "mcp",
+
+    "personal-finance"
+
+  ],
+
+  "activationEvents": [
+
+    "onStartupFinished"
+
+  ],
+
+  "main": "./out/extension.js",
+
+  "contributes": {
+
+    "commands": [
+
+      {
+
+        "command": "financial-advisor.start",
+
+        "title": "Start Financial Advisor"
+
+      }
+
+    ]
+
+  },
+
+  "scripts": {
+
+    "vscode:prepublish": "npm run compile",
+
+    "compile": "tsc -p ./",
+
+    "compile:test": "tsc -p ./tsconfig.test.json",
+
+    "watch": "tsc -watch -p ./",
+
+    "pretest": "npm run compile:test && npm run lint",
+
+    "lint": "eslint src --ext ts",
+
+    "lint:fix": "eslint src --ext ts --fix",
+
+    "format": "prettier --write \"src/**/*.ts\"",
+
+    "format:check": "prettier --check \"src/**/*.ts\"",
+
+    "test": "node ./out/test/runTest.js",
+
+    "test:unit": "npm run compile:test && mocha out/test/unit/**/*.test.js",
+
+    "test:integration": "npm run compile:test && mocha out/test/integration/**/*.test.js",
+
+    "coverage": "nyc --require ts-node/register --extension .ts mocha test/unit/**/*.test.ts",
+
+    "build": "npm run compile",
+
+    "package": "vsce package",
+
+    "publish": "vsce publish",
+
+    "clean": "rimraf out *.vsix",
+
+    "setup": "npm install && npm run setup:hooks",
+
+    "setup:hooks": "npx husky install && npx husky add .husky/pre-commit 'npx lint-staged'",
+
+    "bootstrap": "npm run setup && npm run build && npm run test:unit",
+
+    "audit:security": "npm audit && npx osv-scanner -r .",
+
+    "check:all": "npm run lint && npm run format:check && npm run build && npm run test:unit",
+
+    "sbom:generate": "npx @cyclonedx/cdxgen -o sbom.json --type npm .",
+
+    "licenses:check": "npx license-checker --summary",
+
+    "licenses:report": "npx license-checker --json > licenses.json && npx license-checker --csv > licenses.csv"
+
+  },
+
+  "devDependencies": {
+
+    "@cyclonedx/cdxgen": "^10.0.0",
+
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
+
+    "@types/glob": "^8.1.0",
+
+    "@types/mocha": "^10.0.0",
+
+    "@types/node": "^20.0.0",
+
+    "@types/vscode": "^1.85.0",
+
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+
+    "@typescript-eslint/parser": "^6.0.0",
+
+    "@vscode/test-electron": "^2.3.0",
+
+    "@vscode/vsce": "^2.22.0",
+
+    "eslint": "^8.50.0",
+
+    "glob": "^11.0.3",
+
+    "husky": "^8.0.3",
+
+    "license-checker": "^25.0.1",
+
+    "lint-staged": "^15.2.0",
+
+    "mocha": "^10.0.0",
+
+    "nyc": "^15.1.0",
+
+    "prettier": "^3.0.0",
+
+    "rimraf": "^5.0.0",
+
+    "ts-node": "^10.9.2",
+
+    "typescript": "^5.2.0"
+
+  },
+
+  "dependencies": {
+
+    "@modelcontextprotocol/sdk": "^0.4.0"
+
+  },
+
+  "repository": {
+
+    "type": "git",
+
+    "url": "https://github.com/plures/FinancialAdvisor.git"
+
+  },
+
+  "lint-staged": {
+
+    "*.{ts,js}": [
+
+      "eslint --fix",
+
+      "prettier --write"
+
+    ],
+
+    "*.{json,md,yml,yaml}": [
+
+      "prettier --write"
+
+    ]
+
+  },
+
+  "license": "MIT",
+
+  "homepage": "https://github.com/plures/FinancialAdvisor#readme",
+
+  "bugs": {
+
+    "url": "https://github.com/plures/FinancialAdvisor/issues"
+
   }
+
 }
+
