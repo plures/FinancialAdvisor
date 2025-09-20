@@ -1,0 +1,43 @@
+{
+  "name": "@financialadvisor/root",
+  "version": "1.0.0",
+  "description": "Personal AI Financial Advisor - Monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "dev": "npm run dev --workspaces",
+    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "install:all": "npm install",
+    "setup": "npm run install:all && npm run build"
+  },
+  "keywords": [
+    "financial",
+    "advisor",
+    "ai",
+    "vscode",
+    "mcp",
+    "personal-finance",
+    "budgeting",
+    "investment"
+  ],
+  "author": "FinancialAdvisor Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
