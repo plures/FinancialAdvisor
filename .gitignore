@@ -65,3 +65,15 @@ financial-data/
 credentials/
 *.key
 *.pem
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Package artifacts
+packages/*/dist/
+packages/*/node_modules/
+packages/*/*.vsix
+
+# Test files
+test-results/
+coverage/

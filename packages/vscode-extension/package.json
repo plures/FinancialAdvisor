@@ -1,0 +1,169 @@
+{
+  "name": "financial-advisor",
+  "displayName": "Financial Advisor",
+  "description": "AI-powered personal financial advisor with secure local storage",
+  "version": "1.0.0",
+  "publisher": "financialadvisor",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Data Science",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "financial",
+    "advisor",
+    "ai",
+    "budgeting",
+    "investment",
+    "planning"
+  ],
+  "activationEvents": [
+    "onCommand:financialAdvisor.openDashboard",
+    "onCommand:financialAdvisor.addTransaction",
+    "onCommand:financialAdvisor.analyzeSpending",
+    "onCommand:financialAdvisor.setupMCP"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "financialAdvisor.openDashboard",
+        "title": "Open Financial Dashboard",
+        "category": "Financial Advisor"
+      },
+      {
+        "command": "financialAdvisor.addTransaction",
+        "title": "Add Transaction",
+        "category": "Financial Advisor"
+      },
+      {
+        "command": "financialAdvisor.addAccount",
+        "title": "Add Account",
+        "category": "Financial Advisor"
+      },
+      {
+        "command": "financialAdvisor.analyzeSpending",
+        "title": "Analyze Spending",
+        "category": "Financial Advisor"
+      },
+      {
+        "command": "financialAdvisor.setupMCP",
+        "title": "Setup MCP Server",
+        "category": "Financial Advisor"
+      },
+      {
+        "command": "financialAdvisor.generateReport",
+        "title": "Generate Financial Report",
+        "category": "Financial Advisor"
+      },
+      {
+        "command": "financialAdvisor.configureAI",
+        "title": "Configure AI Provider",
+        "category": "Financial Advisor"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "financialAdvisor",
+          "title": "Financial Advisor",
+          "icon": "$(graph)"
+        }
+      ]
+    },
+    "views": {
+      "financialAdvisor": [
+        {
+          "id": "financialAdvisor.accounts",
+          "name": "Accounts",
+          "when": "financialAdvisor.initialized"
+        },
+        {
+          "id": "financialAdvisor.transactions",
+          "name": "Recent Transactions",
+          "when": "financialAdvisor.initialized"
+        },
+        {
+          "id": "financialAdvisor.budgets",
+          "name": "Budgets",
+          "when": "financialAdvisor.initialized"
+        },
+        {
+          "id": "financialAdvisor.goals",
+          "name": "Goals",
+          "when": "financialAdvisor.initialized"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Financial Advisor",
+      "properties": {
+        "financialAdvisor.mcpServer.path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the Financial Advisor MCP server executable"
+        },
+        "financialAdvisor.mcpServer.dataDir": {
+          "type": "string",
+          "default": "",
+          "description": "Directory for financial data storage"
+        },
+        "financialAdvisor.ai.provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "ollama",
+            "custom"
+          ],
+          "default": "openai",
+          "description": "AI provider to use for financial analysis"
+        },
+        "financialAdvisor.ai.model": {
+          "type": "string",
+          "default": "gpt-3.5-turbo",
+          "description": "AI model to use"
+        },
+        "financialAdvisor.ai.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for the AI provider"
+        },
+        "financialAdvisor.ai.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Base URL for custom AI providers (e.g., Ollama)"
+        },
+        "financialAdvisor.security.encryptionEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable encryption for sensitive financial data"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "dev": "tsc -watch -p ./",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "@typescript-eslint/parser": "^6.4.0",
+    "eslint": "^8.47.0",
+    "typescript": "^5.1.6",
+    "@vscode/vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "@financialadvisor/shared": "file:../shared",
+    "@financialadvisor/financial-tools": "file:../financial-tools",
+    "@financialadvisor/ai-integration": "file:../ai-integration"
+  }
+}

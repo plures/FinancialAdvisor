@@ -391,15 +391,21 @@ export class SecureStorage {
       throw new Error('Backup not configured');
     }
     
+    const fs = require('fs').promises;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFile = path.join(this.config.backupPath, `financial-data-${timestamp}.db`);
     
-    return new Promise((resolve, reject) => {
-      this.db.backup(backupFile, (err) => {
-        if (err) reject(err);
-        else resolve(backupFile);
-      });
-    });
+    try {
+      // Ensure backup directory exists
+      await fs.mkdir(this.config.backupPath, { recursive: true });
+      
+      // Copy the database file
+      await fs.copyFile(this.config.dbPath, backupFile);
+      
+      return backupFile;
+    } catch (error) {
+      throw new Error(`Failed to create backup: ${error}`);
+    }
   }
 
   /**
