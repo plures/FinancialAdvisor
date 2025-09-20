@@ -1,4 +1,5 @@
 {
+
   "name": "financial-advisor",
   "displayName": "Financial Advisor",
   "description": "Personal AI Financial Advisor - VSCode Extension with MCP Server",
@@ -99,5 +100,7 @@
   "homepage": "https://github.com/plures/FinancialAdvisor#readme",
   "bugs": {
     "url": "https://github.com/plures/FinancialAdvisor/issues"
+
+
   }
 }
