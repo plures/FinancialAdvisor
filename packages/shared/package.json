@@ -1,0 +1,20 @@
+{
+  "name": "@financialadvisor/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities and types for FinancialAdvisor",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["financial", "shared", "types", "utilities"],
+  "author": "FinancialAdvisor Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": ["dist/**/*"]
+}
