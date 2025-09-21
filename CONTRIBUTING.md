@@ -38,24 +38,27 @@ This project follows a Code of Conduct. By participating, you agree to uphold th
 ### Setup Development Environment
 
 1. **Fork and Clone**
+   
    ```bash
    git clone https://github.com/your-username/FinancialAdvisor.git
    cd FinancialAdvisor
    ```
 
 2. **Install Dependencies**
+   
    ```bash
    npm run bootstrap
    ```
 
 3. **Verify Setup**
+   
    ```bash
    make check-all
    ```
 
 ### Project Structure
 
-```
+```text
 ├── src/
 │   ├── extension/          # VSCode extension code
 │   ├── mcp-server/        # MCP server implementation  
@@ -68,41 +71,51 @@ This project follows a Code of Conduct. By participating, you agree to uphold th
 
 ## Development Workflow
 
-### Branch Strategy
+### Branch Strategy (short-lived)
 
 - `main`: Production-ready code
-- `develop`: Integration branch for features
-- `feature/*`: Feature development branches
-- `hotfix/*`: Critical bug fixes
-- `release/*`: Release preparation branches
+- `feature/*`: Short-lived branches (< 3 days) for focused changes
+- `hotfix/*`: Critical fixes from main
+- `release/*`: Release preparation (rare; keep brief)
 
-### Development Process
+Avoid long-lived integration branches. Prefer incremental, reviewable PRs.
+
+### Development Process (roadmap-driven)
 
 1. **Create a Feature Branch**
+   
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
-2. **Make Changes**
-   - Write code following our standards
-   - Add/update tests
-   - Update documentation if needed
+2. **Make Changes (package-first)**
+   - Prefer implementing in `packages/*` over adding or modifying duplicate logic under `src/*`
+   - Keep PRs focused (< 400 LOC) and tied to a roadmap item in `docs/ROADMAP.md`
+   - Add/update tests (unit for logic, light integration for MCP tools)
+   - Update docs when behavior changes (README, ROADMAP, guides)
 
 3. **Test Your Changes**
+   
    ```bash
-   make check-all
+   npm run check:all
    ```
 
+   - If MCP tools changed, run a minimal manual smoke (e.g., add_account ➜ analyze_spending)
+
 4. **Commit Changes**
+   
    ```bash
    git add .
-   git commit -m "feat: add your feature description"
+   git commit -m "feat: concise description (refs: ROADMAP MVP/1.0)"
    ```
 
 5. **Push and Create PR**
+   
    ```bash
    git push origin feature/your-feature-name
    ```
+   
+   - Include acceptance evidence (screenshots or output) for user-visible changes
 
 ## Coding Standards
 
@@ -211,13 +224,13 @@ npm run test:integration
 npm run coverage
 ```
 
-## Commit Message Guidelines
+### Commit Message Guidelines
 
 We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ### Format
 
-```
+```text
 <type>[optional scope]: <description>
 
 [optional body]
@@ -261,6 +274,7 @@ BREAKING CHANGE: The calculateBudget function now returns a Promise
 ### Before Submitting
 
 1. **Rebase on Latest Main**
+   
    ```bash
    git checkout main
    git pull origin main
@@ -269,6 +283,7 @@ BREAKING CHANGE: The calculateBudget function now returns a Promise
    ```
 
 2. **Run Quality Checks**
+   
    ```bash
    make check-all
    ```
@@ -312,17 +327,20 @@ We use [Semantic Versioning](https://semver.org/):
 ### Release Workflow
 
 1. **Prepare Release**
+   
    - Update version in package.json
    - Update CHANGELOG.md
    - Test release candidate
 
 2. **Create Release**
+   
    - Create release branch
    - Final testing
    - Merge to main
    - Tag release
 
 3. **Deploy**
+   
    - Automated deployment via GitHub Actions
    - Publish to VS Code Marketplace
    - Update documentation
@@ -330,6 +348,7 @@ We use [Semantic Versioning](https://semver.org/):
 ### Release Notes
 
 Include in release notes:
+
 - New features
 - Bug fixes
 - Breaking changes
@@ -343,7 +362,8 @@ Include in release notes:
 **DO NOT** report security vulnerabilities in public issues.
 
 Instead:
-1. Email security@financial-advisor.dev
+
+1. Email [security@financial-advisor.dev](mailto:security@financial-advisor.dev)
 2. Use GitHub's private security advisory feature
 3. Provide detailed information about the vulnerability
 
@@ -374,6 +394,7 @@ Instead:
 ## Recognition
 
 Contributors will be recognized in:
+
 - CONTRIBUTORS.md file
 - Release notes
 - Project documentation

@@ -12,9 +12,9 @@
 
   "engines": {
 
-    "vscode": "^1.85.0",
+    "vscode": "^1.104.0",
 
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
 
   },
 
@@ -39,27 +39,21 @@
   ],
 
   "activationEvents": [
-
     "onStartupFinished"
-
   ],
 
   "main": "./out/extension.js",
 
   "contributes": {
-
     "commands": [
-
-      {
-
-        "command": "financial-advisor.start",
-
-        "title": "Start Financial Advisor"
-
-      }
-
+      { "command": "financialAdvisor.openDashboard", "title": "Open Financial Dashboard", "category": "Financial Advisor" },
+      { "command": "financialAdvisor.addTransaction", "title": "Add Transaction", "category": "Financial Advisor" },
+      { "command": "financialAdvisor.addAccount", "title": "Add Account", "category": "Financial Advisor" },
+      { "command": "financialAdvisor.analyzeSpending", "title": "Analyze Spending", "category": "Financial Advisor" },
+      { "command": "financialAdvisor.setupMCP", "title": "Setup MCP Server", "category": "Financial Advisor" },
+      { "command": "financialAdvisor.generateReport", "title": "Generate Financial Report", "category": "Financial Advisor" },
+      { "command": "financialAdvisor.configureAI", "title": "Configure AI Provider", "category": "Financial Advisor" }
     ]
-
   },
 
   "scripts": {
@@ -89,14 +83,15 @@
     "test:integration": "npm run compile:test && mocha out/test/integration/**/*.test.js",
 
     "coverage": "nyc --require ts-node/register --extension .ts mocha test/unit/**/*.test.ts",
-
     "build": "npm run compile",
+    "build:all:win": "pwsh -File scripts/build.ps1",
+    "build:all": "bash ./scripts/build.sh",
 
     "package": "vsce package",
 
     "publish": "vsce publish",
 
-    "clean": "rimraf out *.vsix",
+  "clean": "rimraf out *.vsix",
 
     "setup": "npm install && npm run setup:hooks",
 
@@ -118,53 +113,53 @@
 
   "devDependencies": {
 
-    "@cyclonedx/cdxgen": "^10.0.0",
+    "@cyclonedx/cdxgen": "^11.7.0",
 
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
 
-    "@types/glob": "^8.1.0",
+    "@types/glob": "^9.0.0",
 
-    "@types/mocha": "^10.0.0",
+    "@types/mocha": "^10.0.10",
 
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.5.2",
 
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "^1.104.0",
 
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
 
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/parser": "^8.44.0",
 
-    "@vscode/test-electron": "^2.3.0",
+    "@vscode/test-electron": "^2.5.2",
 
-    "@vscode/vsce": "^2.22.0",
+    "@vscode/vsce": "^3.6.0",
 
-    "eslint": "^8.50.0",
+    "eslint": "^9.36.0",
 
     "glob": "^11.0.3",
 
-    "husky": "^8.0.3",
+    "husky": "^9.1.7",
 
     "license-checker": "^25.0.1",
 
-    "lint-staged": "^15.2.0",
+    "lint-staged": "^16.1.6",
 
-    "mocha": "^10.0.0",
+    "mocha": "^11.7.2",
 
-    "nyc": "^15.1.0",
+    "nyc": "^17.1.0",
 
-    "prettier": "^3.0.0",
+    "prettier": "^3.6.2",
 
-    "rimraf": "^5.0.0",
+    "rimraf": "^6.0.1",
 
     "ts-node": "^10.9.2",
 
-    "typescript": "^5.2.0"
+    "typescript": "^5.9.2"
 
   },
 
   "dependencies": {
 
-    "@modelcontextprotocol/sdk": "^0.4.0"
+    "@modelcontextprotocol/sdk": "^1.18.1"
 
   },
 

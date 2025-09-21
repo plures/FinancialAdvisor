@@ -157,13 +157,14 @@
     "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
+    "@vscode/vsce": "^2.15.0",
     "eslint": "^8.47.0",
-    "typescript": "^5.1.6",
-    "@vscode/vsce": "^2.15.0"
+    "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@financialadvisor/shared": "file:../shared",
+    "@financialadvisor/ai-integration": "file:../ai-integration",
     "@financialadvisor/financial-tools": "file:../financial-tools",
-    "@financialadvisor/ai-integration": "file:../ai-integration"
+    "@financialadvisor/shared": "file:../shared",
+    "financial-advisor": "file:../.."
   }
 }

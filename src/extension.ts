@@ -1,24 +1,28 @@
-import * as vscode from 'vscode';
-import { FinancialAdvisorProvider } from './extension/providers/financial-advisor-provider';
-import { MCPServerManager } from './extension/mcp/server-manager';
+import type * as vscode from 'vscode';
+
+// Delegate to the packaged extension implementation to avoid duplication.
+// This re-exports activate/deactivate from packages/vscode-extension.
+// Note: The path relies on the compiled output layout; ensure build copies package dist if publishing from root.
+
+let delegate: { activate: (ctx: vscode.ExtensionContext) => void; deactivate?: () => void } | null = null;
 
 export function activate(context: vscode.ExtensionContext): void {
-  console.log('Financial Advisor extension is now active!');
-
-  // Initialize MCP Server Manager
-  const mcpManager = new MCPServerManager();
-
-  // Initialize Financial Advisor Provider
-  const advisorProvider = new FinancialAdvisorProvider(mcpManager);
-
-  // Register commands
-  const startCommand = vscode.commands.registerCommand('financial-advisor.start', () => {
-    advisorProvider.start();
-  });
-
-  context.subscriptions.push(startCommand, mcpManager, advisorProvider);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const impl = require('../packages/vscode-extension/dist/extension.js');
+  delegate = impl;
+  if (typeof impl.activate === 'function') {
+    impl.activate(context);
+  } else {
+    console.error('Failed to load packaged extension implementation.');
+  }
 }
 
 export function deactivate(): void {
-  console.log('Financial Advisor extension is now deactivated');
+  if (delegate && typeof delegate.deactivate === 'function') {
+    try {
+      delegate.deactivate();
+    } catch {
+      // noop
+    }
+  }
 }

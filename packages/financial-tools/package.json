@@ -10,14 +10,22 @@
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["financial", "calculations", "analysis", "budgeting"],
+  "keywords": [
+    "financial",
+    "calculations",
+    "analysis",
+    "budgeting"
+  ],
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "dependencies": {
-    "@financialadvisor/shared": "file:../shared"
+    "@financialadvisor/shared": "file:../shared",
+    "financial-advisor": "file:../.."
   },
   "devDependencies": {
     "typescript": "^5.0.0"
   },
-  "files": ["dist/**/*"]
+  "files": [
+    "dist/**/*"
+  ]
 }

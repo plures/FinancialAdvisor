@@ -14,22 +14,31 @@
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["mcp", "financial", "storage", "secure", "server"],
+  "keywords": [
+    "mcp",
+    "financial",
+    "storage",
+    "secure",
+    "server"
+  ],
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "dependencies": {
-    "@financialadvisor/shared": "file:../shared",
     "@financialadvisor/financial-tools": "file:../financial-tools",
+    "@financialadvisor/shared": "file:../shared",
     "@modelcontextprotocol/sdk": "^0.5.0",
-    "sqlite3": "^5.1.6",
     "bcrypt": "^5.1.1",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "financial-advisor": "file:../..",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0",
     "@types/bcrypt": "^5.0.0",
-    "@types/express": "^4.17.0"
+    "@types/express": "^4.17.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   },
-  "files": ["dist/**/*"]
+  "files": [
+    "dist/**/*"
+  ]
 }

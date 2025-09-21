@@ -344,6 +344,31 @@ Create a `.financial-advisor-config.json` file:
 }
 ```
 
+### Quick MCP setup (Windows PowerShell)
+
+- In VS Code, open Settings (Ctrl+,) and set:
+  - financialAdvisor.mcpServer.dataDir → e.g., C:\\Users\\<you>\\.financial-advisor
+  - financialAdvisor.mcpServer.path → optional full path to financial-advisor-mcp if it’s not on PATH
+
+- Or add to your .vscode/settings.json:
+
+```jsonc
+{
+  "financialAdvisor.mcpServer.dataDir": "C:\\Users\\<you>\\.financial-advisor",
+  "financialAdvisor.security.encryptionEnabled": true
+}
+```
+
+- Optional: start the MCP server manually for troubleshooting:
+
+```powershell
+# If installed globally or available on PATH
+financial-advisor-mcp
+
+# Or from the package (after building the monorepo)
+pwsh -NoProfile -Command "npm run build:all:win; cd packages/mcp-server; node dist/cli.js"
+```
+
 ## 🔒 Security & Privacy
 
 - **Local-First**: Financial data never leaves your machine by default
@@ -389,29 +414,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 🗺️ Roadmap
 
-### Phase 1: Core Features ✅
-- [x] VSCode extension framework
-- [x] MCP server integration
-- [x] Basic financial types
-- [x] CI/CD pipeline
-
-### Phase 2: AI Integration
-- [ ] Local LLM integration (Ollama)
-- [ ] Cloud AI API support
-- [ ] Natural language financial queries
-- [ ] Intelligent recommendations
-
-### Phase 3: Advanced Features
-- [ ] Real-time market data
-- [ ] Investment portfolio tracking
-- [ ] Tax optimization suggestions
-- [ ] Risk assessment models
-
-### Phase 4: Mobile & Web
-- [ ] React Native mobile app
-- [ ] Web interface
-- [ ] Cross-platform sync
-- [ ] API gateway
+See docs/ROADMAP.md for the prioritized MVP and 1.0.0 plan.
 
 ## 📊 Metrics & Analytics
 
@@ -423,162 +426,6 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 - 📋 [Issues](https://github.com/plures/FinancialAdvisor/issues)
 - 💬 [Discussions](https://github.com/plures/FinancialAdvisor/discussions)
-- 📧 Email: support@financial-advisor.dev
+- 📧 Email: [support@financial-advisor.dev](mailto:support@financial-advisor.dev)
 - 📚 [Documentation](https://docs.financial-advisor.dev)
-=======
-```bash
-# Environment Variables
-FINANCIAL_ADVISOR_DATA_DIR="/path/to/data"        # Data storage location
-FINANCIAL_ADVISOR_ENCRYPTION_KEY="secure-key"     # Encryption key
-```
-
-### VSCode Extension Settings
-
-```json
-{
-  "financialAdvisor.mcpServer.dataDir": "/path/to/data",
-  "financialAdvisor.ai.provider": "openai",
-  "financialAdvisor.ai.model": "gpt-4",
-  "financialAdvisor.ai.apiKey": "your-api-key",
-  "financialAdvisor.security.encryptionEnabled": true
-}
-```
-
-### AI Provider Setup
-
-#### OpenAI
-```json
-{
-  "financialAdvisor.ai.provider": "openai",
-  "financialAdvisor.ai.model": "gpt-4",
-  "financialAdvisor.ai.apiKey": "sk-..."
-}
-```
-
-#### Ollama (Local)
-```json
-{
-  "financialAdvisor.ai.provider": "ollama",
-  "financialAdvisor.ai.model": "llama2",
-  "financialAdvisor.ai.baseUrl": "http://localhost:11434"
-}
-```
-
-## 🔌 API Reference
-
-### MCP Server Tools
-
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `add_account` | Add new financial account | `name`, `type`, `balance`, `currency`, `institution` |
-| `add_transaction` | Add new transaction | `accountId`, `amount`, `description`, `category`, `merchant` |
-| `analyze_spending` | Analyze spending patterns | `startDate`, `endDate`, `accountId` |
-| `analyze_portfolio` | Investment portfolio analysis | `accountId` |
-| `categorize_transactions` | Auto-categorize transactions | `limit` |
-
-### MCP Server Resources
-
-| Resource | Description | Format |
-|----------|-------------|---------|
-| `financial://accounts` | All account data | JSON |
-| `financial://transactions` | Transaction history | JSON |
-| `financial://budgets` | Budget information | JSON |
-| `financial://goals` | Financial goals | JSON |
-| `financial://investments` | Investment portfolio | JSON |
-
-## 🛠️ Development
-
-### Building the Project
-
-```bash
-# Install dependencies
-npm install
-
-# Build all packages
-npm run build
-
-# Watch mode for development
-npm run dev
-```
-
-### Running Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run specific package tests
-npm test --workspace=@financialadvisor/financial-tools
-```
-
-### Development Workflow
-
-1. **Package Development** - Work on individual packages in isolation
-2. **Integration Testing** - Test package interactions
-3. **Extension Testing** - Test VSCode extension functionality
-4. **MCP Server Testing** - Verify server operations
-
-### Adding New Features
-
-1. **Core Logic** - Implement in appropriate package (`financial-tools`, `shared`, etc.)
-2. **MCP Integration** - Add tools/resources to MCP server
-3. **UI Integration** - Update VSCode extension
-4. **Documentation** - Update README and docs
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
-
-### Development Setup
-
-```bash
-# Fork and clone the repository
-git clone https://github.com/your-username/FinancialAdvisor.git
-cd FinancialAdvisor
-
-# Install dependencies
-npm install
-
-# Create a feature branch
-git checkout -b feature/your-feature-name
-
-# Make your changes and test
-npm run build && npm test
-
-# Submit a pull request
-```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Model Context Protocol](https://modelcontextprotocol.io/) for the MCP specification
-- [VS Code Extension API](https://code.visualstudio.com/api) for the extension framework
-- Open source community for tools and libraries
-
----
-
-**⚠️ Disclaimer**: This tool provides educational information and should not be considered as professional financial advice. Always consult with qualified financial advisors for important financial decisions.
-=======
-## 🙋‍♂️ Support
-
-- **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/plures/FinancialAdvisor/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/plures/FinancialAdvisor/discussions)
-
-## 🗺️ Roadmap
-
-- [ ] **Web Dashboard** - Browser-based financial dashboard
-- [ ] **Mobile App** - React Native mobile application
-- [ ] **Bank Integration** - Direct bank account connections
-- [ ] **Investment Tracking** - Real-time stock price updates
-- [ ] **Tax Reporting** - Automated tax document generation
-- [ ] **Multi-Currency** - Enhanced multi-currency support
-- [ ] **Collaborative Features** - Family financial planning
-- [ ] **Advanced AI** - More sophisticated financial AI models
-
----
-
-**Made with ❤️ for better financial health**
+ 

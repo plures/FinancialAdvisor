@@ -10,11 +10,21 @@
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["financial", "shared", "types", "utilities"],
+  "keywords": [
+    "financial",
+    "shared",
+    "types",
+    "utilities"
+  ],
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
   },
-  "files": ["dist/**/*"]
+  "files": [
+    "dist/**/*"
+  ],
+  "dependencies": {
+    "financial-advisor": "file:../.."
+  }
 }
