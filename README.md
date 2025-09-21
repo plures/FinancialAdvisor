@@ -1,4 +1,3 @@
-
 # Financial Advisor 💰
 
 [![CI/CD Status](https://github.com/plures/FinancialAdvisor/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/plures/FinancialAdvisor/actions/workflows/ci.yml)
@@ -8,12 +7,12 @@
 [![Version](https://img.shields.io/github/package-json/v/plures/FinancialAdvisor)](https://github.com/plures/FinancialAdvisor/releases)
 [![codecov](https://codecov.io/gh/plures/FinancialAdvisor/branch/main/graph/badge.svg)](https://codecov.io/gh/plures/FinancialAdvisor)
 
-
 > **Personal AI-Powered Financial Advisor** - A comprehensive monorepo for managing your finances with AI assistance, secure local storage, and extensible architecture.
 
 ## 🎯 Overview
 
 FinancialAdvisor is a complete personal finance management system that combines:
+
 - **VSCode Extension** for intuitive financial data management
 - **MCP Server** for secure local storage of financial data
 - **AI Integration** supporting multiple providers (OpenAI, Ollama, etc.)
@@ -22,7 +21,7 @@ FinancialAdvisor is a complete personal finance management system that combines:
 
 ## 🏗️ Architecture
 
-```
+```text
 FinancialAdvisor/
 ├── 📦 packages/
 │   ├── 🔧 shared/              # Common types and utilities
@@ -38,6 +37,7 @@ FinancialAdvisor/
 ## ✨ Features
 
 ### 🏦 Financial Management
+
 - **Account Tracking** - Monitor multiple accounts (checking, savings, investment, etc.)
 - **Transaction Management** - Automatic categorization and analysis
 - **Budget Planning** - Create and track budgets with overspend alerts
@@ -45,18 +45,21 @@ FinancialAdvisor/
 - **Investment Analysis** - Portfolio diversification and performance tracking
 
 ### 🤖 AI-Powered Insights
+
 - **Smart Categorization** - Automatic transaction categorization
 - **Spending Analysis** - AI-powered spending pattern recognition
 - **Financial Advice** - Personalized recommendations based on your data
 - **Report Generation** - Automated financial reports with insights
 
 ### 🔐 Security & Privacy
+
 - **Local Storage** - All data stored locally with optional encryption
 - **Password Management** - Secure credential storage for financial accounts
 - **Data Encryption** - AES encryption for sensitive information
 - **No Cloud Dependencies** - Complete offline operation capability
 
 ### 🔌 Extensibility
+
 - **Plugin System** - Custom extensions for specific financial needs
 - **AI Provider Choice** - Support for OpenAI, Anthropic, Ollama, and custom providers
 - **MCP Protocol** - Standard Model Context Protocol for AI integration
@@ -67,7 +70,7 @@ FinancialAdvisor/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - VS Code 1.85+
 - Git
 
@@ -129,7 +132,7 @@ make release-check  # Check release readiness
 
 ### Project Structure
 
-```
+```text
 ├── src/
 │   ├── extension/          # VSCode extension code
 │   │   ├── providers/      # Financial advice providers
@@ -171,29 +174,29 @@ npm run package
 # Publish (requires tokens)
 npm run publish
 ```
-- Node.js 18+ and npm 9+
-- VSCode 1.74+
-- (Optional) Ollama for local AI models
 
-### Installation
+### Manual Installation
 
 1. **Clone and Setup**
-   ```bash
+
+  ```bash
    git clone https://github.com/plures/FinancialAdvisor.git
    cd FinancialAdvisor
    npm install
    npm run build
    ```
 
-2. **Install VSCode Extension**
-   ```bash
+1. **Install VSCode Extension**
+
+  ```bash
    cd packages/vscode-extension
    npm run package
    code --install-extension financial-advisor-1.0.0.vsix
    ```
 
-3. **Configure MCP Server**
-   ```bash
+1. **Configure MCP Server**
+
+  ```bash
    # Set data directory
    export FINANCIAL_ADVISOR_DATA_DIR="$HOME/.financial-advisor"
    
@@ -217,6 +220,7 @@ npm run publish
 ### Package Documentation
 
 #### 🔧 Shared Package (`@financialadvisor/shared`)
+
 Common types, interfaces, and utilities used across all packages.
 
 ```typescript
@@ -236,6 +240,7 @@ console.log(formatCurrency(account.balance)); // $1,500.00
 ```
 
 #### 🧮 Financial Tools (`@financialadvisor/financial-tools`)
+
 Core financial calculations and analysis tools.
 
 ```typescript
@@ -251,6 +256,7 @@ console.log(`Budget used: ${budgetAnalysis.percentageUsed.toFixed(1)}%`);
 ```
 
 #### 🤖 AI Integration (`@financialadvisor/ai-integration`)
+
 AI provider abstractions for financial analysis.
 
 ```typescript
@@ -270,6 +276,7 @@ const response = await provider.analyzeFinancialData(context, {
 ```
 
 #### 🔐 MCP Server (`@financialadvisor/mcp-server`)
+
 Secure local storage with MCP protocol support.
 
 ```typescript
@@ -289,6 +296,7 @@ await server.run();
 The VSCode extension provides a complete UI for managing your financial data:
 
 #### Commands
+
 - `Financial Advisor: Open Dashboard` - Main financial dashboard
 - `Financial Advisor: Add Transaction` - Quick transaction entry
 - `Financial Advisor: Add Account` - Account management
@@ -297,12 +305,14 @@ The VSCode extension provides a complete UI for managing your financial data:
 - `Financial Advisor: Configure AI` - AI provider setup
 
 #### Views
+
 - **Accounts View** - List and manage all accounts
 - **Transactions View** - Recent transaction history
 - **Budgets View** - Budget tracking and alerts
 - **Goals View** - Financial goal monitoring
 
 #### Dashboard Features
+
 - Real-time account balances
 - Transaction categorization
 - Spending analysis charts
@@ -347,14 +357,14 @@ Create a `.financial-advisor-config.json` file:
 ### Quick MCP setup (Windows PowerShell)
 
 - In VS Code, open Settings (Ctrl+,) and set:
-  - financialAdvisor.mcpServer.dataDir → e.g., C:\\Users\\<you>\\.financial-advisor
+  - financialAdvisor.mcpServer.dataDir → e.g., C:\\Users\\YOUR_USER\\.financial-advisor
   - financialAdvisor.mcpServer.path → optional full path to financial-advisor-mcp if it’s not on PATH
 
 - Or add to your .vscode/settings.json:
 
 ```jsonc
 {
-  "financialAdvisor.mcpServer.dataDir": "C:\\Users\\<you>\\.financial-advisor",
+  "financialAdvisor.mcpServer.dataDir": "C:\\Users\\YOUR_USER\\.financial-advisor",
   "financialAdvisor.security.encryptionEnabled": true
 }
 ```
@@ -404,7 +414,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - Conventional Commits for commit messages
 - 80%+ test coverage requirement
 
-## 📖 Documentation
+## 📚 Docs & Guides
 
 - [API Documentation](docs/api.md)
 - [Architecture Decisions](docs/adr/)
