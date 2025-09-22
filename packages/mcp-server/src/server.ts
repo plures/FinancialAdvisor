@@ -12,8 +12,9 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { SecureStorage, DatabaseConfig } from './storage';
-import { BudgetCalculator, InvestmentCalculator, TransactionAnalyzer, SavingsPlanner } from '@financialadvisor/financial-tools';
-import { Account, Transaction, Budget, Goal, Investment, TransactionType, generateId } from '@financialadvisor/shared';
+import { TransactionAnalyzer } from '../../financial-tools/src/categorization';
+import { Account, Transaction, TransactionType } from '../../shared/src/types';
+import { generateId } from '../../shared/src/utils';
 
 export class FinancialAdvisorMCPServer {
   private server: Server;
@@ -35,6 +36,10 @@ export class FinancialAdvisorMCPServer {
     );
 
     this.setupHandlers();
+  }
+
+  async initialize(): Promise<void> {
+    await this.storage.initialize();
   }
 
   private setupHandlers() {
@@ -223,16 +228,45 @@ export class FinancialAdvisorMCPServer {
     currency?: string;
     institution?: string;
   }) {
+    // Validate required fields
+    if (!args.name || args.name.trim().length === 0) {
+      throw new Error('Account name is required and cannot be empty');
+    }
+
+    if (!args.type || args.type.trim().length === 0) {
+      throw new Error('Account type is required and cannot be empty');
+    }
+
+    if (typeof args.balance !== 'number' || isNaN(args.balance)) {
+      throw new Error('Balance must be a valid number');
+    }
+
+    // Validate account type against allowed values
+    const validAccountTypes = ['checking', 'savings', 'credit_card', 'investment', 'loan', 'mortgage', 'retirement'];
+    if (!validAccountTypes.includes(args.type.toLowerCase())) {
+      throw new Error(`Invalid account type. Must be one of: ${validAccountTypes.join(', ')}`);
+    }
+
+    // Check for duplicate account name
+    const existingAccount = await this.storage.getAccountByName(args.name.trim());
+    if (existingAccount) {
+      throw new Error(`An account with the name "${args.name.trim()}" already exists`);
+    }
+
     const account: Account = {
       id: generateId(),
-      name: args.name,
-      type: args.type as any,
+      name: args.name.trim(),
+      type: args.type.toLowerCase() as any,
       balance: args.balance,
       currency: args.currency || 'USD',
-      institution: args.institution,
       lastUpdated: new Date(),
       isActive: true,
     };
+
+    // Only add institution if it exists
+    if (args.institution?.trim()) {
+      account.institution = args.institution.trim();
+    }
 
     await this.storage.saveAccount(account);
     
@@ -260,11 +294,17 @@ export class FinancialAdvisorMCPServer {
       amount: args.amount,
       description: args.description,
       date: args.date ? new Date(args.date) : new Date(),
-      category: args.category,
       tags: [],
       type: args.amount > 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
-      merchant: args.merchant,
     };
+
+    // Add optional fields if they exist
+    if (args.category) {
+      transaction.category = args.category;
+    }
+    if (args.merchant) {
+      transaction.merchant = args.merchant;
+    }
 
     // Auto-categorize if no category provided
     if (!transaction.category) {
@@ -310,17 +350,17 @@ export class FinancialAdvisorMCPServer {
 - **Savings Rate**: ${insights.savingsRate.toFixed(1)}%
 
 ## Top Spending Categories
-${insights.topCategories.map(cat => 
+${insights.topCategories.map((cat: any) => 
   `- **${cat.category}**: $${cat.totalAmount.toFixed(2)} (${cat.percentage.toFixed(1)}%)`
 ).join('\n')}
 
 ## Largest Expenses
-${insights.largestExpenses.slice(0, 5).map(t => 
+${insights.largestExpenses.slice(0, 5).map((t: any) => 
   `- $${Math.abs(t.amount).toFixed(2)} - ${t.description} (${t.category || 'Uncategorized'})`
 ).join('\n')}
 
 ## Recurring Patterns
-${insights.recurringPatterns.slice(0, 5).map(p => 
+${insights.recurringPatterns.slice(0, 5).map((p: any) => 
   `- **${p.merchant}**: $${p.averageAmount.toFixed(2)} avg, ${p.frequency.toFixed(1)}x/month`
 ).join('\n')}
     `;
@@ -335,7 +375,7 @@ ${insights.recurringPatterns.slice(0, 5).map(p =>
     };
   }
 
-  private async analyzePortfolio(args: { accountId?: string }) {
+  private async analyzePortfolio(_args: { accountId?: string }) {
     // For now, return a placeholder since we need investment data
     const report = `
 # Investment Portfolio Analysis

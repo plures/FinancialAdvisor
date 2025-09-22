@@ -2,7 +2,7 @@
  * Transaction categorization and analysis tools
  */
 
-import { Transaction, TransactionType } from '@financialadvisor/shared';
+import { Transaction, TransactionType } from '../../shared/src/types';
 
 export interface CategorySummary {
   category: string;
@@ -176,28 +176,28 @@ export class TransactionAnalyzer {
       });
 
     return Array.from(patterns.entries())
-      .filter(([_, transactions]) => transactions.length >= 3) // At least 3 similar transactions
-      .map(([key, transactions]) => {
+      .filter(([, transactions]) => transactions.length >= 3) // At least 3 similar transactions
+      .map(([, transactions]) => {
         const sortedTransactions = transactions.sort((a, b) => b.date.getTime() - a.date.getTime());
         const totalAmount = transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
         const averageAmount = totalAmount / transactions.length;
         
         // Calculate frequency (transactions per month)
-        const firstDate = sortedTransactions[transactions.length - 1].date;
-        const lastDate = sortedTransactions[0].date;
+        const firstDate = sortedTransactions[transactions.length - 1]!.date;
+        const lastDate = sortedTransactions[0]!.date;
         const monthsDiff = (lastDate.getFullYear() - firstDate.getFullYear()) * 12 + 
                           (lastDate.getMonth() - firstDate.getMonth()) + 1;
         const frequency = transactions.length / monthsDiff;
 
         return {
-          category: transactions[0].category || this.categorizeTransaction(transactions[0]),
-          subcategory: transactions[0].subcategory,
-          merchant: transactions[0].merchant,
+          category: transactions[0]!.category || this.categorizeTransaction(transactions[0]!),
+          subcategory: transactions[0]!.subcategory,
+          merchant: transactions[0]!.merchant,
           averageAmount,
           frequency,
           isRecurring: frequency >= 0.8, // At least once per month
           lastTransaction: lastDate,
-        };
+        } as SpendingPattern;
       })
       .sort((a, b) => b.frequency - a.frequency);
   }

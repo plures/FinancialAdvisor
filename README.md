@@ -217,6 +217,90 @@ npm run publish
 
 ## 📖 Documentation
 
+### 📋 User Guide
+
+#### Adding Financial Accounts
+
+The Add Account feature allows you to register your financial accounts for tracking and analysis.
+
+##### Via VS Code Extension
+
+1. **Open Command Palette** (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+2. **Run Command**: `Financial Advisor: Add Account`
+3. **Fill in the details** when prompted:
+   - **Account Name**: A unique identifier for your account
+   - **Account Type**: Choose from available types
+   - **Current Balance**: Enter the current account balance
+   - **Institution** (optional): Your bank or financial institution
+
+##### Supported Account Types
+
+- **`checking`** - Primary checking accounts
+- **`savings`** - Savings accounts and money market accounts
+- **`credit_card`** - Credit card accounts (balances can be negative)
+- **`investment`** - Investment and brokerage accounts
+- **`loan`** - Personal loans and lines of credit
+- **`mortgage`** - Home mortgages and property loans
+- **`retirement`** - 401(k), IRA, and other retirement accounts
+
+##### Input Validation
+
+The system validates your input to ensure data integrity:
+
+- ✅ **Account names must be unique** - Duplicate names are not allowed
+- ✅ **Required fields** - Name, type, and balance are mandatory
+- ✅ **Valid account types** - Only predefined types are accepted
+- ✅ **Numeric balance** - Balance must be a valid number (negative allowed for credit cards)
+- ✅ **Whitespace handling** - Leading/trailing spaces are automatically trimmed
+
+##### Examples
+
+**Basic Checking Account:**
+```
+Name: "Primary Checking"
+Type: checking
+Balance: 2,500.75
+Institution: "Bank of America"
+```
+
+**Credit Card (with negative balance):**
+```
+Name: "Chase Freedom"
+Type: credit_card
+Balance: -1,250.00
+Institution: "Chase Bank"
+```
+
+**Investment Account:**
+```
+Name: "Fidelity 401k"
+Type: retirement
+Balance: 125,000.00
+Institution: "Fidelity Investments"
+```
+
+##### Via MCP Server API
+
+You can also add accounts programmatically via the MCP server:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "add_account",
+    "arguments": {
+      "name": "Savings Account",
+      "type": "savings",
+      "balance": 5000.00,
+      "currency": "USD",
+      "institution": "Local Credit Union"
+    }
+  }
+}
+```
+
 ### Package Documentation
 
 #### 🔧 Shared Package (`@financialadvisor/shared`)
