@@ -4,9 +4,8 @@
 
 import { Database } from 'sqlite3';
 import * as crypto from 'crypto';
-import * as bcrypt from 'bcrypt';
 import * as path from 'path';
-import { Account, Transaction, Budget, Goal, Investment, SecureCredential } from '@financialadvisor/shared';
+import { Account, Transaction, SecureCredential } from '../../shared/src/types';
 
 export interface DatabaseConfig {
   dbPath: string;
@@ -18,13 +17,20 @@ export interface DatabaseConfig {
 export class SecureStorage {
   private db: Database;
   private config: DatabaseConfig;
-  private encryptionKey?: string;
+  private encryptionKey: string | undefined;
 
   constructor(config: DatabaseConfig) {
     this.config = config;
     this.encryptionKey = config.encryptionKey;
     this.db = new Database(config.dbPath);
-    this.initializeTables();
+    // Note: initializeTables() is async, call it separately if needed
+  }
+
+  /**
+   * Initialize the storage (must be called after constructor)
+   */
+  async initialize(): Promise<void> {
+    await this.initializeTables();
   }
 
   /**
@@ -143,27 +149,40 @@ export class SecureStorage {
   private encrypt(data: string): string {
     if (!this.encryptionKey) return data;
     
-    const cipher = crypto.createCipher('aes-256-cbc', this.encryptionKey);
-    let encrypted = cipher.update(data, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return encrypted;
+    try {
+      const iv = crypto.randomBytes(16);
+      const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
+      const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+      let encrypted = cipher.update(data, 'utf8', 'hex');
+      encrypted += cipher.final('hex');
+      return iv.toString('hex') + ':' + encrypted;
+    } catch {
+      return data; // Return as-is if encryption fails
+    }
   }
 
   /**
    * Decrypt sensitive data
+   * Currently unused but kept for future use
    */
-  private decrypt(encryptedData: string): string {
-    if (!this.encryptionKey) return encryptedData;
+  // private decrypt(encryptedData: string): string {
+  //   if (!this.encryptionKey) return encryptedData;
     
-    try {
-      const decipher = crypto.createDecipher('aes-256-cbc', this.encryptionKey);
-      let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-      decrypted += decipher.final('utf8');
-      return decrypted;
-    } catch {
-      return encryptedData; // Return as-is if decryption fails
-    }
-  }
+  //   try {
+  //     const parts = encryptedData.split(':');
+  //     if (parts.length !== 2) return encryptedData;
+      
+  //     const iv = Buffer.from(parts[0]!, 'hex');
+  //     const encryptedText = parts[1]!;
+  //     const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
+  //     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  //     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+  //     decrypted += decipher.final('utf8');
+  //     return decrypted;
+  //   } catch {
+  //     return encryptedData; // Return as-is if decryption fails
+  //   }
+  // }
 
   /**
    * Save account data
@@ -221,6 +240,40 @@ export class SecureStorage {
         }));
         
         resolve(accounts);
+      });
+    });
+  }
+
+  /**
+   * Get account by name
+   */
+  async getAccountByName(name: string): Promise<Account | null> {
+    const sql = 'SELECT * FROM accounts WHERE name = ? AND is_active = 1';
+    
+    return new Promise((resolve, reject) => {
+      this.db.get(sql, [name], (err, row: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        
+        if (!row) {
+          resolve(null);
+          return;
+        }
+        
+        const account: Account = {
+          id: row.id,
+          name: row.name,
+          type: row.type,
+          balance: row.balance,
+          currency: row.currency,
+          institution: row.institution,
+          lastUpdated: new Date(row.last_updated),
+          isActive: row.is_active === 1
+        };
+        
+        resolve(account);
       });
     });
   }
@@ -332,7 +385,7 @@ export class SecureStorage {
    * Save secure credential
    */
   async saveCredential(credential: SecureCredential): Promise<void> {
-    const hashedPassword = await bcrypt.hash(credential.encryptedPassword, 10);
+    const hashedPassword = this.encrypt(credential.encryptedPassword);
     
     const sql = `INSERT OR REPLACE INTO credentials 
       (id, service, username, encrypted_password, notes, last_updated)
