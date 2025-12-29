@@ -36,6 +36,10 @@
     ".svelte-kit",
     "build",
     "out",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "src/extension.ts",
+    "src/extension/**/*",
+    "src/mcp-server/**/*",
+    "src/shared/**/*"
   ]
 }

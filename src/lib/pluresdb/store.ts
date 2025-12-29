@@ -23,7 +23,8 @@
 // PluresDB is properly installed and its API is verified
 
 export class FinancialDataStore {
-  private db: any;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _db: any; // Placeholder for PluresDB instance (will be used when PluresDB is fully integrated)
   private initialized = false;
 
   async initialize() {
@@ -105,12 +106,12 @@ export class FinancialDataStore {
   }
 
   // Vector storage for AI embeddings (placeholder)
-  async saveEmbedding(id: string, vector: number[], metadata: any) {
+  async saveEmbedding(_id: string, _vector: number[], _metadata: any) {
     // TODO: Implement with PluresDB vector storage
-    console.log('Saving embedding for', id);
+    console.log('Saving embedding for', _id);
   }
 
-  async searchSimilar(vector: number[], limit = 5) {
+  async searchSimilar(_vector: number[], _limit = 5) {
     // TODO: Implement with PluresDB vector search
     console.log('Searching similar vectors');
     return [];
