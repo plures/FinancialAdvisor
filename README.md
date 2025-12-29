@@ -3,35 +3,46 @@
 [![CI/CD Status](https://github.com/plures/FinancialAdvisor/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/plures/FinancialAdvisor/actions/workflows/ci.yml)
 [![Security Scan](https://github.com/plures/FinancialAdvisor/workflows/Security%20Scanning/badge.svg)](https://github.com/plures/FinancialAdvisor/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue)](https://marketplace.visualstudio.com/items?itemName=plures.financial-advisor)
 [![Version](https://img.shields.io/github/package-json/v/plures/FinancialAdvisor)](https://github.com/plures/FinancialAdvisor/releases)
-[![codecov](https://codecov.io/gh/plures/FinancialAdvisor/branch/main/graph/badge.svg)](https://codecov.io/gh/plures/FinancialAdvisor)
 
-> **Personal AI-Powered Financial Advisor** - A comprehensive monorepo for managing your finances with AI assistance, secure local storage, and extensible architecture.
+> **Personal AI-Powered Financial Advisor** - A multiplatform desktop application for managing your finances with AI assistance, built with Tauri, Svelte, Praxis, and PluresDB.
 
 ## 🎯 Overview
 
-FinancialAdvisor is a complete personal finance management system that combines:
+FinancialAdvisor is a modern personal finance management system that combines:
 
-- **VSCode Extension** for intuitive financial data management
-- **MCP Server** for secure local storage of financial data
-- **AI Integration** supporting multiple providers (OpenAI, Ollama, etc.)
-- **Financial Tools** for analysis, categorization, and planning
-- **Extensible Architecture** for custom plugins and integrations
+- **Tauri Desktop App** - Cross-platform desktop application (Windows, macOS, Linux)
+- **SvelteKit UI** - Modern, reactive user interface with Svelte 5
+- **Praxis Framework** - Schema-driven application logic and business rules
+- **PluresDB** - Local-first data storage with real-time sync and vector storage for AI
+- **AI Integration** - Support for multiple AI providers (OpenAI, Ollama, etc.)
+- **MCP Protocol** - Model Context Protocol for AI agent integration
 
 ## 🏗️ Architecture
 
 ```text
 FinancialAdvisor/
-├── 📦 packages/
-│   ├── 🔧 shared/              # Common types and utilities
-│   ├── 🧮 financial-tools/     # Core financial calculations
-│   ├── 🤖 ai-integration/      # AI provider abstractions
-│   ├── 🔐 mcp-server/          # Secure data storage server
-│   └── 🖥️ vscode-extension/    # VSCode interface
-├── 📚 docs/                    # Documentation
-├── 🛠️ scripts/                # Build and utility scripts
-└── 📊 apps/                    # Demo applications
+├── 📱 src/                      # SvelteKit frontend application
+│   ├── routes/                  # Application pages
+│   │   ├── accounts/           # Account management
+│   │   ├── transactions/       # Transaction tracking
+│   │   ├── reports/            # Financial reports
+│   │   └── settings/           # App settings
+│   └── lib/                    # Shared libraries
+│       ├── praxis/             # Praxis schema & logic
+│       ├── pluresdb/           # PluresDB integration
+│       ├── stores/             # Svelte stores
+│       └── components/         # Reusable components
+├── 🦀 src-tauri/               # Tauri Rust backend
+│   ├── src/                    # Rust source code
+│   ├── Cargo.toml              # Rust dependencies
+│   └── tauri.conf.json         # Tauri configuration
+├── 📦 packages/                # Legacy packages (being migrated)
+│   ├── shared/                 # Common types and utilities
+│   ├── financial-tools/        # Core financial calculations
+│   ├── ai-integration/         # AI provider abstractions
+│   └── mcp-server/             # MCP server implementation
+└── 📚 docs/                    # Documentation
 ```
 
 ## ✨ Features
@@ -39,40 +50,43 @@ FinancialAdvisor/
 ### 🏦 Financial Management
 
 - **Account Tracking** - Monitor multiple accounts (checking, savings, investment, etc.)
-- **Transaction Management** - Automatic categorization and analysis
-- **Budget Planning** - Create and track budgets with overspend alerts
-- **Goal Setting** - Set and monitor financial goals with progress tracking
-- **Investment Analysis** - Portfolio diversification and performance tracking
+- **Transaction Management** - Add and categorize transactions
+- **Budget Planning** - Create and track budgets (coming soon)
+- **Goal Setting** - Set and monitor financial goals (coming soon)
+- **Investment Analysis** - Portfolio tracking (coming soon)
 
 ### 🤖 AI-Powered Insights
 
-- **Smart Categorization** - Automatic transaction categorization
+- **Smart Categorization** - Automatic transaction categorization using AI
 - **Spending Analysis** - AI-powered spending pattern recognition
 - **Financial Advice** - Personalized recommendations based on your data
 - **Report Generation** - Automated financial reports with insights
 
 ### 🔐 Security & Privacy
 
-- **Local Storage** - All data stored locally with optional encryption
-- **Password Management** - Secure credential storage for financial accounts
-- **Data Encryption** - AES encryption for sensitive information
+- **Local-First Storage** - All data stored locally using PluresDB
 - **No Cloud Dependencies** - Complete offline operation capability
+- **Data Encryption** - Secure storage of sensitive information
+- **Vector Storage** - AI embeddings stored locally for privacy
 
 ### 🔌 Extensibility
 
-- **Plugin System** - Custom extensions for specific financial needs
+- **Praxis Schema** - Declarative data models and business rules
 - **AI Provider Choice** - Support for OpenAI, Anthropic, Ollama, and custom providers
 - **MCP Protocol** - Standard Model Context Protocol for AI integration
-- **API Access** - RESTful API for custom integrations
+- **Multiplatform** - Desktop support for Windows, macOS, and Linux
 
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
-- VS Code 1.85+
-- Git
+- **Node.js** 20+ (22+ recommended)
+- **Rust** - Install from [rustup.rs](https://rustup.rs/)
+- **Platform-specific dependencies**:
+  - **Windows**: Visual Studio with C++ tools, WebView2
+  - **macOS**: Xcode Command Line Tools
+  - **Linux**: Build essentials, webkit2gtk-4.1, libssl-dev
 
 ### Installation
 
@@ -81,19 +95,15 @@ FinancialAdvisor/
 git clone https://github.com/plures/FinancialAdvisor.git
 cd FinancialAdvisor
 
-# Install dependencies and setup
-npm run bootstrap
+# Install dependencies
+npm install
 
-# Package the extension
-npm run package
+# Run in development mode
+npm run tauri:dev
+
+# Build for production
+npm run tauri:build
 ```
-
-### From VS Code Marketplace
-
-1. Open VS Code
-2. Go to Extensions (Ctrl+Shift+X)
-3. Search for "Financial Advisor"
-4. Click Install
 
 ## 🛠️ Development
 
