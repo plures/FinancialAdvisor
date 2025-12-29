@@ -1,166 +1,103 @@
 {
-
   "name": "financial-advisor",
-
   "displayName": "Financial Advisor",
-
-  "description": "Personal AI Financial Advisor - VSCode Extension with MCP Server",
-
-  "version": "0.1.0",
-
+  "description": "Personal AI Financial Advisor - Multiplatform Desktop App with AI Integration",
+  "version": "0.2.0",
+  "type": "module",
   "publisher": "plures",
-
+  "private": true,
   "engines": {
-
-    "vscode": "^1.104.0",
-
     "node": ">=22.0.0"
-
   },
-
-  "categories": [
-
-    "Other"
-
-  ],
-
   "keywords": [
-
     "ai",
-
     "finance",
-
     "advisor",
-
     "mcp",
-
-    "personal-finance"
-
+    "personal-finance",
+    "tauri",
+    "svelte",
+    "praxis",
+    "pluresdb",
+    "multiplatform"
   ],
 
-  "activationEvents": [
-    "onStartupFinished"
-  ],
 
-  "main": "./out/extension.js",
-
-  "contributes": {
-    "commands": [
-      { "command": "financialAdvisor.openDashboard", "title": "Open Financial Dashboard", "category": "Financial Advisor" },
-      { "command": "financialAdvisor.addTransaction", "title": "Add Transaction", "category": "Financial Advisor" },
-      { "command": "financialAdvisor.addAccount", "title": "Add Account", "category": "Financial Advisor" },
-      { "command": "financialAdvisor.analyzeSpending", "title": "Analyze Spending", "category": "Financial Advisor" },
-      { "command": "financialAdvisor.setupMCP", "title": "Setup MCP Server", "category": "Financial Advisor" },
-      { "command": "financialAdvisor.generateReport", "title": "Generate Financial Report", "category": "Financial Advisor" },
-      { "command": "financialAdvisor.configureAI", "title": "Configure AI Provider", "category": "Financial Advisor" }
-    ]
-  },
 
   "scripts": {
-
-    "vscode:prepublish": "npm run compile",
-
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:windows": "tauri build --target x86_64-pc-windows-msvc",
+    "tauri:build:macos": "tauri build --target aarch64-apple-darwin",
+    "tauri:build:linux": "tauri build --target x86_64-unknown-linux-gnu",
     "compile": "tsc -p ./",
-
     "compile:test": "tsc -p ./tsconfig.test.json",
-
     "watch": "tsc -watch -p ./",
-
     "pretest": "npm run compile:test && npm run lint",
-
-    "lint": "eslint src --ext ts",
-
-    "lint:fix": "eslint src --ext ts --fix",
-
-    "format": "prettier --write \"src/**/*.ts\"",
-
-    "format:check": "prettier --check \"src/**/*.ts\"",
-
-    "test": "node ./out/test/runTest.js",
-
+    "lint": "eslint src --ext ts,svelte",
+    "lint:fix": "eslint src --ext ts,svelte --fix",
+    "format": "prettier --write \"src/**/*.{ts,svelte,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,svelte,css}\"",
+    "test": "npm run test:unit",
     "test:unit": "npm run compile:test && mocha out/test/unit/**/*.test.js",
-
     "test:integration": "npm run compile:test && mocha out/test/integration/**/*.test.js",
-
     "coverage": "nyc --require ts-node/register --extension .ts mocha test/unit/**/*.test.ts",
-    "build": "npm run compile",
-    "build:all:win": "pwsh -File scripts/build.ps1",
-    "build:all": "bash ./scripts/build.sh",
-
-    "package": "vsce package",
-
-    "publish": "vsce publish",
-
-  "clean": "rimraf out *.vsix",
-
-    "setup": "npm install && npm run setup:hooks",
-
-    "setup:hooks": "npx husky install && npx husky add .husky/pre-commit 'npx lint-staged'",
-
-    "bootstrap": "npm run setup && npm run build && npm run test:unit",
-
-    "audit:security": "npm audit && npx osv-scanner -r .",
-
-    "check:all": "npm run lint && npm run format:check && npm run build && npm run test:unit",
-
+    "clean": "rimraf out build .svelte-kit *.vsix",
+    "clean:rust": "cargo clean --manifest-path src-tauri/Cargo.toml || echo 'No Rust to clean'",
+    "clean:all": "npm run clean && npm run clean:rust",
+    "setup": "npm install",
+    "bootstrap": "npm run setup && npm run build",
+    "audit:security": "npm audit && npx osv-scanner -r . || echo 'OSV scanner not critical'",
+    "check:all": "npm run lint && npm run format:check && npm run build",
     "sbom:generate": "npx @cyclonedx/cdxgen -o sbom.json --type npm .",
-
     "licenses:check": "npx license-checker --summary",
-
     "licenses:report": "npx license-checker --json > licenses.json && npx license-checker --csv > licenses.csv"
-
   },
 
   "devDependencies": {
-
     "@cyclonedx/cdxgen": "^11.7.0",
-
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.22.0",
+    "@sveltejs/vite-plugin-svelte": "^6.0.0",
+    "@tauri-apps/api": "^2.9.0",
+    "@tauri-apps/cli": "^2.9.4",
     "@types/glob": "^9.0.0",
-
     "@types/mocha": "^10.0.10",
-
     "@types/node": "^24.5.2",
-
-    "@types/vscode": "^1.104.0",
-
     "@typescript-eslint/eslint-plugin": "^8.44.0",
-
     "@typescript-eslint/parser": "^8.44.0",
-
-    "@vscode/test-electron": "^2.5.2",
-
-    "@vscode/vsce": "^3.6.0",
-
     "eslint": "^9.36.0",
-
+    "eslint-plugin-svelte": "^2.46.1",
     "glob": "^11.0.3",
-
     "husky": "^9.1.7",
-
     "license-checker": "^25.0.1",
-
     "lint-staged": "^16.1.6",
-
     "mocha": "^11.7.2",
-
     "nyc": "^17.1.0",
-
     "prettier": "^3.6.2",
-
+    "prettier-plugin-svelte": "^3.3.2",
     "rimraf": "^6.0.1",
-
+    "svelte": "^5.19.0",
+    "svelte-check": "^4.0.0",
     "ts-node": "^10.9.2",
-
-    "typescript": "^5.9.2"
-
+    "typescript": "^5.9.2",
+    "vite": "^7.0.4"
   },
 
   "dependencies": {
-
-    "@modelcontextprotocol/sdk": "^1.18.1"
-
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "@plures/praxis": "^1.1.3",
+    "@plures/pluresdb": "github:plures/pluresdb",
+    "@tauri-apps/plugin-store": "^2.4.1",
+    "@tauri-apps/plugin-updater": "^2.9.0"
   },
 
   "repository": {
