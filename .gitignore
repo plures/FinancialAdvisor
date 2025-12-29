@@ -11,6 +11,13 @@ out/
 *.vsix
 .svelte-kit/
 
+# TypeScript compiled outputs (except .d.ts in packages)
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+src/**/*.d.ts.map
+!src/**/*.svelte.d.ts
+
 # Tauri
 src-tauri/target/
 src-tauri/Cargo.lock
