@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { transactions, accounts } from '$lib/stores/financial';
+	import { FinancialLogic } from '$lib/praxis/logic';
 	import type { Transaction } from '$lib/praxis/schema';
 
 	let showAddForm = false;
+	let errors: string[] = [];
 	let newTransaction: Partial<Transaction> = {
 		accountId: '',
 		amount: 0,
@@ -19,25 +21,38 @@
 	});
 
 	function handleAddTransaction() {
+		errors = [];
+		
 		if (!newTransaction.accountId || !newTransaction.description || !newTransaction.amount) {
-			alert('Please fill in all required fields');
+			errors = ['Please fill in all required fields'];
 			return;
 		}
+
+		// Auto-categorize if no category provided
+		const category = newTransaction.category || FinancialLogic.categorizeTransaction(newTransaction.description);
 
 		const transaction: Transaction = {
 			id: `txn-${Date.now()}`,
 			accountId: newTransaction.accountId,
 			amount: newTransaction.amount,
 			description: newTransaction.description,
-			category: newTransaction.category,
+			category: category,
 			date: newTransaction.date || new Date(),
 			type: newTransaction.type as any,
 			tags: [],
 			createdAt: new Date()
 		};
 
+		// Validate using Praxis logic
+		const validation = FinancialLogic.validateTransaction(transaction);
+		if (!validation.valid) {
+			errors = validation.errors;
+			return;
+		}
+
 		transactions.add(transaction);
 		showAddForm = false;
+		errors = [];
 		newTransaction = {
 			accountId: '',
 			amount: 0,
@@ -56,6 +71,11 @@
 		const account = $accounts.find((a) => a.id === accountId);
 		return account?.name || 'Unknown Account';
 	}
+	
+	// Auto-suggest category as user types description
+	$: suggestedCategory = newTransaction.description 
+		? FinancialLogic.categorizeTransaction(newTransaction.description)
+		: '';
 </script>
 
 <svelte:head>
@@ -73,6 +93,15 @@
 	{#if showAddForm}
 		<div class="add-form">
 			<h2>Add New Transaction</h2>
+			
+			{#if errors.length > 0}
+				<div class="error-box">
+					{#each errors as error}
+						<p class="error">{error}</p>
+					{/each}
+				</div>
+			{/if}
+			
 			<form on:submit|preventDefault={handleAddTransaction}>
 				<div class="form-group">
 					<label for="account">Account *</label>
@@ -116,12 +145,17 @@
 				</div>
 
 				<div class="form-group">
-					<label for="category">Category</label>
+					<label for="category">
+						Category
+						{#if suggestedCategory && !newTransaction.category}
+							<span class="suggestion">(Suggested: {suggestedCategory})</span>
+						{/if}
+					</label>
 					<input
 						id="category"
 						type="text"
 						bind:value={newTransaction.category}
-						placeholder="e.g., Food, Transport"
+						placeholder={suggestedCategory || "e.g., Food, Transport"}
 					/>
 				</div>
 
@@ -291,5 +325,25 @@
 		padding: 3rem;
 		background: #f9f9f9;
 		border-radius: 8px;
+	}
+
+	.error-box {
+		background: #fff5f5;
+		border: 1px solid #ffcccc;
+		border-radius: 4px;
+		padding: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.error {
+		color: #dc3545;
+		margin: 0.25rem 0;
+	}
+
+	.suggestion {
+		color: #28a745;
+		font-size: 0.85rem;
+		font-weight: normal;
+		margin-left: 0.5rem;
 	}
 </style>

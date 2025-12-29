@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { accounts } from '$lib/stores/financial';
+	import { FinancialLogic } from '$lib/praxis/logic';
 	import type { Account } from '$lib/praxis/schema';
 
 	let showAddForm = false;
+	let errors: string[] = [];
 	let newAccount: Partial<Account> = {
 		name: '',
 		type: 'checking',
@@ -17,8 +19,10 @@
 	});
 
 	function handleAddAccount() {
+		errors = [];
+		
 		if (!newAccount.name || newAccount.balance === undefined) {
-			alert('Please fill in all required fields');
+			errors = ['Please fill in all required fields'];
 			return;
 		}
 
@@ -34,8 +38,16 @@
 			updatedAt: new Date()
 		};
 
+		// Validate using Praxis logic
+		const validation = FinancialLogic.validateAccount(account);
+		if (!validation.valid) {
+			errors = validation.errors;
+			return;
+		}
+
 		accounts.add(account);
 		showAddForm = false;
+		errors = [];
 		newAccount = {
 			name: '',
 			type: 'checking',
@@ -61,6 +73,15 @@
 	{#if showAddForm}
 		<div class="add-form">
 			<h2>Add New Account</h2>
+			
+			{#if errors.length > 0}
+				<div class="error-box">
+					{#each errors as error}
+						<p class="error">{error}</p>
+					{/each}
+				</div>
+			{/if}
+			
 			<form on:submit|preventDefault={handleAddAccount}>
 				<div class="form-group">
 					<label for="name">Account Name *</label>
@@ -269,5 +290,18 @@
 		padding: 3rem;
 		background: #f9f9f9;
 		border-radius: 8px;
+	}
+
+	.error-box {
+		background: #fff5f5;
+		border: 1px solid #ffcccc;
+		border-radius: 4px;
+		padding: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.error {
+		color: #dc3545;
+		margin: 0.25rem 0;
 	}
 </style>
