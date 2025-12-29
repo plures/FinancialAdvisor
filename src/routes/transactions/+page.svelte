@@ -38,7 +38,7 @@
 			description: newTransaction.description,
 			category: category,
 			date: newTransaction.date || new Date(),
-			type: newTransaction.type as any,
+			type: newTransaction.type as Transaction['type'],
 			tags: [],
 			createdAt: new Date()
 		};

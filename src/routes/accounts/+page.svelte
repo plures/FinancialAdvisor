@@ -29,7 +29,7 @@
 		const account: Account = {
 			id: `acc-${Date.now()}`,
 			name: newAccount.name,
-			type: newAccount.type as any,
+			type: newAccount.type as Account['type'],
 			balance: newAccount.balance,
 			currency: newAccount.currency || 'USD',
 			institution: newAccount.institution,
