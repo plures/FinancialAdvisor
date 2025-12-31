@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { accounts, transactions, totalBalance, budgets } from '$lib/stores/financial';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { Chart, registerables } from 'chart.js';
 
 	Chart.register(...registerables);
@@ -8,18 +8,38 @@
 	let spendingByCategoryChart: Chart | null = null;
 	let incomeExpensesChart: Chart | null = null;
 	let accountBalancesChart: Chart | null = null;
+	let chartsInitialized = false;
 
 	onMount(async () => {
 		await accounts.load();
 		await transactions.load();
+	});
 
-		// Create charts after data is loaded
-		setTimeout(() => {
+	onDestroy(() => {
+		// Clean up chart instances to prevent memory leaks
+		if (spendingByCategoryChart) {
+			spendingByCategoryChart.destroy();
+			spendingByCategoryChart = null;
+		}
+		if (incomeExpensesChart) {
+			incomeExpensesChart.destroy();
+			incomeExpensesChart = null;
+		}
+		if (accountBalancesChart) {
+			accountBalancesChart.destroy();
+			accountBalancesChart = null;
+		}
+	});
+
+	// Reactive statement to initialize charts when data is loaded
+	$: if ($transactions.length >= 0 && $accounts.length >= 0 && !chartsInitialized) {
+		chartsInitialized = true;
+		requestAnimationFrame(() => {
 			createSpendingByCategoryChart();
 			createIncomeExpensesChart();
 			createAccountBalancesChart();
-		}, 100);
-	});
+		});
+	}
 
 	function createSpendingByCategoryChart() {
 		const canvas = document.getElementById('spendingByCategory') as HTMLCanvasElement;
@@ -57,7 +77,7 @@
 						'#4BC0C0',
 						'#9966FF',
 						'#FF9F40',
-						'#FF6384',
+						'#E91E63',
 						'#C9CBCF'
 					]
 				}]

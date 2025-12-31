@@ -5,6 +5,9 @@
 	import type { Goal } from '$lib/praxis/schema';
 
 	let showAddForm = false;
+	let showProgressForm = false;
+	let selectedGoalId = '';
+	let progressAmount = 0;
 	let errors: string[] = [];
 	let newGoal: Partial<Goal> = {
 		name: '',
@@ -70,6 +73,21 @@
 				isCompleted: newAmount >= goal.targetAmount
 			});
 		}
+		showProgressForm = false;
+		progressAmount = 0;
+		selectedGoalId = '';
+	}
+
+	function showProgressInput(id: string) {
+		selectedGoalId = id;
+		showProgressForm = true;
+		progressAmount = 0;
+	}
+
+	function cancelProgress() {
+		showProgressForm = false;
+		selectedGoalId = '';
+		progressAmount = 0;
 	}
 
 	function deleteGoal(id: string) {
@@ -188,6 +206,36 @@
 		</div>
 	{/if}
 
+	{#if showProgressForm}
+		<div class="modal-overlay" onclick={cancelProgress}>
+			<div class="modal-content" onclick={(e) => e.stopPropagation()}>
+				<h2>Add Progress</h2>
+				<form onsubmit={(e) => { e.preventDefault(); updateGoalProgress(selectedGoalId, progressAmount); }}>
+					<div class="form-group">
+						<label for="progressAmount">Amount to Add *</label>
+						<input
+							id="progressAmount"
+							type="number"
+							step="0.01"
+							bind:value={progressAmount}
+							placeholder="100.00"
+							required
+							autofocus
+						/>
+					</div>
+					<div class="form-actions">
+						<button type="button" class="btn-secondary" onclick={cancelProgress}>
+							Cancel
+						</button>
+						<button type="submit" class="btn-primary">
+							Add Progress
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	{/if}
+
 	<div class="goals-list">
 		<h2>Your Goals</h2>
 		
@@ -236,10 +284,7 @@
 							<div class="goal-actions">
 								<button 
 									class="btn-small"
-									onclick={() => {
-										const amount = parseFloat(prompt('Enter amount to add:') || '0');
-										if (amount > 0) updateGoalProgress(goal.id, amount);
-									}}
+									onclick={() => showProgressInput(goal.id)}
 								>
 									Add Progress
 								</button>
@@ -518,5 +563,32 @@
 		text-align: center;
 		border-radius: 8px;
 		color: #666;
+	}
+
+	.modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+	}
+
+	.modal-content {
+		background: white;
+		padding: 2rem;
+		border-radius: 8px;
+		max-width: 400px;
+		width: 90%;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+	}
+
+	.modal-content h2 {
+		margin-top: 0;
+		margin-bottom: 1.5rem;
 	}
 </style>
