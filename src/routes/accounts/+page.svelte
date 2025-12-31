@@ -21,7 +21,7 @@
 	function handleAddAccount() {
 		errors = [];
 		
-		if (!newAccount.name || newAccount.balance === undefined) {
+		if (!newAccount.name || newAccount.balance === undefined || !newAccount.type) {
 			errors = ['Please fill in all required fields'];
 			return;
 		}
@@ -29,7 +29,7 @@
 		const account: Account = {
 			id: `acc-${Date.now()}`,
 			name: newAccount.name,
-			type: newAccount.type as Account['type'],
+			type: newAccount.type,
 			balance: newAccount.balance,
 			currency: newAccount.currency || 'USD',
 			institution: newAccount.institution,

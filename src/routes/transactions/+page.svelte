@@ -23,7 +23,7 @@
 	function handleAddTransaction() {
 		errors = [];
 		
-		if (!newTransaction.accountId || !newTransaction.description || !newTransaction.amount) {
+		if (!newTransaction.accountId || !newTransaction.description || !newTransaction.amount || !newTransaction.type) {
 			errors = ['Please fill in all required fields'];
 			return;
 		}
@@ -38,7 +38,7 @@
 			description: newTransaction.description,
 			category: category,
 			date: newTransaction.date || new Date(),
-			type: newTransaction.type as Transaction['type'],
+			type: newTransaction.type,
 			tags: [],
 			createdAt: new Date()
 		};
