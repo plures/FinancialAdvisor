@@ -4,38 +4,34 @@
  * Provides local-first data storage with real-time sync capabilities
  * and vector storage for AI integration.
  * 
- * CURRENT STATUS: Using localStorage as temporary fallback
+ * CURRENT STATUS: Using browser localStorage with structured API
  * 
- * TODO - PluresDB Integration Roadmap:
- * 1. Complete PluresDB package installation and API verification
- * 2. Initialize PluresDB graph database connection
- * 3. Migrate data models to PluresDB graph structure
- * 4. Implement reactive subscriptions for real-time updates
- * 5. Set up vector storage for AI embeddings
- * 6. Add peer-to-peer sync capabilities (optional)
- * 7. Implement data migration from localStorage
+ * PluresDB Integration Notes:
+ * - PluresDB requires Deno runtime which isn't available in browser
+ * - For Tauri desktop app, we can use PluresDB on the backend (Rust side)
+ * - For now, localStorage provides compatible interface
+ * - Future: Move to Tauri commands that call PluresDB on Rust backend
  * 
- * Timeline: Phase 3 of refactor (in progress)
+ * Timeline: Phase 3 of refactor (deferred to backend integration)
  */
 
-// Note: PluresDB is installed from GitHub and may have different API
-// This is a basic integration placeholder that will be updated once
-// PluresDB is properly installed and its API is verified
-
 export class FinancialDataStore {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private _db: any; // Placeholder for PluresDB instance (will be used when PluresDB is fully integrated)
   private initialized = false;
+  private storage: Storage | null = null;
 
   async initialize() {
     if (this.initialized) return;
     
-    // TODO: Initialize PluresDB when the package is available
-    // For now, using localStorage as a fallback
-    console.log('Initializing FinancialDataStore with localStorage fallback');
+    // Check if we're in browser environment
+    if (typeof window !== 'undefined') {
+      this.storage = window.localStorage;
+      console.log('Initializing FinancialDataStore with localStorage');
+    }
+    
     this.initialized = true;
   }
 
+  // Account operations
   async saveAccount(account: any) {
     await this.initialize();
     const accounts = this.getAccounts();
@@ -47,16 +43,13 @@ export class FinancialDataStore {
       accounts.push(account);
     }
     
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('fa_accounts', JSON.stringify(accounts));
-    }
-    
+    this.storage?.setItem('fa_accounts', JSON.stringify(accounts));
     return account;
   }
 
   getAccounts(): any[] {
-    if (typeof window === 'undefined') return [];
-    const data = localStorage.getItem('fa_accounts');
+    if (!this.storage) return [];
+    const data = this.storage.getItem('fa_accounts');
     return data ? JSON.parse(data) : [];
   }
 
@@ -68,14 +61,11 @@ export class FinancialDataStore {
   async deleteAccount(id: string) {
     const accounts = this.getAccounts();
     const filtered = accounts.filter((a: any) => a.id !== id);
-    
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('fa_accounts', JSON.stringify(filtered));
-    }
-    
+    this.storage?.setItem('fa_accounts', JSON.stringify(filtered));
     return true;
   }
 
+  // Transaction operations
   async saveTransaction(transaction: any) {
     await this.initialize();
     const transactions = this.getTransactions();
@@ -87,16 +77,13 @@ export class FinancialDataStore {
       transactions.push(transaction);
     }
     
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('fa_transactions', JSON.stringify(transactions));
-    }
-    
+    this.storage?.setItem('fa_transactions', JSON.stringify(transactions));
     return transaction;
   }
 
   getTransactions(): any[] {
-    if (typeof window === 'undefined') return [];
-    const data = localStorage.getItem('fa_transactions');
+    if (!this.storage) return [];
+    const data = this.storage.getItem('fa_transactions');
     return data ? JSON.parse(data) : [];
   }
 
@@ -105,15 +92,73 @@ export class FinancialDataStore {
     return transactions.filter((t: any) => t.accountId === accountId);
   }
 
-  // Vector storage for AI embeddings (placeholder)
+  // Budget operations
+  async saveBudget(budget: any) {
+    await this.initialize();
+    const budgets = this.getBudgets();
+    const index = budgets.findIndex((b: any) => b.id === budget.id);
+    
+    if (index >= 0) {
+      budgets[index] = budget;
+    } else {
+      budgets.push(budget);
+    }
+    
+    this.storage?.setItem('fa_budgets', JSON.stringify(budgets));
+    return budget;
+  }
+
+  getBudgets(): any[] {
+    if (!this.storage) return [];
+    const data = this.storage.getItem('fa_budgets');
+    return data ? JSON.parse(data) : [];
+  }
+
+  async deleteBudget(id: string) {
+    const budgets = this.getBudgets();
+    const filtered = budgets.filter((b: any) => b.id !== id);
+    this.storage?.setItem('fa_budgets', JSON.stringify(filtered));
+    return true;
+  }
+
+  // Goal operations
+  async saveGoal(goal: any) {
+    await this.initialize();
+    const goals = this.getGoals();
+    const index = goals.findIndex((g: any) => g.id === goal.id);
+    
+    if (index >= 0) {
+      goals[index] = goal;
+    } else {
+      goals.push(goal);
+    }
+    
+    this.storage?.setItem('fa_goals', JSON.stringify(goals));
+    return goal;
+  }
+
+  getGoals(): any[] {
+    if (!this.storage) return [];
+    const data = this.storage.getItem('fa_goals');
+    return data ? JSON.parse(data) : [];
+  }
+
+  async deleteGoal(id: string) {
+    const goals = this.getGoals();
+    const filtered = goals.filter((g: any) => g.id !== id);
+    this.storage?.setItem('fa_goals', JSON.stringify(filtered));
+    return true;
+  }
+
+  // Vector storage for AI embeddings (placeholder for future PluresDB integration)
   async saveEmbedding(_id: string, _vector: number[], _metadata: any) {
-    // TODO: Implement with PluresDB vector storage
-    console.log('Saving embedding for', _id);
+    // TODO: Implement with PluresDB vector storage via Tauri backend
+    console.log('Vector storage will be implemented with PluresDB backend integration');
   }
 
   async searchSimilar(_vector: number[], _limit = 5) {
-    // TODO: Implement with PluresDB vector search
-    console.log('Searching similar vectors');
+    // TODO: Implement with PluresDB vector search via Tauri backend
+    console.log('Vector search will be implemented with PluresDB backend integration');
     return [];
   }
 }

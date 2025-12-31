@@ -49,14 +49,60 @@ function createTransactionsStore() {
 }
 
 // Budgets store
-export const budgets = writable<Budget[]>([]);
+function createBudgetsStore() {
+  const { subscribe, set, update } = writable<Budget[]>([]);
+
+  return {
+    subscribe,
+    load: async () => {
+      const budgets = dataStore.getBudgets();
+      set(budgets);
+    },
+    add: async (budget: Budget) => {
+      await dataStore.saveBudget(budget);
+      update(budgets => [...budgets, budget]);
+    },
+    update: async (budget: Budget) => {
+      await dataStore.saveBudget(budget);
+      update(budgets => budgets.map(b => b.id === budget.id ? budget : b));
+    },
+    remove: async (id: string) => {
+      await dataStore.deleteBudget(id);
+      update(budgets => budgets.filter(b => b.id !== id));
+    }
+  };
+}
 
 // Goals store
-export const goals = writable<Goal[]>([]);
+function createGoalsStore() {
+  const { subscribe, set, update } = writable<Goal[]>([]);
+
+  return {
+    subscribe,
+    load: async () => {
+      const goals = dataStore.getGoals();
+      set(goals);
+    },
+    add: async (goal: Goal) => {
+      await dataStore.saveGoal(goal);
+      update(goals => [...goals, goal]);
+    },
+    update: async (goal: Goal) => {
+      await dataStore.saveGoal(goal);
+      update(goals => goals.map(g => g.id === goal.id ? goal : g));
+    },
+    remove: async (id: string) => {
+      await dataStore.deleteGoal(id);
+      update(goals => goals.filter(g => g.id !== id));
+    }
+  };
+}
 
 // Export stores
 export const accounts = createAccountsStore();
 export const transactions = createTransactionsStore();
+export const budgets = createBudgetsStore();
+export const goals = createGoalsStore();
 
 // Derived stores
 export const totalBalance = derived(accounts, ($accounts) => {

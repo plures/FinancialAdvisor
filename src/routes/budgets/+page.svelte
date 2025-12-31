@@ -15,7 +15,7 @@
 	};
 
 	onMount(async () => {
-		// Load budgets from store
+		await budgets.load();
 	});
 
 	function handleAddBudget() {
@@ -42,7 +42,7 @@
 			isActive: true
 		};
 
-		budgets.update(b => [...b, budget]);
+		budgets.add(budget);
 		showAddForm = false;
 		resetForm();
 	}
@@ -60,14 +60,15 @@
 	}
 
 	function toggleBudgetStatus(id: string) {
-		budgets.update(b => b.map(budget => 
-			budget.id === id ? { ...budget, isActive: !budget.isActive } : budget
-		));
+		const budget = $budgets.find(b => b.id === id);
+		if (budget) {
+			budgets.update({ ...budget, isActive: !budget.isActive });
+		}
 	}
 
 	function deleteBudget(id: string) {
 		if (confirm('Are you sure you want to delete this budget?')) {
-			budgets.update(b => b.filter(budget => budget.id !== id));
+			budgets.remove(id);
 		}
 	}
 

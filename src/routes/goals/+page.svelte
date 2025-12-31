@@ -16,7 +16,7 @@
 	};
 
 	onMount(async () => {
-		// Load goals from store
+		await goals.load();
 	});
 
 	function handleAddGoal() {
@@ -43,7 +43,7 @@
 			createdAt: new Date()
 		};
 
-		goals.update(g => [...g, goal]);
+		goals.add(goal);
 		showAddForm = false;
 		resetForm();
 	}
@@ -61,22 +61,20 @@
 	}
 
 	function updateGoalProgress(id: string, amount: number) {
-		goals.update(g => g.map(goal => {
-			if (goal.id === id) {
-				const newAmount = Math.max(0, goal.currentAmount || 0) + amount;
-				return {
-					...goal,
-					currentAmount: newAmount,
-					isCompleted: newAmount >= goal.targetAmount
-				};
-			}
-			return goal;
-		}));
+		const goal = $goals.find(g => g.id === id);
+		if (goal) {
+			const newAmount = Math.max(0, goal.currentAmount || 0) + amount;
+			goals.update({
+				...goal,
+				currentAmount: newAmount,
+				isCompleted: newAmount >= goal.targetAmount
+			});
+		}
 	}
 
 	function deleteGoal(id: string) {
 		if (confirm('Are you sure you want to delete this goal?')) {
-			goals.update(g => g.filter(goal => goal.id !== id));
+			goals.remove(id);
 		}
 	}
 
