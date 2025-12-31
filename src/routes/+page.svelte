@@ -32,6 +32,8 @@
 			<ul>
 				<li><a href="/accounts">Manage Accounts</a></li>
 				<li><a href="/transactions">View Transactions</a></li>
+				<li><a href="/budgets">Budget Management</a></li>
+				<li><a href="/goals">Goals Tracking</a></li>
 				<li><a href="/reports">Financial Reports</a></li>
 				<li><a href="/settings">Settings</a></li>
 			</ul>
