@@ -1,11 +1,185 @@
 <script lang="ts">
-	import { accounts, transactions, totalBalance } from '$lib/stores/financial';
+	import { accounts, transactions, totalBalance, budgets } from '$lib/stores/financial';
 	import { onMount } from 'svelte';
+	import { Chart, registerables } from 'chart.js';
+
+	Chart.register(...registerables);
+
+	let spendingByCategoryChart: Chart | null = null;
+	let incomeExpensesChart: Chart | null = null;
+	let accountBalancesChart: Chart | null = null;
 
 	onMount(async () => {
 		await accounts.load();
 		await transactions.load();
+
+		// Create charts after data is loaded
+		setTimeout(() => {
+			createSpendingByCategoryChart();
+			createIncomeExpensesChart();
+			createAccountBalancesChart();
+		}, 100);
 	});
+
+	function createSpendingByCategoryChart() {
+		const canvas = document.getElementById('spendingByCategory') as HTMLCanvasElement;
+		if (!canvas) return;
+
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+
+		// Aggregate transactions by category
+		const categoryTotals: Record<string, number> = {};
+		$transactions.forEach(transaction => {
+			if (transaction.type === 'debit') {
+				const category = transaction.category || 'Uncategorized';
+				categoryTotals[category] = (categoryTotals[category] || 0) + transaction.amount;
+			}
+		});
+
+		const categories = Object.keys(categoryTotals);
+		const amounts = Object.values(categoryTotals);
+
+		if (spendingByCategoryChart) {
+			spendingByCategoryChart.destroy();
+		}
+
+		spendingByCategoryChart = new Chart(ctx, {
+			type: 'pie',
+			data: {
+				labels: categories.length > 0 ? categories : ['No Data'],
+				datasets: [{
+					data: amounts.length > 0 ? amounts : [1],
+					backgroundColor: [
+						'#FF6384',
+						'#36A2EB',
+						'#FFCE56',
+						'#4BC0C0',
+						'#9966FF',
+						'#FF9F40',
+						'#FF6384',
+						'#C9CBCF'
+					]
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					title: {
+						display: true,
+						text: 'Spending by Category'
+					},
+					legend: {
+						position: 'bottom'
+					}
+				}
+			}
+		});
+	}
+
+	function createIncomeExpensesChart() {
+		const canvas = document.getElementById('incomeExpenses') as HTMLCanvasElement;
+		if (!canvas) return;
+
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+
+		// Calculate income vs expenses
+		let totalIncome = 0;
+		let totalExpenses = 0;
+		$transactions.forEach(transaction => {
+			if (transaction.type === 'credit') {
+				totalIncome += transaction.amount;
+			} else {
+				totalExpenses += transaction.amount;
+			}
+		});
+
+		if (incomeExpensesChart) {
+			incomeExpensesChart.destroy();
+		}
+
+		incomeExpensesChart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: ['Income', 'Expenses', 'Net'],
+				datasets: [{
+					label: 'Amount ($)',
+					data: [totalIncome, totalExpenses, totalIncome - totalExpenses],
+					backgroundColor: [
+						'#28a745',
+						'#dc3545',
+						totalIncome - totalExpenses >= 0 ? '#28a745' : '#dc3545'
+					]
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					title: {
+						display: true,
+						text: 'Income vs Expenses'
+					},
+					legend: {
+						display: false
+					}
+				},
+				scales: {
+					y: {
+						beginAtZero: true
+					}
+				}
+			}
+		});
+	}
+
+	function createAccountBalancesChart() {
+		const canvas = document.getElementById('accountBalances') as HTMLCanvasElement;
+		if (!canvas) return;
+
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+
+		const accountNames = $accounts.map(a => a.name);
+		const balances = $accounts.map(a => a.balance);
+
+		if (accountBalancesChart) {
+			accountBalancesChart.destroy();
+		}
+
+		accountBalancesChart = new Chart(ctx, {
+			type: 'doughnut',
+			data: {
+				labels: accountNames.length > 0 ? accountNames : ['No Accounts'],
+				datasets: [{
+					data: balances.length > 0 ? balances : [1],
+					backgroundColor: [
+						'#0066cc',
+						'#28a745',
+						'#ffc107',
+						'#dc3545',
+						'#17a2b8',
+						'#6f42c1'
+					]
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					title: {
+						display: true,
+						text: 'Account Balances Distribution'
+					},
+					legend: {
+						position: 'bottom'
+					}
+				}
+			}
+		});
+	}
 </script>
 
 <svelte:head>
@@ -33,15 +207,21 @@
 	</div>
 
 	<div class="reports-section">
-		<h2>Available Reports</h2>
-		<p class="coming-soon">Advanced reporting features coming soon!</p>
-		<ul>
-			<li>Spending Analysis by Category</li>
-			<li>Income vs Expenses Trend</li>
-			<li>Budget Performance</li>
-			<li>Net Worth Over Time</li>
-			<li>Goal Progress Reports</li>
-		</ul>
+		<h2>Financial Charts</h2>
+		
+		<div class="charts-grid">
+			<div class="chart-container">
+				<canvas id="spendingByCategory"></canvas>
+			</div>
+			
+			<div class="chart-container">
+				<canvas id="incomeExpenses"></canvas>
+			</div>
+			
+			<div class="chart-container">
+				<canvas id="accountBalances"></canvas>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -91,21 +271,22 @@
 		border-radius: 8px;
 	}
 
-	.coming-soon {
-		color: #666;
-		font-style: italic;
+	.charts-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+		gap: 2rem;
+		margin-top: 1rem;
 	}
 
-	ul {
-		list-style: none;
-		padding: 0;
-	}
-
-	li {
-		padding: 0.75rem;
-		margin: 0.5rem 0;
+	.chart-container {
 		background: white;
-		border-radius: 4px;
-		border-left: 4px solid #0066cc;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		padding: 1.5rem;
+		height: 400px;
+	}
+
+	.chart-container canvas {
+		max-height: 100%;
 	}
 </style>
