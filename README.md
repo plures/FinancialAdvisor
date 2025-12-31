@@ -74,7 +74,7 @@ FinancialAdvisor/
 - **Praxis Schema** - Declarative data models and business rules
 - **AI Provider Choice** - Support for OpenAI, Anthropic, Ollama, and custom providers
 - **MCP Protocol** - Standard Model Context Protocol for AI integration
-- **Multiplatform** - Desktop support for Windows, macOS, and Linux
+- **Multiplatform** - Desktop support for Windows, macOS, and Linux; Mobile support for iOS and Android
 
 
 ## 🚀 Quick Start

@@ -39,7 +39,14 @@
     "copyright": "Copyright © 2025 Plures Team",
     "category": "Finance",
     "shortDescription": "AI-powered Personal Finance Manager",
-    "longDescription": "A comprehensive personal finance management system with AI assistance, secure local storage, and multiplatform support."
+    "longDescription": "A comprehensive personal finance management system with AI assistance, secure local storage, and multiplatform support.",
+    "iOS": {
+      "minimumSystemVersion": "13.0",
+      "frameworks": []
+    },
+    "android": {
+      "minSdkVersion": 24
+    }
   },
   "plugins": {}
 }
