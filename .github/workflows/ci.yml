@@ -51,8 +51,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Sync SvelteKit
+        run: npm run prepare
+
       - name: Run type checking
-        run: npx tsc --noEmit
+        run: npm run check
 
   # Build and test matrix
   test:

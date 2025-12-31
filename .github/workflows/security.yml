@@ -90,15 +90,16 @@ jobs:
           name: npm-audit-results
           path: npm-audit.json
 
+      - name: Install OSV Scanner
+        run: |
+          curl -LO https://github.com/google/osv-scanner/releases/latest/download/osv-scanner_linux_amd64
+          chmod +x osv-scanner_linux_amd64
+          sudo mv osv-scanner_linux_amd64 /usr/local/bin/osv-scanner
+
       - name: Run OSV Scanner
-        uses: google/osv-scanner-action@v1.7.4
-        with:
-          scan-args: |-
-            -r
-            --skip-git
-            --format=json
-            --output=osv-results.json
-            ./
+        run: |
+          osv-scanner --version
+          osv-scanner -r --skip-git --format json --output osv-results.json . || true
         continue-on-error: true
 
       - name: Upload OSV scan results

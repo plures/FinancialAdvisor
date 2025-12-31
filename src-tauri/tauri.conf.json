@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.0",
+  "productName": "Financial Advisor",
+  "version": "0.2.0",
+  "identifier": "com.plures.financial-advisor",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Financial Advisor",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "identifier": "com.plures.financial-advisor",
+    "publisher": "Plures",
+    "copyright": "Copyright © 2025 Plures Team",
+    "category": "Finance",
+    "shortDescription": "AI-powered Personal Finance Manager",
+    "longDescription": "A comprehensive personal finance management system with AI assistance, secure local storage, and multiplatform support."
+  },
+  "plugins": {}
+}
