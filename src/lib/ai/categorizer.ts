@@ -131,7 +131,7 @@ export class AICategorizer {
         // Search for similar transactions in vector database
         const similar = await dataStore.searchSimilar(embedding, 3);
 
-        if (similar.length > 0 && similar[0].metadata?.category) {
+        if (similar.length > 0 && similar[0]?.metadata?.category) {
           // Use the category of the most similar transaction
           return similar[0].metadata.category;
         }

@@ -231,7 +231,10 @@ export class FinancialDataStore {
     console.log('Vector storage will be implemented with PluresDB backend integration');
   }
 
-  async searchSimilar(_vector: number[], _limit = 5) {
+  async searchSimilar(
+    _vector: number[],
+    _limit = 5
+  ): Promise<Array<{ metadata?: { category?: string; [key: string]: any }; [key: string]: any }>> {
     // TODO: Implement with PluresDB vector search via Tauri backend
     console.log('Vector search will be implemented with PluresDB backend integration');
     return [];
