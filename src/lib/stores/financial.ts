@@ -18,12 +18,12 @@ function createAccountsStore() {
     },
     update: async (account: Account) => {
       await dataStore.saveAccount(account);
-      update(accounts => accounts.map(a => a.id === account.id ? account : a));
+      update(accounts => accounts.map(a => (a.id === account.id ? account : a)));
     },
     remove: async (id: string) => {
       await dataStore.deleteAccount(id);
       update(accounts => accounts.filter(a => a.id !== id));
-    }
+    },
   };
 }
 
@@ -44,22 +44,98 @@ function createTransactionsStore() {
     loadByAccount: async (accountId: string) => {
       const transactions = await dataStore.getTransactionsByAccount(accountId);
       set(transactions);
-    }
+    },
   };
 }
 
 // Budgets store
-export const budgets = writable<Budget[]>([]);
+function createBudgetsStore() {
+  const { subscribe, set, update } = writable<Budget[]>([]);
+
+  return {
+    subscribe,
+    load: async () => {
+      const budgets = dataStore.getBudgets();
+      set(budgets);
+    },
+    add: async (budget: Budget) => {
+      try {
+        await dataStore.saveBudget(budget);
+        update(budgets => [...budgets, budget]);
+      } catch (error) {
+        console.error('Failed to add budget:', error);
+        throw error;
+      }
+    },
+    update: async (budget: Budget) => {
+      try {
+        await dataStore.saveBudget(budget);
+        update(budgets => budgets.map(b => (b.id === budget.id ? budget : b)));
+      } catch (error) {
+        console.error('Failed to update budget:', error);
+        throw error;
+      }
+    },
+    remove: async (id: string) => {
+      try {
+        await dataStore.deleteBudget(id);
+        update(budgets => budgets.filter(b => b.id !== id));
+      } catch (error) {
+        console.error('Failed to remove budget:', error);
+        throw error;
+      }
+    },
+  };
+}
 
 // Goals store
-export const goals = writable<Goal[]>([]);
+function createGoalsStore() {
+  const { subscribe, set, update } = writable<Goal[]>([]);
+
+  return {
+    subscribe,
+    load: async () => {
+      const goals = dataStore.getGoals();
+      set(goals);
+    },
+    add: async (goal: Goal) => {
+      try {
+        await dataStore.saveGoal(goal);
+        update(goals => [...goals, goal]);
+      } catch (error) {
+        console.error('Failed to add goal:', error);
+        throw error;
+      }
+    },
+    update: async (goal: Goal) => {
+      try {
+        await dataStore.saveGoal(goal);
+        update(goals => goals.map(g => (g.id === goal.id ? goal : g)));
+      } catch (error) {
+        console.error('Failed to update goal:', error);
+        throw error;
+      }
+    },
+    remove: async (id: string) => {
+      try {
+        await dataStore.deleteGoal(id);
+        update(goals => goals.filter(g => g.id !== id));
+      } catch (error) {
+        console.error('Failed to remove goal:', error);
+        throw error;
+      }
+    },
+  };
+}
 
 // Export stores
 export const accounts = createAccountsStore();
 export const transactions = createTransactionsStore();
+export const budgets = createBudgetsStore();
+export const goals = createGoalsStore();
 
 // Derived stores
-export const totalBalance = derived(accounts, ($accounts) => {
+export const totalBalance = derived(accounts, $accounts => {
   return $accounts.reduce((sum, account) => {
     if (account.type === 'credit_card') {
       return sum + account.balance; // Credit card balance is negative
@@ -68,6 +144,6 @@ export const totalBalance = derived(accounts, ($accounts) => {
   }, 0);
 });
 
-export const activeAccounts = derived(accounts, ($accounts) => {
+export const activeAccounts = derived(accounts, $accounts => {
   return $accounts.filter(account => account.isActive);
 });

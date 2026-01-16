@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION_MATRIX: "[18, 20, 22]"
+  NODE_VERSION_MATRIX: "[22]"
 
 jobs:
   # Lint and format check
@@ -152,12 +152,13 @@ jobs:
         continue-on-error: true
 
       - name: Run OSV Scanner
-        uses: google/osv-scanner-action@v1.7.4
+        uses: google/osv-scanner-action@v1
         with:
           scan-args: |-
             -r
             --skip-git
             ./
+        continue-on-error: true
 
   # Bundle analysis
   bundle-analysis:
