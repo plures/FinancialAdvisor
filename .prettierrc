@@ -10,5 +10,14 @@
   "bracketSpacing": true,
   "insertPragma": false,
   "requirePragma": false,
-  "proseWrap": "preserve"
+  "proseWrap": "preserve",
+  "plugins": ["prettier-plugin-svelte"],
+  "overrides": [
+    {
+      "files": "*.svelte",
+      "options": {
+        "parser": "svelte"
+      }
+    }
+  ]
 }

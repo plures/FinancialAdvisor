@@ -1,17 +1,17 @@
 /**
  * PluresDB Integration for Financial Advisor
- * 
+ *
  * Provides local-first data storage with real-time sync capabilities
  * and vector storage for AI integration.
- * 
+ *
  * CURRENT STATUS: Using browser localStorage with structured API
- * 
+ *
  * PluresDB Integration Notes:
  * - PluresDB requires Deno runtime which isn't available in browser
  * - For Tauri desktop app, we can use PluresDB on the backend (Rust side)
  * - For now, localStorage provides compatible interface
  * - Future: Move to Tauri commands that call PluresDB on Rust backend
- * 
+ *
  * Timeline: Phase 3 of refactor (deferred to backend integration)
  */
 
@@ -20,14 +20,16 @@ export class FinancialDataStore {
   private storage: Storage | null = null;
 
   async initialize() {
-    if (this.initialized) return;
-    
+    if (this.initialized) {
+      return;
+    }
+
     // Check if we're in browser environment
     if (typeof window !== 'undefined') {
       this.storage = window.localStorage;
       console.log('Initializing FinancialDataStore with localStorage');
     }
-    
+
     this.initialized = true;
   }
 
@@ -36,25 +38,27 @@ export class FinancialDataStore {
     await this.initialize();
     const accounts = this.getAccounts();
     const index = accounts.findIndex((a: any) => a.id === account.id);
-    
+
     if (index >= 0) {
       accounts[index] = account;
     } else {
       accounts.push(account);
     }
-    
+
     try {
       this.storage?.setItem('fa_accounts', JSON.stringify(accounts));
     } catch (error) {
       console.error('Failed to save account to localStorage:', error);
       throw new Error('Storage quota exceeded or localStorage is disabled');
     }
-    
+
     return account;
   }
 
   getAccounts(): any[] {
-    if (!this.storage) return [];
+    if (!this.storage) {
+      return [];
+    }
     try {
       const data = this.storage.getItem('fa_accounts');
       return data ? JSON.parse(data) : [];
@@ -72,14 +76,14 @@ export class FinancialDataStore {
   async deleteAccount(id: string) {
     const accounts = this.getAccounts();
     const filtered = accounts.filter((a: any) => a.id !== id);
-    
+
     try {
       this.storage?.setItem('fa_accounts', JSON.stringify(filtered));
     } catch (error) {
       console.error('Failed to delete account from localStorage:', error);
       throw new Error('Storage quota exceeded or localStorage is disabled');
     }
-    
+
     return true;
   }
 
@@ -88,25 +92,27 @@ export class FinancialDataStore {
     await this.initialize();
     const transactions = this.getTransactions();
     const index = transactions.findIndex((t: any) => t.id === transaction.id);
-    
+
     if (index >= 0) {
       transactions[index] = transaction;
     } else {
       transactions.push(transaction);
     }
-    
+
     try {
       this.storage?.setItem('fa_transactions', JSON.stringify(transactions));
     } catch (error) {
       console.error('Failed to save transaction to localStorage:', error);
       throw new Error('Storage quota exceeded or localStorage is disabled');
     }
-    
+
     return transaction;
   }
 
   getTransactions(): any[] {
-    if (!this.storage) return [];
+    if (!this.storage) {
+      return [];
+    }
     try {
       const data = this.storage.getItem('fa_transactions');
       return data ? JSON.parse(data) : [];
@@ -126,25 +132,27 @@ export class FinancialDataStore {
     await this.initialize();
     const budgets = this.getBudgets();
     const index = budgets.findIndex((b: any) => b.id === budget.id);
-    
+
     if (index >= 0) {
       budgets[index] = budget;
     } else {
       budgets.push(budget);
     }
-    
+
     try {
       this.storage?.setItem('fa_budgets', JSON.stringify(budgets));
     } catch (error) {
       console.error('Failed to save budget to localStorage:', error);
       throw new Error('Storage quota exceeded or localStorage is disabled');
     }
-    
+
     return budget;
   }
 
   getBudgets(): any[] {
-    if (!this.storage) return [];
+    if (!this.storage) {
+      return [];
+    }
     try {
       const data = this.storage.getItem('fa_budgets');
       return data ? JSON.parse(data) : [];
@@ -157,14 +165,14 @@ export class FinancialDataStore {
   async deleteBudget(id: string) {
     const budgets = this.getBudgets();
     const filtered = budgets.filter((b: any) => b.id !== id);
-    
+
     try {
       this.storage?.setItem('fa_budgets', JSON.stringify(filtered));
     } catch (error) {
       console.error('Failed to delete budget from localStorage:', error);
       throw new Error('Storage quota exceeded or localStorage is disabled');
     }
-    
+
     return true;
   }
 
@@ -173,25 +181,27 @@ export class FinancialDataStore {
     await this.initialize();
     const goals = this.getGoals();
     const index = goals.findIndex((g: any) => g.id === goal.id);
-    
+
     if (index >= 0) {
       goals[index] = goal;
     } else {
       goals.push(goal);
     }
-    
+
     try {
       this.storage?.setItem('fa_goals', JSON.stringify(goals));
     } catch (error) {
       console.error('Failed to save goal to localStorage:', error);
       throw new Error('Storage quota exceeded or localStorage is disabled');
     }
-    
+
     return goal;
   }
 
   getGoals(): any[] {
-    if (!this.storage) return [];
+    if (!this.storage) {
+      return [];
+    }
     try {
       const data = this.storage.getItem('fa_goals');
       return data ? JSON.parse(data) : [];
@@ -204,14 +214,14 @@ export class FinancialDataStore {
   async deleteGoal(id: string) {
     const goals = this.getGoals();
     const filtered = goals.filter((g: any) => g.id !== id);
-    
+
     try {
       this.storage?.setItem('fa_goals', JSON.stringify(filtered));
     } catch (error) {
       console.error('Failed to delete goal from localStorage:', error);
       throw new Error('Storage quota exceeded or localStorage is disabled');
     }
-    
+
     return true;
   }
 

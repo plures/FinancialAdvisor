@@ -18,12 +18,12 @@ function createAccountsStore() {
     },
     update: async (account: Account) => {
       await dataStore.saveAccount(account);
-      update(accounts => accounts.map(a => a.id === account.id ? account : a));
+      update(accounts => accounts.map(a => (a.id === account.id ? account : a)));
     },
     remove: async (id: string) => {
       await dataStore.deleteAccount(id);
       update(accounts => accounts.filter(a => a.id !== id));
-    }
+    },
   };
 }
 
@@ -44,7 +44,7 @@ function createTransactionsStore() {
     loadByAccount: async (accountId: string) => {
       const transactions = await dataStore.getTransactionsByAccount(accountId);
       set(transactions);
-    }
+    },
   };
 }
 
@@ -70,7 +70,7 @@ function createBudgetsStore() {
     update: async (budget: Budget) => {
       try {
         await dataStore.saveBudget(budget);
-        update(budgets => budgets.map(b => b.id === budget.id ? budget : b));
+        update(budgets => budgets.map(b => (b.id === budget.id ? budget : b)));
       } catch (error) {
         console.error('Failed to update budget:', error);
         throw error;
@@ -84,7 +84,7 @@ function createBudgetsStore() {
         console.error('Failed to remove budget:', error);
         throw error;
       }
-    }
+    },
   };
 }
 
@@ -110,7 +110,7 @@ function createGoalsStore() {
     update: async (goal: Goal) => {
       try {
         await dataStore.saveGoal(goal);
-        update(goals => goals.map(g => g.id === goal.id ? goal : g));
+        update(goals => goals.map(g => (g.id === goal.id ? goal : g)));
       } catch (error) {
         console.error('Failed to update goal:', error);
         throw error;
@@ -124,7 +124,7 @@ function createGoalsStore() {
         console.error('Failed to remove goal:', error);
         throw error;
       }
-    }
+    },
   };
 }
 
@@ -135,7 +135,7 @@ export const budgets = createBudgetsStore();
 export const goals = createGoalsStore();
 
 // Derived stores
-export const totalBalance = derived(accounts, ($accounts) => {
+export const totalBalance = derived(accounts, $accounts => {
   return $accounts.reduce((sum, account) => {
     if (account.type === 'credit_card') {
       return sum + account.balance; // Credit card balance is negative
@@ -144,6 +144,6 @@ export const totalBalance = derived(accounts, ($accounts) => {
   }, 0);
 });
 
-export const activeAccounts = derived(accounts, ($accounts) => {
+export const activeAccounts = derived(accounts, $accounts => {
   return $accounts.filter(account => account.isActive);
 });
