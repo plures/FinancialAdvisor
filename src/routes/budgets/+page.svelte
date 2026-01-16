@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { budgets } from '$lib/stores/financial';
+	import { budgets, transactions } from '$lib/stores/financial';
+	import { FinancialLogic } from '$lib/praxis/logic';
 	import type { Budget } from '$lib/praxis/schema';
 
 	let showAddForm = false;
@@ -16,18 +17,21 @@
 
 	onMount(async () => {
 		await budgets.load();
+		await transactions.load();
 	});
 
 	function handleAddBudget() {
 		errors = [];
 		
-		if (!newBudget.name || !newBudget.category || !newBudget.amount || !newBudget.startDate) {
+		const amount = Number(newBudget.amount);
+		
+		if (!newBudget.name || !newBudget.category || Number.isNaN(amount) || !newBudget.startDate) {
 			errors = ['Please fill in all required fields'];
 			return;
 		}
 
-		if (newBudget.amount <= 0) {
-			errors = ['Budget amount must be positive'];
+		if (!Number.isFinite(amount) || amount <= 0) {
+			errors = ['Budget amount must be a valid positive number'];
 			return;
 		}
 
@@ -35,7 +39,7 @@
 			id: `budget-${Date.now()}`,
 			name: newBudget.name,
 			category: newBudget.category,
-			amount: newBudget.amount,
+			amount: amount,
 			period: newBudget.period || 'monthly',
 			startDate: new Date(newBudget.startDate),
 			endDate: newBudget.endDate ? new Date(newBudget.endDate) : undefined,
@@ -86,6 +90,11 @@
 		'Savings',
 		'Other'
 	];
+
+	function getBudgetProgress(budget: Budget) {
+		const analysis = FinancialLogic.analyzeBudget(budget, $transactions);
+		return analysis;
+	}
 </script>
 
 <svelte:head>
@@ -200,6 +209,7 @@
 		{:else}
 			<div class="budget-grid">
 				{#each $budgets as budget}
+					{@const progress = getBudgetProgress(budget)}
 					<div class="budget-card" class:inactive={!budget.isActive}>
 						<div class="budget-header">
 							<h3>{budget.name}</h3>
@@ -217,9 +227,9 @@
 
 						<div class="budget-progress">
 							<div class="progress-bar">
-								<div class="progress-fill" style="width: 0%"></div>
+								<div class="progress-fill" style="width: {Math.min(100, progress.percentageUsed)}%"></div>
 							</div>
-							<p class="progress-text">$0.00 spent of ${budget.amount.toFixed(2)}</p>
+							<p class="progress-text">${progress.totalSpent.toFixed(2)} spent of ${budget.amount.toFixed(2)}</p>
 						</div>
 
 						<div class="budget-actions">

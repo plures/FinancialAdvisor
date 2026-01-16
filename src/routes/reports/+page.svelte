@@ -9,10 +9,12 @@
 	let incomeExpensesChart: Chart | null = null;
 	let accountBalancesChart: Chart | null = null;
 	let chartsInitialized = false;
+	let dataLoaded = false;
 
 	onMount(async () => {
 		await accounts.load();
 		await transactions.load();
+		dataLoaded = true;
 	});
 
 	onDestroy(() => {
@@ -32,7 +34,7 @@
 	});
 
 	// Reactive statement to initialize charts when data is loaded
-	$: if ($transactions.length >= 0 && $accounts.length >= 0 && !chartsInitialized) {
+	$: if (dataLoaded && !chartsInitialized) {
 		chartsInitialized = true;
 		requestAnimationFrame(() => {
 			createSpendingByCategoryChart();

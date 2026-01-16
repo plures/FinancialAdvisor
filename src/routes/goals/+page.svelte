@@ -66,18 +66,29 @@
 	}
 
 	function updateGoalProgress(id: string, amount: number) {
+		errors = [];
+		
+		// Validate the progress amount
+		const parsedAmount = Number(amount);
+		if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+			errors = ['Progress amount must be a valid positive number'];
+			return;
+		}
+		
 		const goal = $goals.find(g => g.id === id);
 		if (goal) {
-			const newAmount = Math.max(0, goal.currentAmount || 0) + amount;
+			const newAmount = Math.max(0, goal.currentAmount || 0) + parsedAmount;
 			goals.update({
 				...goal,
 				currentAmount: newAmount,
 				isCompleted: newAmount >= goal.targetAmount
 			});
+			
+			// Only reset and close the form after successful update
+			showProgressForm = false;
+			progressAmount = 0;
+			selectedGoalId = '';
 		}
-		showProgressForm = false;
-		progressAmount = 0;
-		selectedGoalId = '';
 	}
 
 	function showProgressInput(id: string) {

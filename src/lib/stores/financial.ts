@@ -59,16 +59,31 @@ function createBudgetsStore() {
       set(budgets);
     },
     add: async (budget: Budget) => {
-      await dataStore.saveBudget(budget);
-      update(budgets => [...budgets, budget]);
+      try {
+        await dataStore.saveBudget(budget);
+        update(budgets => [...budgets, budget]);
+      } catch (error) {
+        console.error('Failed to add budget:', error);
+        throw error;
+      }
     },
     update: async (budget: Budget) => {
-      await dataStore.saveBudget(budget);
-      update(budgets => budgets.map(b => b.id === budget.id ? budget : b));
+      try {
+        await dataStore.saveBudget(budget);
+        update(budgets => budgets.map(b => b.id === budget.id ? budget : b));
+      } catch (error) {
+        console.error('Failed to update budget:', error);
+        throw error;
+      }
     },
     remove: async (id: string) => {
-      await dataStore.deleteBudget(id);
-      update(budgets => budgets.filter(b => b.id !== id));
+      try {
+        await dataStore.deleteBudget(id);
+        update(budgets => budgets.filter(b => b.id !== id));
+      } catch (error) {
+        console.error('Failed to remove budget:', error);
+        throw error;
+      }
     }
   };
 }
@@ -84,16 +99,31 @@ function createGoalsStore() {
       set(goals);
     },
     add: async (goal: Goal) => {
-      await dataStore.saveGoal(goal);
-      update(goals => [...goals, goal]);
+      try {
+        await dataStore.saveGoal(goal);
+        update(goals => [...goals, goal]);
+      } catch (error) {
+        console.error('Failed to add goal:', error);
+        throw error;
+      }
     },
     update: async (goal: Goal) => {
-      await dataStore.saveGoal(goal);
-      update(goals => goals.map(g => g.id === goal.id ? goal : g));
+      try {
+        await dataStore.saveGoal(goal);
+        update(goals => goals.map(g => g.id === goal.id ? goal : g));
+      } catch (error) {
+        console.error('Failed to update goal:', error);
+        throw error;
+      }
     },
     remove: async (id: string) => {
-      await dataStore.deleteGoal(id);
-      update(goals => goals.filter(g => g.id !== id));
+      try {
+        await dataStore.deleteGoal(id);
+        update(goals => goals.filter(g => g.id !== id));
+      } catch (error) {
+        console.error('Failed to remove goal:', error);
+        throw error;
+      }
     }
   };
 }

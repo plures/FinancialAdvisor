@@ -43,14 +43,25 @@ export class FinancialDataStore {
       accounts.push(account);
     }
     
-    this.storage?.setItem('fa_accounts', JSON.stringify(accounts));
+    try {
+      this.storage?.setItem('fa_accounts', JSON.stringify(accounts));
+    } catch (error) {
+      console.error('Failed to save account to localStorage:', error);
+      throw new Error('Storage quota exceeded or localStorage is disabled');
+    }
+    
     return account;
   }
 
   getAccounts(): any[] {
     if (!this.storage) return [];
-    const data = this.storage.getItem('fa_accounts');
-    return data ? JSON.parse(data) : [];
+    try {
+      const data = this.storage.getItem('fa_accounts');
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Failed to read accounts from localStorage:', error);
+      return [];
+    }
   }
 
   async getAccount(id: string) {
@@ -61,7 +72,14 @@ export class FinancialDataStore {
   async deleteAccount(id: string) {
     const accounts = this.getAccounts();
     const filtered = accounts.filter((a: any) => a.id !== id);
-    this.storage?.setItem('fa_accounts', JSON.stringify(filtered));
+    
+    try {
+      this.storage?.setItem('fa_accounts', JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Failed to delete account from localStorage:', error);
+      throw new Error('Storage quota exceeded or localStorage is disabled');
+    }
+    
     return true;
   }
 
@@ -77,14 +95,25 @@ export class FinancialDataStore {
       transactions.push(transaction);
     }
     
-    this.storage?.setItem('fa_transactions', JSON.stringify(transactions));
+    try {
+      this.storage?.setItem('fa_transactions', JSON.stringify(transactions));
+    } catch (error) {
+      console.error('Failed to save transaction to localStorage:', error);
+      throw new Error('Storage quota exceeded or localStorage is disabled');
+    }
+    
     return transaction;
   }
 
   getTransactions(): any[] {
     if (!this.storage) return [];
-    const data = this.storage.getItem('fa_transactions');
-    return data ? JSON.parse(data) : [];
+    try {
+      const data = this.storage.getItem('fa_transactions');
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Failed to read transactions from localStorage:', error);
+      return [];
+    }
   }
 
   async getTransactionsByAccount(accountId: string) {
@@ -104,20 +133,38 @@ export class FinancialDataStore {
       budgets.push(budget);
     }
     
-    this.storage?.setItem('fa_budgets', JSON.stringify(budgets));
+    try {
+      this.storage?.setItem('fa_budgets', JSON.stringify(budgets));
+    } catch (error) {
+      console.error('Failed to save budget to localStorage:', error);
+      throw new Error('Storage quota exceeded or localStorage is disabled');
+    }
+    
     return budget;
   }
 
   getBudgets(): any[] {
     if (!this.storage) return [];
-    const data = this.storage.getItem('fa_budgets');
-    return data ? JSON.parse(data) : [];
+    try {
+      const data = this.storage.getItem('fa_budgets');
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Failed to read budgets from localStorage:', error);
+      return [];
+    }
   }
 
   async deleteBudget(id: string) {
     const budgets = this.getBudgets();
     const filtered = budgets.filter((b: any) => b.id !== id);
-    this.storage?.setItem('fa_budgets', JSON.stringify(filtered));
+    
+    try {
+      this.storage?.setItem('fa_budgets', JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Failed to delete budget from localStorage:', error);
+      throw new Error('Storage quota exceeded or localStorage is disabled');
+    }
+    
     return true;
   }
 
@@ -133,20 +180,38 @@ export class FinancialDataStore {
       goals.push(goal);
     }
     
-    this.storage?.setItem('fa_goals', JSON.stringify(goals));
+    try {
+      this.storage?.setItem('fa_goals', JSON.stringify(goals));
+    } catch (error) {
+      console.error('Failed to save goal to localStorage:', error);
+      throw new Error('Storage quota exceeded or localStorage is disabled');
+    }
+    
     return goal;
   }
 
   getGoals(): any[] {
     if (!this.storage) return [];
-    const data = this.storage.getItem('fa_goals');
-    return data ? JSON.parse(data) : [];
+    try {
+      const data = this.storage.getItem('fa_goals');
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Failed to read goals from localStorage:', error);
+      return [];
+    }
   }
 
   async deleteGoal(id: string) {
     const goals = this.getGoals();
     const filtered = goals.filter((g: any) => g.id !== id);
-    this.storage?.setItem('fa_goals', JSON.stringify(filtered));
+    
+    try {
+      this.storage?.setItem('fa_goals', JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Failed to delete goal from localStorage:', error);
+      throw new Error('Storage quota exceeded or localStorage is disabled');
+    }
+    
     return true;
   }
 
