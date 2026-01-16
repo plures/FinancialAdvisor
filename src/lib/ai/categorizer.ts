@@ -11,7 +11,7 @@
  * - Fallback to rule-based categorization
  */
 
-import { dataStore } from '../pluresdb/store';
+import { dataStore } from '$lib/pluresdb/store';
 
 export interface AIProvider {
   name: string;
