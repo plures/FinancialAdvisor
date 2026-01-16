@@ -25,20 +25,22 @@
 	function handleAddGoal() {
 		errors = [];
 		
-		if (!newGoal.name || !newGoal.targetAmount) {
+		const targetAmount = Number(newGoal.targetAmount);
+
+		if (!newGoal.name || Number.isNaN(targetAmount)) {
 			errors = ['Please fill in all required fields'];
 			return;
 		}
 
-		if (newGoal.targetAmount <= 0) {
-			errors = ['Target amount must be positive'];
+		if (!Number.isFinite(targetAmount) || targetAmount <= 0) {
+			errors = ['Target amount must be a valid positive number'];
 			return;
 		}
 
 		const goal: Goal = {
 			id: `goal-${Date.now()}`,
 			name: newGoal.name,
-			targetAmount: newGoal.targetAmount,
+			targetAmount: targetAmount,
 			currentAmount: newGoal.currentAmount || 0,
 			category: newGoal.category,
 			deadline: newGoal.deadline ? new Date(newGoal.deadline) : undefined,
