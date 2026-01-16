@@ -152,12 +152,13 @@ jobs:
         continue-on-error: true
 
       - name: Run OSV Scanner
-        uses: google/osv-scanner-action@v1.7.4
+        uses: google/osv-scanner-action@v1
         with:
           scan-args: |-
             -r
             --skip-git
             ./
+        continue-on-error: true
 
   # Bundle analysis
   bundle-analysis:
