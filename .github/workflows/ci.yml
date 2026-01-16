@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION_MATRIX: "[18, 20, 22]"
+  NODE_VERSION_MATRIX: "[22]"
 
 jobs:
   # Lint and format check
