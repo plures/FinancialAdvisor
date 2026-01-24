@@ -83,6 +83,8 @@ jobs:
 
       - name: Run integration tests
         run: npm run test:integration
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         continue-on-error: true # Allow integration tests to fail for now
 
       - name: Generate coverage report

@@ -17,7 +17,10 @@
   "include": [
     "src/mcp-server/**/*",
     "src/shared/**/*",
-    "test/unit/**/*"
+    "test/unit/**/*",
+    "test/integration/**/*",
+    "packages/shared/src/**/*",
+    "packages/ai-integration/src/**/*"
   ],
   "exclude": [
     "node_modules",

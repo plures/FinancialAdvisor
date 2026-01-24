@@ -92,11 +92,13 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "@financialadvisor/shared": "file:packages/shared",
     "@modelcontextprotocol/sdk": "^1.25.2",
     "@plures/pluresdb": "github:plures/pluresdb",
     "@plures/praxis": "^1.2.0",
     "@tauri-apps/plugin-store": "^2.4.2",
     "@tauri-apps/plugin-updater": "^2.9.0",
+    "axios": "^1.13.2",
     "chart.js": "^4.5.1"
   },
   "repository": {
