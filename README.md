@@ -55,9 +55,21 @@ FinancialAdvisor/
 - **Goal Setting** - Set and monitor financial goals (coming soon)
 - **Investment Analysis** - Portfolio tracking (coming soon)
 
-### 🤖 AI-Powered Insights
+### 🤖 AI-Powered Insights (Phase 3)
 
-- **Smart Categorization** - Automatic transaction categorization using AI
+- **Multi-Provider AI Support** - Microsoft Copilot (recommended), OpenAI, Ollama, or custom providers
+- **Autonomous Financial Planning** - AI agents create comprehensive financial plans
+- **Smart Categorization** - Automatic transaction categorization with learning
+- **Proactive Assessments** - Continuous AI-driven financial health monitoring
+- **What-If Planning** - AI-powered scenario analysis and predictions
+- **Creative Solutions** - Innovative AI-generated strategies to achieve goals
+- **Budget Optimization** - AI-recommended budgets based on goals and behavior
+- **Learning System** - Improves from user corrections and manual categorizations
+
+See [Phase 3 Documentation](docs/PHASE3_IMPLEMENTATION.md) for detailed features and setup.
+
+### 🤖 Legacy AI Features
+
 - **Spending Analysis** - AI-powered spending pattern recognition
 - **Financial Advice** - Personalized recommendations based on your data
 - **Report Generation** - Automated financial reports with insights
@@ -72,8 +84,8 @@ FinancialAdvisor/
 ### 🔌 Extensibility
 
 - **Praxis Schema** - Declarative data models and business rules
-- **AI Provider Choice** - Support for OpenAI, Anthropic, Ollama, and custom providers
-- **MCP Protocol** - Standard Model Context Protocol for AI integration
+- **AI Provider Choice** - Microsoft Copilot (preferred), OpenAI, Anthropic, Ollama, and custom providers
+- **MCP Protocol** - Standard Model Context Protocol for AI integration (future-ready)
 - **Multiplatform** - Desktop support for Windows, macOS, and Linux; Mobile support for iOS and Android
 
 
@@ -518,7 +530,22 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 🗺️ Roadmap
 
-See docs/ROADMAP.md for the prioritized MVP and 1.0.0 plan.
+**Current Status: Phase 3 Complete ✅**
+
+- ✅ **Phase 1:** Core functionality and data management
+- ✅ **Phase 2:** UI, budgets, goals, and advanced reporting
+- ✅ **Phase 3:** AI-driven automation and intelligent financial planning
+  - Microsoft Copilot integration
+  - Multi-provider AI support (OpenAI, Ollama, local AI)
+  - Autonomous financial planning agents
+  - AI-powered categorization and learning
+  - Proactive financial assessments
+  - What-if scenario planning
+  - Creative financial solutions engine
+- 🔄 **Phase 4:** Advanced analytics and predictions (Future)
+- 🔄 **Phase 5:** Bank integrations and real-time data (Future)
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the prioritized plan and [docs/PHASE3_IMPLEMENTATION.md](docs/PHASE3_IMPLEMENTATION.md) for Phase 3 details.
 
 ## 📊 Metrics & Analytics
 

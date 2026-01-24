@@ -124,6 +124,7 @@ export enum AIProviderType {
   OPENAI = 'openai',
   ANTHROPIC = 'anthropic',
   OLLAMA = 'ollama',
+  COPILOT = 'copilot',
   CUSTOM = 'custom'
 }
 
