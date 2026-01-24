@@ -2,14 +2,25 @@
 
 This roadmap prioritizes delivering a usable MVP quickly with minimal risk, then iterates to a polished 1.0.0. It aligns engineering work across packages (shared, financial-tools, mcp-server, vscode-extension, ai-integration) and favors the already more complete code in `packages/*` to reduce duplication and errors.
 
+**Current Status: Phase 3 Complete ✅** - January 24, 2026
+
+See [PHASE3_COMPLETION.md](./PHASE3_COMPLETION.md) for detailed Phase 3 completion report.
+
 ## Guiding principles
 
 - Deliver smallest end-to-end value early: add account ➜ add transaction ➜ analyze spending ➜ view result in VS Code.
 - One code path per concern: prefer `packages/*` implementations over duplicate `src/*` where overlaps exist.
 - Strict quality gates: build, lint, unit tests must pass before merge; avoid large PRs.
 - Privacy by default: local storage first, no external calls unless explicitly configured.
+- AI-first automation: leverage AI for planning, categorization, and proactive guidance.
 
 ---
+
+## Phase 3 (v0.3.0) — AI-Powered Financial Planning ✅ COMPLETE
+
+Goal: Implement comprehensive AI-driven financial planning automation with multi-provider support.
+
+See [PHASE3_IMPLEMENTATION.md](./PHASE3_IMPLEMENTATION.md) for complete documentation.
 
 ## MVP (v0.2.0) — 2-3 short sprints
 
