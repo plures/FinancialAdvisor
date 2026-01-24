@@ -184,6 +184,26 @@ npm run test:integration
 npm run coverage
 ```
 
+### AI Integration Testing
+
+The project includes comprehensive integration tests for AI providers (OpenAI, GitHub Copilot) that validate real API connections. These tests automatically skip when API keys are not available.
+
+```bash
+# Run AI integration tests with OpenAI API key
+export OPENAI_API_KEY="sk-your-api-key-here"
+npm run test:integration
+
+# Tests will skip gracefully without API key
+npm run test:integration  # Skips AI tests if no key
+```
+
+See [AI Integration Testing Guide](docs/AI_INTEGRATION_TESTING.md) for detailed documentation on:
+- Setting up API keys for testing
+- Running tests locally and in CI/CD
+- Understanding test coverage
+- Cost management and best practices
+- Adding new AI integration tests
+
 ## 📦 Building & Packaging
 
 ```bash
