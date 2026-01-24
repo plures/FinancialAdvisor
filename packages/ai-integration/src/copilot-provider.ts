@@ -47,15 +47,16 @@ Always prioritize:
         ? `${this.formatFinancialContext(context)}\n\n${prompt}`
         : prompt;
 
-      // This is a placeholder - actual implementation would use MCP SDK or Copilot API
+      // Estimate token count - Note: This is a rough approximation
+      // For production use with billing, implement proper tokenization using tiktoken or similar
       const response: AIResponse = {
         content: await this.processWithCopilot(systemPrompt, fullPrompt),
         model: this.config.model,
         timestamp: new Date(),
         usage: {
-          promptTokens: fullPrompt.length / 4,
-          completionTokens: 0,
-          totalTokens: fullPrompt.length / 4
+          promptTokens: Math.ceil(fullPrompt.length / 4), // Rough estimate: ~4 chars per token
+          completionTokens: 0, // Will be set after response
+          totalTokens: Math.ceil(fullPrompt.length / 4)
         }
       };
 
@@ -76,17 +77,8 @@ Always prioritize:
     // 2. GitHub Copilot Extensions via MCP
     // 3. Azure OpenAI Service with Copilot capabilities
     
-    return `[Copilot Integration Placeholder]
-This would connect to Microsoft Copilot services for intelligent financial analysis.
-
-System: ${systemPrompt}
-User: ${userPrompt}
-
-Next steps:
-1. Implement Microsoft 365 Copilot API client
-2. Configure authentication (OAuth 2.0 / Microsoft Entra ID)
-3. Integrate with MCP server for context provision
-4. Enable enterprise governance and security features`;
+    // NOTE: This is a development stub - actual implementation required for production
+    throw new Error('Microsoft Copilot integration not yet implemented. Please configure an alternative AI provider (OpenAI or Ollama) or implement Copilot API integration.');
   }
 
   async analyzeFinancialData(context: FinancialContext, query: AIQuery): Promise<AIResponse> {

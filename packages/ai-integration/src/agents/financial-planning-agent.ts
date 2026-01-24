@@ -274,23 +274,49 @@ Extract patterns and rules that can improve future categorization accuracy.`;
   }
 
   private parsePlanFromAI(content: string, goals: Goal[], context: FinancialContext): FinancialPlan {
-    // In production, parse AI response properly
-    // For now, create a structured plan
-    return {
+    // Attempt to parse JSON response from AI, with fallback to structured data extraction
+    try {
+      // Try parsing as JSON first
+      const parsed = JSON.parse(content);
+      if (parsed.strategies && Array.isArray(parsed.strategies)) {
+        return {
+          id: `plan_${Date.now()}`,
+          goals,
+          budgetRecommendations: parsed.budgets || [],
+          timeline: parsed.timeline || [],
+          strategies: parsed.strategies,
+          riskAssessment: parsed.riskAssessment || {
+            overallRisk: 'medium',
+            factors: [],
+            mitigationStrategies: []
+          },
+          progressMetrics: parsed.metrics || [],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+      }
+    } catch {
+      // JSON parsing failed, extract structured data from text
+    }
+
+    // Fallback: Extract information from unstructured text response
+    const plan: FinancialPlan = {
       id: `plan_${Date.now()}`,
       goals,
       budgetRecommendations: [],
       timeline: [],
-      strategies: [],
+      strategies: this.extractStrategiesFromText(content),
       riskAssessment: {
         overallRisk: 'medium',
         factors: [],
-        mitigationStrategies: []
+        mitigationStrategies: this.extractMitigationStrategies(content)
       },
       progressMetrics: [],
       createdAt: new Date(),
       updatedAt: new Date()
     };
+
+    return plan;
   }
 
   private parseAssessment(content: string): {
@@ -299,22 +325,135 @@ Extract patterns and rules that can improve future categorization accuracy.`;
     recommendations: Strategy[];
     warnings: string[];
   } {
-    // Parse AI response
+    // Try to extract health score from content
+    let healthScore = 75; // Default
+    const scoreMatch = content.match(/(\d+)(\s*\/\s*100|%|\s+points?)/i);
+    if (scoreMatch) {
+      healthScore = Math.min(100, Math.max(0, parseInt(scoreMatch[1])));
+    }
+
+    // Extract insights and warnings
+    const lines = content.split('\n');
+    const insights: string[] = [];
+    const warnings: string[] = [];
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.length > 15) {
+        if (trimmed.toLowerCase().includes('warning') || 
+            trimmed.toLowerCase().includes('concern') ||
+            trimmed.toLowerCase().includes('risk')) {
+          warnings.push(trimmed);
+        } else if (trimmed.toLowerCase().includes('insight') ||
+                   trimmed.toLowerCase().includes('strength') ||
+                   trimmed.toLowerCase().includes('opportunity')) {
+          insights.push(trimmed);
+        }
+      }
+    }
+
     return {
-      healthScore: 75,
-      insights: [],
-      recommendations: [],
-      warnings: []
+      healthScore,
+      insights,
+      recommendations: this.extractStrategiesFromText(content),
+      warnings
     };
   }
 
   private parseBudgetRecommendations(content: string): Budget[] {
-    // Parse AI budget recommendations
-    return [];
+    const budgets: Budget[] = [];
+    const lines = content.split('\n');
+    
+    // Look for budget-related lines with amounts
+    const budgetPattern = /(\$|USD|€)?(\d+(?:,\d{3})*(?:\.\d{2})?)/;
+    
+    for (const line of lines) {
+      const match = line.match(budgetPattern);
+      if (match && (line.toLowerCase().includes('budget') || 
+                    line.toLowerCase().includes('allocate') ||
+                    line.toLowerCase().includes('monthly'))) {
+        const amount = parseFloat(match[2].replace(/,/g, ''));
+        
+        // Extract category from line context
+        let category = 'Other';
+        if (line.toLowerCase().includes('food') || line.toLowerCase().includes('groceries')) {
+          category = 'Food & Groceries';
+        } else if (line.toLowerCase().includes('housing') || line.toLowerCase().includes('rent')) {
+          category = 'Housing';
+        } else if (line.toLowerCase().includes('transport')) {
+          category = 'Transportation';
+        } else if (line.toLowerCase().includes('saving')) {
+          category = 'Savings';
+        }
+        
+        budgets.push({
+          id: `budget_${Date.now()}_${budgets.length}`,
+          name: `${category} Budget`,
+          category,
+          amount,
+          period: 'monthly' as any,
+          startDate: new Date(),
+          spent: 0,
+          remaining: amount
+        });
+      }
+    }
+    
+    return budgets;
   }
 
   private parseStrategies(content: string): Strategy[] {
-    // Parse AI strategies
-    return [];
+    return this.extractStrategiesFromText(content);
+  }
+
+  /**
+   * Extract strategies from unstructured AI text response
+   */
+  private extractStrategiesFromText(content: string): Strategy[] {
+    const strategies: Strategy[] = [];
+    
+    // Look for numbered lists or bullet points indicating strategies
+    const lines = content.split('\n');
+    const strategyPattern = /^\d+\.|^-|^\*/;
+    
+    for (const line of lines) {
+      if (strategyPattern.test(line.trim())) {
+        const text = line.replace(strategyPattern, '').trim();
+        if (text.length > 10) { // Ignore very short lines
+          strategies.push({
+            name: text.substring(0, 100), // First 100 chars as name
+            description: text,
+            priority: 'medium',
+            estimatedImpact: 10, // Default 10% impact
+            timeToImplement: 30, // Default 30 days
+            category: 'savings' // Default category
+          });
+        }
+      }
+    }
+    
+    return strategies;
+  }
+
+  /**
+   * Extract mitigation strategies from text
+   */
+  private extractMitigationStrategies(content: string): string[] {
+    const strategies: string[] = [];
+    const lines = content.split('\n');
+    
+    // Look for risk-related content
+    for (const line of lines) {
+      if (line.toLowerCase().includes('risk') || 
+          line.toLowerCase().includes('mitigation') ||
+          line.toLowerCase().includes('protect')) {
+        const cleaned = line.trim();
+        if (cleaned.length > 10) {
+          strategies.push(cleaned);
+        }
+      }
+    }
+    
+    return strategies;
   }
 }
