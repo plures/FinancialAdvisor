@@ -2,7 +2,7 @@
  * Automated tests for AI Provider Integration
  */
 
-import { describe, it, before } from 'mocha';
+import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 describe('AI Provider Integration Tests', () => {
