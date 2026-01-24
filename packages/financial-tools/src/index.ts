@@ -3,6 +3,7 @@ export * from './budget';
 export * from './investment';
 export * from './categorization';
 export * from './savings';
+export * from './predictive-analytics';
 
 // Version information
 export const VERSION = '1.0.0';

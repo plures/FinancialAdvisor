@@ -5,6 +5,9 @@ export * from './ollama-provider';
 export * from './copilot-provider';
 export * from './provider-manager';
 export * from './agents';
+export * from './ai-accuracy-enhancer';
+export * from './performance-optimizer';
+export * from './production-monitor';
 
 // Version information
 export const VERSION = '1.0.0';
