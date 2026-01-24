@@ -22,8 +22,9 @@ export class CopilotProvider extends BaseAIProvider {
 
   getCapabilities(): AIProviderCapabilities {
     return {
-      supportsStreaming: true,
-      supportsFunction: true,
+      // Streaming and function-calling are disabled until the Copilot integration is fully implemented
+      supportsStreaming: false,
+      supportsFunction: false,
       maxTokens: this.config.maxTokens || 8000,
       supportedFormats: ['text', 'json', 'markdown']
     };
@@ -130,13 +131,9 @@ Use professional formatting and clear data visualization.`;
   }
 
   async testConnection(): Promise<boolean> {
-    try {
-      // Placeholder for actual connection test
-      // Would verify Microsoft Copilot API access
-      return true;
-    } catch {
-      return false;
-    }
+    // Copilot integration is not yet implemented; report as unavailable
+    // to prevent AIProviderFactory from treating this provider as usable.
+    return false;
   }
 
   /**

@@ -4,7 +4,8 @@
  */
 
 import { BaseAIProvider } from '../base-provider';
-import { FinancialContext, Goal, Budget } from '@financialadvisor/shared';
+import type { FinancialContext, Goal, Budget } from '@financialadvisor/shared';
+import { BudgetPeriod } from '@financialadvisor/shared';
 
 export interface FinancialPlan {
   id: string;
@@ -391,7 +392,7 @@ Extract patterns and rules that can improve future categorization accuracy.`;
           name: `${category} Budget`,
           category,
           amount,
-          period: 'monthly' as any,
+          period: BudgetPeriod.MONTHLY,
           startDate: new Date(),
           spent: 0,
           remaining: amount

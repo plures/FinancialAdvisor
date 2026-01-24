@@ -26,10 +26,20 @@ Write-Host "Checking prerequisites..."
 
 # Check Node.js
 try {
-    $nodeVersion = node -v
-    Print-Success "Node.js $nodeVersion detected"
+    $nodeVersionRaw = node -v
+    $nodeVersion = $nodeVersionRaw.TrimStart('v', 'V')
+    $nodeVersionParts = $nodeVersion.Split('.')
+    [int]$nodeMajor = $nodeVersionParts[0]
+    $requiredNodeMajor = 22
+
+    if ($nodeMajor -lt $requiredNodeMajor) {
+        Print-Error "Node.js version $nodeVersionRaw detected, but Node.js 22+ is required. Please upgrade Node.js from https://nodejs.org/"
+        exit 1
+    } else {
+        Print-Success "Node.js $nodeVersionRaw detected"
+    }
 } catch {
-    Print-Error "Node.js not found. Please install Node.js 20+ from https://nodejs.org/"
+    Print-Error "Node.js not found. Please install Node.js 22+ from https://nodejs.org/"
     exit 1
 }
 
@@ -58,6 +68,10 @@ Write-Host "Installing dependencies..."
 
 # Install Node.js dependencies
 npm install
+if ($LASTEXITCODE -ne 0) {
+    Print-Error "Failed to install dependencies"
+    exit 1
+}
 
 Print-Success "Node.js dependencies installed"
 
@@ -65,6 +79,10 @@ Print-Success "Node.js dependencies installed"
 Write-Host ""
 Write-Host "Building packages..."
 npm run build
+if ($LASTEXITCODE -ne 0) {
+    Print-Error "Build failed"
+    exit 1
+}
 
 Print-Success "Build complete"
 
