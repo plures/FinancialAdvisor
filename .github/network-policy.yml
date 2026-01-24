@@ -1,0 +1,192 @@
+# Network Policy Configuration
+# 
+# This file documents the required network access for GitHub Actions workflows
+# and CI/CD jobs in this repository. 
+#
+# For GitHub Enterprise Cloud organizations with IP allow lists enabled,
+# these domains and IP ranges need to be added to the allow list to ensure
+# CI/CD workflows can function properly.
+#
+# Reference: https://docs.github.com/en/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/managing-allowed-ip-addresses-for-your-organization
+
+name: Network Policy Configuration
+version: 1.0.0
+
+# Required external services for CI/CD workflows
+allowed_services:
+  # OpenAI API - Required for AI integration features
+  - name: OpenAI API
+    description: AI provider for financial advice and analysis
+    domains:
+      - api.openai.com
+    ports:
+      - 443  # HTTPS
+    protocol: HTTPS
+    required_for:
+      - Integration tests
+      - AI feature validation
+      - OpenAI provider testing
+    workflow_jobs:
+      - ci.yml (test job)
+      - security.yml (dependency-scan job)
+    environment_variables:
+      - OPENAI_API_KEY
+    notes: |
+      Required for testing OpenAI integration in packages/ai-integration.
+      Tests make API calls to validate provider functionality.
+      API key should be stored as a GitHub secret.
+
+  # NPM Registry - Required for package installation
+  - name: NPM Registry
+    description: Node.js package registry
+    domains:
+      - registry.npmjs.org
+      - registry.npmjs.com
+    ports:
+      - 443  # HTTPS
+    protocol: HTTPS
+    required_for:
+      - Dependency installation
+      - Package publishing
+    workflow_jobs:
+      - ci.yml (all jobs)
+      - release.yml (all jobs)
+      - security.yml (all jobs)
+
+  # GitHub API - Required for GitHub Actions
+  - name: GitHub API
+    description: GitHub REST and GraphQL APIs
+    domains:
+      - api.github.com
+      - github.com
+    ports:
+      - 443  # HTTPS
+    protocol: HTTPS
+    required_for:
+      - Actions workflow execution
+      - Release creation
+      - Artifact uploads
+    workflow_jobs:
+      - ci.yml (all jobs)
+      - release.yml (all jobs)
+      - security.yml (all jobs)
+
+  # Codecov - Required for coverage reporting
+  - name: Codecov
+    description: Code coverage reporting service
+    domains:
+      - codecov.io
+      - uploader.codecov.io
+    ports:
+      - 443  # HTTPS
+    protocol: HTTPS
+    required_for:
+      - Coverage report uploads
+    workflow_jobs:
+      - ci.yml (test job)
+
+  # Google OSV Scanner - Required for security scanning
+  - name: Google OSV Scanner
+    description: Open source vulnerability scanner
+    domains:
+      - github.com
+      - api.osv.dev
+    ports:
+      - 443  # HTTPS
+    protocol: HTTPS
+    required_for:
+      - Vulnerability scanning
+      - Security analysis
+    workflow_jobs:
+      - ci.yml (security job)
+      - security.yml (dependency-scan job)
+
+# IP ranges (if specific IPs are required instead of domains)
+# Note: These are approximate and may change. Use domain-based rules when possible.
+allowed_ip_ranges:
+  # OpenAI API IP ranges (approximate - use domains when possible)
+  - service: OpenAI API
+    ranges:
+      - 104.18.0.0/15  # Cloudflare CDN (OpenAI uses Cloudflare)
+    notes: |
+      OpenAI uses Cloudflare CDN. IP addresses may change.
+      Domain-based filtering (api.openai.com) is strongly recommended.
+
+# Security recommendations
+security_notes: |
+  1. All external API calls use HTTPS (port 443) for encrypted communication
+  2. API keys and secrets are stored as GitHub encrypted secrets
+  3. Network access is limited to specific domains required for CI/CD
+  4. Workflow jobs use the principle of least privilege
+  5. Consider using GitHub Actions IP ranges if implementing strict IP filtering
+
+# GitHub Actions IP ranges
+# Reference: https://api.github.com/meta
+github_actions_notes: |
+  GitHub-hosted runners use dynamic IP addresses from GitHub's published ranges.
+  If your organization uses IP allow lists, you need to allow GitHub's IP ranges.
+  
+  To get current IP ranges for GitHub Actions:
+  curl https://api.github.com/meta | jq '.actions'
+  
+  These ranges change periodically, so domain-based filtering is recommended
+  where possible.
+
+# Configuration for GitHub Enterprise Cloud
+enterprise_configuration:
+  instructions: |
+    For GitHub Enterprise Cloud organizations with IP allow lists:
+    
+    1. Navigate to Organization Settings > Security > IP allow list
+    2. Add the following entries:
+       - api.openai.com (for OpenAI API access)
+       - registry.npmjs.org (for NPM package installation)
+       - GitHub Actions IP ranges from https://api.github.com/meta
+    
+    3. Alternatively, configure firewall rules at the runner level:
+       - For self-hosted runners, configure your firewall to allow outbound
+         HTTPS traffic to the domains listed above
+       - For GitHub-hosted runners, IP allow list configuration at the
+         organization level is required
+    
+    4. Verify configuration:
+       - Run the CI/CD pipeline after configuration
+       - Check workflow logs for network connectivity issues
+       - Ensure all jobs complete successfully
+
+# Self-hosted runner configuration
+self_hosted_runner_notes: |
+  If using self-hosted runners:
+  
+  1. Configure outbound firewall rules to allow HTTPS (port 443) to:
+     - api.openai.com
+     - registry.npmjs.org
+     - api.github.com
+     - codecov.io
+     - api.osv.dev
+  
+  2. Ensure the runner has internet access for package installation
+  
+  3. Consider using a proxy server for additional security and logging
+  
+  4. Monitor network traffic to identify any additional required endpoints
+
+# Testing and validation
+validation_steps: |
+  To verify network configuration:
+  
+  1. Trigger a CI/CD workflow run
+  2. Monitor the workflow logs for network errors
+  3. Verify that:
+     - Dependencies install successfully (npm ci)
+     - OpenAI API tests pass
+     - Coverage reports upload successfully
+     - Security scans complete
+  
+  4. If any jobs fail with network errors:
+     - Check the error message for the blocked domain
+     - Add the domain to the allow list
+     - Re-run the workflow
+
+# Last updated
+last_updated: 2026-01-24

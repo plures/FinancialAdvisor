@@ -427,6 +427,15 @@ The VSCode extension provides a complete UI for managing your financial data:
 
 ## 🔧 Configuration
 
+### Network Configuration (CI/CD)
+
+For organizations using IP allow lists or self-hosted runners, network access must be configured to allow connections to external services like the OpenAI API. See the [Network Configuration Guide](docs/guides/network-configuration.md) for detailed setup instructions.
+
+**Quick reference:**
+- OpenAI API: `api.openai.com:443` (required for AI features)
+- NPM Registry: `registry.npmjs.org:443` (required for package installation)
+- See [`.github/network-policy.yml`](.github/network-policy.yml) for complete network policy
+
 ### MCP Server Configuration
 
 Create a `.financial-advisor-config.json` file:
@@ -527,6 +536,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - [User Guide](docs/user-guide.md)
 - [Developer Guide](docs/developer-guide.md)
 - [Security Guide](docs/security.md)
+- [Network Configuration Guide](docs/guides/network-configuration.md) - Firewall and network setup for CI/CD
 
 ## 🗺️ Roadmap
 
