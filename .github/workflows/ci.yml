@@ -145,7 +145,7 @@ jobs:
         continue-on-error: true
 
       - name: Run OSV Scanner
-        uses: google/osv-scanner-action@v1
+        uses: google/osv-scanner-action@v1.9.0
         with:
           scan-args: |-
             -r
@@ -175,10 +175,10 @@ jobs:
 
       - name: Analyze bundle size
         run: |
-          echo "Extension bundle analysis:"
-          ls -lah out/
-          find out/ -name "*.js" -exec wc -c {} + | sort -n
+          echo "SvelteKit bundle analysis:"
+          ls -lah build/
+          find build/ -name "*.js" -exec wc -c {} + | sort -n || echo "No JS files found"
 
       - name: Check for large files
         run: |
-          find out/ -name "*.js" -size +1M -exec echo "Warning: Large file found: {} $(du -h {})" \;
+          find build/ -name "*.js" -size +1M -exec echo "Warning: Large file found: {} $(du -h {})" \; || echo "No large files found"
