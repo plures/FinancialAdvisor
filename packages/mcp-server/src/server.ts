@@ -11,9 +11,11 @@ import {
   CallToolRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { SecureStorage, DatabaseConfig } from './storage';
+import type { DatabaseConfig } from './storage';
+import { SecureStorage } from './storage';
 import { TransactionAnalyzer } from '../../financial-tools/src/categorization';
-import { Account, Transaction, TransactionType } from '../../shared/src/types';
+import type { Account, Transaction } from '../../shared/src/types';
+import { TransactionType } from '../../shared/src/types';
 import { generateId } from '../../shared/src/utils';
 
 export class FinancialAdvisorMCPServer {

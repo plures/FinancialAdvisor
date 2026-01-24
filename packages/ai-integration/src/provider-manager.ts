@@ -5,6 +5,7 @@
 import { BaseAIProvider } from './base-provider';
 import { OpenAIProvider } from './openai-provider';
 import { OllamaProvider } from './ollama-provider';
+import { CopilotProvider } from './copilot-provider';
 import { AIProviderConfig, AIProviderType } from '@financialadvisor/shared';
 
 export class AIProviderFactory {
@@ -21,6 +22,9 @@ export class AIProviderFactory {
       
       case AIProviderType.OLLAMA:
         return new OllamaProvider(config);
+      
+      case AIProviderType.COPILOT:
+        return new CopilotProvider(config);
       
       case AIProviderType.ANTHROPIC:
         // TODO: Implement Anthropic provider

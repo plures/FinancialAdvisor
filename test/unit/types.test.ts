@@ -1,6 +1,8 @@
+import { describe, it } from 'mocha';
 import * as assert from 'assert';
-import { FinancialData, BudgetCategory } from '../../src/shared/types';
-import { FinancialCalculator, FinancialGoal } from '../../src/shared/financial-utils';
+import type { FinancialData, BudgetCategory } from '../../src/shared/types';
+import type { FinancialGoal } from '../../src/shared/financial-utils';
+import { FinancialCalculator } from '../../src/shared/financial-utils';
 
 describe('Financial Types Tests', () => {
   it('FinancialData interface should be properly typed', () => {

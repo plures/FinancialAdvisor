@@ -1,9 +1,10 @@
+import { describe, it, beforeEach, afterEach } from 'mocha';
 import * as assert from 'assert';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { FinancialAdvisorMCPServer } from '../../packages/mcp-server/src/server';
-import { DatabaseConfig } from '../../packages/mcp-server/src/storage';
+import type { DatabaseConfig } from '../../packages/mcp-server/src/storage';
 
 describe('Add Account Tool Tests', () => {
   let server: FinancialAdvisorMCPServer;
