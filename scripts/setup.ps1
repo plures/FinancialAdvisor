@@ -78,7 +78,7 @@ Print-Success "Node.js dependencies installed"
 # Build packages
 Write-Host ""
 Write-Host "Building packages..."
-npm run build
+.\scripts\build.ps1
 if ($LASTEXITCODE -ne 0) {
     Print-Error "Build failed"
     exit 1
