@@ -15,7 +15,7 @@ async function main() {
 
   const server = new FinancialAdvisorMCPServer({
     dbPath,
-    encryptionKey: process.env.FINANCIAL_ADVISOR_ENCRYPTION_KEY ?? undefined,
+    encryptionKey: process.env.FINANCIAL_ADVISOR_ENCRYPTION_KEY || "",
     backupEnabled: true,
     backupPath: path.join(dataDir, 'backups'),
   });
