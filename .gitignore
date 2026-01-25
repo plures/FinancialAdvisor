@@ -10,6 +10,7 @@ build/
 out/
 *.vsix
 .svelte-kit/
+*.tsbuildinfo
 
 # TypeScript compiled outputs (except .d.ts in packages)
 src/**/*.js
