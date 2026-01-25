@@ -2,8 +2,8 @@
  * Transaction categorization and analysis tools
  */
 
-import type { Transaction } from '../../shared/src/types';
-import { TransactionType } from '../../shared/src/types';
+import type { Transaction } from '../../shared/dist/index.js';
+import { TransactionType } from '../../shared/dist/index.js';
 
 export interface CategorySummary {
   category: string;

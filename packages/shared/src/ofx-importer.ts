@@ -13,7 +13,7 @@ import type {
   CSVTemplate,
   OFXTransaction,
   PrivacyLevel,
-} from './account-integration-types';
+} from './account-integration-types.js';
 
 export interface OFXImportOptions {
   accountId?: string;

@@ -2,7 +2,7 @@
  * Common utility functions for the FinancialAdvisor system
  */
 
-import type { Currency, DateRange } from './types';
+import type { Currency, DateRange } from './types.js';
 
 /**
  * Format currency amount with proper locale and currency symbol

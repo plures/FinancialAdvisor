@@ -2,4 +2,4 @@
  * AI Agents for Financial Advisor
  */
 
-export * from './financial-planning-agent';
+export * from './financial-planning-agent.js';

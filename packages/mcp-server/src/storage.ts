@@ -2,10 +2,12 @@
  * Secure database storage for financial data
  */
 
-import { Database } from 'sqlite3';
+import sqlite3 from 'sqlite3';
 import * as crypto from 'crypto';
 import * as path from 'path';
-import type { Account, Transaction, SecureCredential } from '../../shared/src/types.js';
+import type { Account, Transaction, SecureCredential } from '../../shared/dist/index.js';
+
+const { Database } = sqlite3;
 
 export interface DatabaseConfig {
   dbPath: string;
@@ -15,7 +17,7 @@ export interface DatabaseConfig {
 }
 
 export class SecureStorage {
-  private db: Database;
+  private db: sqlite3.Database;
   private config: DatabaseConfig;
   private encryptionKey: string | undefined;
 

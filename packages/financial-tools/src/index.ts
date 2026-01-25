@@ -1,9 +1,9 @@
 // Main exports for the financial-tools package
-export * from './budget';
-export * from './investment';
-export * from './categorization';
-export * from './savings';
-export * from './predictive-analytics';
+export * from './budget.js';
+export * from './investment.js';
+export * from './categorization.js';
+export * from './savings.js';
+export * from './predictive-analytics.js';
 
 // Version information
 export const VERSION = '1.0.0';

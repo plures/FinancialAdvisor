@@ -3,7 +3,7 @@
  * Provides confidence scoring, response validation, and quality improvements
  */
 
-import { AIResponse } from './base-provider';
+import { AIResponse } from './base-provider.js';
 import type { FinancialContext, Account } from '@financialadvisor/shared';
 
 export interface ConfidenceScore {
@@ -53,11 +53,12 @@ export class AIAccuracyEnhancer {
       dataSupport: this.scoreDataSupport(response.content, context)
     };
 
+    // Adjusted weights to better reflect quality without context
     const overall = (
-      factors.responseLength * 0.2 +
-      factors.specificity * 0.3 +
-      factors.consistency * 0.25 +
-      factors.dataSupport * 0.25
+      factors.responseLength * 0.25 +
+      factors.specificity * 0.40 +
+      factors.consistency * 0.20 +
+      factors.dataSupport * 0.15
     );
 
     return {
@@ -80,7 +81,7 @@ export class AIAccuracyEnhancer {
     }
 
     // Check for generic responses
-    const genericPhrases = ['I cannot', 'I do not have', 'unable to', 'insufficient data'];
+    const genericPhrases = ['i cannot', 'i do not have', 'unable to', 'insufficient data'];
     if (genericPhrases.some(phrase => response.content.toLowerCase().includes(phrase))) {
       issues.push('Response appears generic or unhelpful');
       suggestions.push('Provide more context or rephrase the query');
@@ -211,16 +212,16 @@ export class AIAccuracyEnhancer {
   private scoreSpecificity(content: string): number {
     const specificIndicators = [
       /\$\d+/g, // Dollar amounts
-      /\d+%/g, // Percentages
+      /\d+%/g, // Percentages  
       /\d{4}-\d{2}-\d{2}/g, // Dates
-      /\b(increase|decrease|save|spend|invest|budget)\b/gi // Financial verbs
+      /\b(increase|decrease|save|spend|invest|budget|recommend|allocate)\b/gi // Financial verbs
     ];
 
     let score = 0.5; // Base score
     for (const pattern of specificIndicators) {
       const matches = content.match(pattern);
       if (matches) {
-        score += Math.min(0.15, matches.length * 0.03);
+        score += Math.min(0.20, matches.length * 0.04);
       }
     }
 

@@ -1,14 +1,17 @@
 import * as assert from 'assert';
 import { spawn } from 'child_process';
 import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('Integration Tests', () => {
   it('should validate project structure', () => {
     // Test that key files exist and are accessible
-    const fs = require('fs');
-    const path = require('path');
-    
-    const projectRoot = path.resolve(__dirname, '../../..');
+    const projectRoot = path.resolve(__dirname, '../../../..');
     
     // Check package.json exists
     assert.ok(fs.existsSync(path.join(projectRoot, 'package.json')));
@@ -23,8 +26,8 @@ describe('Integration Tests', () => {
   assert.ok(hasStdBuild || hasTestBuild, 'Expected out/extension.js or out/src/extension.js');
   });
   
-  it('should validate shared types module', () => {
-    const types = require('../../src/shared/types');
+  it('should validate shared types module', async () => {
+    const types = await import('../../src/shared/types.js');
     
     // Types should be available for import (even though they're interfaces)
     // This test validates the module structure
@@ -36,8 +39,6 @@ describe('Integration Tests', () => {
     this.timeout(15000);
 
     const env = { ...process.env };
-    const fs = require('fs');
-    const path = require('path');
 
     // Use a temp data dir for the test run
     const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-mcp-'));

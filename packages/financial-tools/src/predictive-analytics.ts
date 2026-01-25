@@ -107,9 +107,13 @@ export class PredictiveAnalytics {
 
     // Simple linear regression for trend
     const trend = this.calculateLinearTrend(recentMonths.map(m => m.total));
+    
+    // Start from the last known month value
+    const lastMonthValue = recentMonths[recentMonths.length - 1]?.total || baseline;
 
     for (let i = 1; i <= monthsAhead; i++) {
-      const prediction = baseline + (trend * i);
+      // Project from last month's value using the trend
+      const prediction = lastMonthValue + (trend * i);
       const variance = stdDev / Math.sqrt(recentMonths.length);
       const confidence = Math.max(0.5, 1 - (variance / baseline));
 
@@ -179,12 +183,30 @@ export class PredictiveAnalytics {
     const now = new Date();
     const periodStart = new Date(now);
     periodStart.setDate(periodStart.getDate() - periodDays);
-    const daysElapsed = periodDays;
     const daysInPeriod = 30; // Assume monthly budget
 
     for (const [category, limit] of budgets.entries()) {
       const categoryTxns = categoryData[category] || [];
       const periodTxns = categoryTxns.filter(t => new Date(t.date) >= periodStart);
+      
+      if (periodTxns.length === 0) {
+        // No transactions in this period
+        predictions.push({
+          category,
+          currentSpending: 0,
+          predictedEndOfPeriod: 0,
+          budgetLimit: limit,
+          variancePercentage: -100,
+          riskLevel: 'safe'
+        });
+        continue;
+      }
+
+      // Calculate actual days elapsed based on transaction dates
+      const txnDates = periodTxns.map(t => new Date(t.date).getTime());
+      const earliestTxn = Math.min(...txnDates);
+      const latestTxn = Math.max(...txnDates);
+      const daysElapsed = Math.max(1, Math.ceil((latestTxn - earliestTxn) / (1000 * 60 * 60 * 24)) + 1);
       
       const currentSpending = periodTxns.reduce((sum, t) => sum + Math.abs(t.amount), 0);
       const dailyAverage = currentSpending / daysElapsed;
@@ -193,7 +215,7 @@ export class PredictiveAnalytics {
       const variancePercentage = ((predictedEndOfPeriod - limit) / limit) * 100;
       
       let riskLevel: 'safe' | 'warning' | 'danger';
-      if (variancePercentage < -10) riskLevel = 'safe';
+      if (variancePercentage <= -10) riskLevel = 'safe';
       else if (variancePercentage < 10) riskLevel = 'warning';
       else riskLevel = 'danger';
 
