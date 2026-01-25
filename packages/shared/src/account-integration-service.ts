@@ -220,9 +220,9 @@ export class AccountIntegrationService {
    * Schedule automatic sync for a connection
    * 
    * @param connectionId - Connection ID
-   * @param frequency - Sync frequency
+   * @param config - Sync configuration
    */
-  async scheduleSyncuration(
+  async scheduleSync(
     connectionId: string,
     config: SyncConfiguration
   ): Promise<void> {
