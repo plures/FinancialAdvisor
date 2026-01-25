@@ -43,7 +43,6 @@
     "packages/vscode-extension/**/*",
     "src/extension/**/*",
     "test/runTest.ts",
-    "test/suite/**/*",
-    "**/*.test.ts"
+    "test/suite/**/*"
   ]
 }
