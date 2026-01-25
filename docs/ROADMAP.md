@@ -203,11 +203,149 @@ Risk controls
 
 ---
 
-## 1.0.0 — 4-6 sprints after MVP
+## Phase 5 (v0.5.0) — Ethereum Cryptocurrency Bridge Services 🔄 CURRENT PRIORITY
 
-Goal: Complete core personal finance workflows with solid UX and optional AI assistance, ready for Marketplace.
+Goal: Develop comprehensive Ethereum-based cryptocurrency bridge services targeting underbanked populations, cross-border remittances, stablecoin accounts, DeFi integration, and self-custody education.
 
-Scope (must-have for 1.0.0)
+See [ETHEREUM_BRIDGE_SERVICES.md](./ETHEREUM_BRIDGE_SERVICES.md) for complete strategic documentation.
+
+**Target Markets:**
+- **Underbanked Populations**: 1.7B people globally without bank accounts
+- **Cross-Border Remittances**: $700B annual market with high fees (5-10%)
+- **USD Access**: Stablecoin accounts for users in unstable currency regions
+- **DeFi Access**: Decentralized finance for yield and financial services
+
+**Core Services:**
+
+1. ⏳ Ethereum Wallet Management
+   - Non-custodial HD wallets (BIP-39/44)
+   - Multi-network support (Ethereum, Polygon, Optimism, Base, Arbitrum)
+   - Hardware wallet integration (Ledger, Trezor)
+   - Social recovery mechanisms
+   - Multi-signature support via Safe (Gnosis Safe)
+
+2. ⏳ Stablecoin Accounts
+   - USDC, DAI support across multiple networks
+   - Zero minimum balance, no monthly fees
+   - Instant global transfers (<2 seconds on L2s)
+   - Yield generation through DeFi integration (3-8% APY)
+   - Real-time balance tracking
+
+3. ⏳ Cross-Border Remittances
+   - 0.5-1% fees vs. 5-10% traditional
+   - Minutes vs. days settlement
+   - Support for high-volume corridors (US→Mexico, US→Philippines, US→India)
+   - Partner with local exchanges for fiat conversion
+
+4. ⏳ DeFi Integration
+   - Aave, Compound lending protocols
+   - Uniswap, Curve DEX integration
+   - 1inch DEX aggregation for best rates
+   - Yearn, Beefy yield optimization
+   - Safety ratings and risk warnings
+
+5. ⏳ Self-Custody Education
+   - Interactive educational modules on private key security
+   - Seed phrase backup wizard
+   - Transaction simulation on testnet
+   - Security checklist and recovery planning
+   - Hardware wallet setup guidance
+
+**Regulatory Compliance:**
+
+6. ⏳ MSB Licensing Framework
+   - FinCEN Money Services Business (MSB) registration
+   - State-by-state money transmitter licenses (phased approach)
+   - KYC/AML implementation (Sumsub integration)
+   - Transaction monitoring (Chainalysis)
+   - Compliance reporting system (CTR, SAR)
+
+**Technology Stack:**
+- ethers.js / web3.js for Ethereum integration
+- WalletConnect for mobile wallet connections
+- Layer 2 networks: Polygon, Optimism, Base, Arbitrum
+- DeFi protocol SDKs: Aave, Uniswap, Curve, 1inch
+- Compliance tools: Sumsub, Chainalysis, ComplyAdvantage
+
+**Implementation Timeline:**
+
+**Months 1-3: Foundation**
+- Basic Ethereum wallet integration
+- USDC support on Polygon
+- Non-custodial wallet creation/import
+- Simple send/receive functionality
+- Security education module
+
+**Months 4-6: DeFi Integration**
+- Aave lending protocol integration
+- Yield generation dashboard
+- Uniswap/1inch DEX integration
+- Transaction simulation
+- Hardware wallet support
+
+**Months 7-12: Compliance & Licensing**
+- FinCEN MSB registration
+- KYC/AML system implementation
+- California, New York, Texas licenses
+- Fiat on/off ramp partnerships
+- Compliance monitoring dashboard
+
+**Months 13-18: Remittance Services**
+- Cross-border remittance service
+- Local exchange partnerships (5 countries)
+- Multi-language support
+- Marketing to target communities
+
+**Months 19-24: Scale & Expansion**
+- Additional state licenses (15 total)
+- More DeFi protocols (Curve, Yearn, Compound)
+- Mobile app optimization
+- EU market entry
+- API for third-party developers
+
+**Success Metrics:**
+- ✅ 1,000+ active users by end of Phase 1
+- ✅ $1M+ TVL in DeFi protocols by end of Phase 2
+- ✅ MSB registration and 3 state licenses by end of Phase 3
+- ✅ $1M+ monthly remittance volume by end of Phase 4
+- ✅ 10,000+ active users and $10M+ TVL by end of Phase 5
+
+**Risks & Mitigation:**
+- Regulatory Risk: Proactive compliance, phased licensing approach
+- Security Risk: Audited contracts only, multi-layer security, insurance
+- Market Risk: Focus on stablecoins, volatility warnings
+- Competition Risk: Differentiate via education, compliance-first approach
+
+**Revenue Model:**
+- Trading fees (0.5-1% on fiat ↔ crypto)
+- Yield sharing on DeFi products (10-20%)
+- Premium features (advanced trading, analytics)
+- API access for developers
+
+---
+
+## Phase 6 (v0.6.0) — Local-First Bank Integration 🔜 FUTURE
+
+Goal: Implement file-based account integration and local-first banking data import for complete user data ownership and privacy.
+
+**Scope:**
+
+1. File-Based Account Import
+   - OFX/QFX/CSV file import support
+   - Drag-and-drop file import with auto-detection
+   - Directory watcher for automatic import
+   - CSV template system for all banks
+   
+2. Self-Hosted Open Bank Project
+   - Self-hosted OBP option for advanced users
+   - Complete user data ownership and privacy
+   - No external dependencies
+
+See [LOCAL_FIRST_INTEGRATION_PLAN.md](./LOCAL_FIRST_INTEGRATION_PLAN.md) for complete details.
+
+---
+
+## 1.0.0 — Production Release
 
 1. Robust data model & storage
 

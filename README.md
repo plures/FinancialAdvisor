@@ -585,18 +585,24 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
   - ✅ Performance optimizations (batching, rate limiting, connection pooling)
   - ✅ Production monitoring (health checks, metrics, error tracking)
   - ⏳ Actual Microsoft Copilot API integration
-  - ✅ Production deployment documentation
-- 🔜 **Phase 5:** Local-first bank integration (In Progress)
-  - ✅ File-based account import framework (OFX/QFX/CSV)
-  - ✅ CSV importer with template-based column mapping
-  - ✅ OFX/QFX importer with SGML and XML support
-  - ✅ Pre-configured templates for common banks
-  - ⏳ Directory watcher for automatic import
-  - ⏳ Transaction deduplication engine
-  - ⏳ Self-hosted Open Bank Project option
+  - ⏳ Production deployment preparation
+- 🔄 **Phase 5:** Ethereum Cryptocurrency Bridge Services (CURRENT PRIORITY)
+  - 🎯 Ethereum ecosystem integration targeting underbanked populations (1.7B globally)
+  - 💸 Cross-border remittances ($700B annual market, <1% fees)
+  - 💵 Stablecoin accounts for USD access (USDC, DAI)
+  - 🏦 DeFi integration and self-custody education
+  - ⚖️ MSB licensing and compliance framework
+  - 🌐 Multi-network support (Ethereum, Polygon, Optimism, Base, Arbitrum)
+  - See [ETHEREUM_BRIDGE_SERVICES.md](docs/ETHEREUM_BRIDGE_SERVICES.md) for complete details
+- 🔜 **Phase 6:** Local-first bank integration (Future)
+  - ⏳ File-based account import (OFX/QFX/CSV)
+  - Drag-and-drop file import with auto-detection
+  - Directory watcher for automatic import
+  - CSV template system for all banks
+  - Self-hosted Open Bank Project option
   - Complete user data ownership and privacy
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete plan, [docs/PHASE3_IMPLEMENTATION.md](docs/PHASE3_IMPLEMENTATION.md) for Phase 3 details, and [docs/PHASE4_IMPLEMENTATION.md](docs/PHASE4_IMPLEMENTATION.md) for Phase 4 features.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete plan, [docs/PHASE3_IMPLEMENTATION.md](docs/PHASE3_IMPLEMENTATION.md) for Phase 3 details, [docs/PHASE4_IMPLEMENTATION.md](docs/PHASE4_IMPLEMENTATION.md) for Phase 4 features, and [docs/ETHEREUM_BRIDGE_SERVICES.md](docs/ETHEREUM_BRIDGE_SERVICES.md) for Ethereum cryptocurrency bridge services.
 
 ## 📊 Metrics & Analytics
 
