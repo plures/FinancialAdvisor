@@ -77,17 +77,17 @@ jobs:
 
       - name: Install package dependencies
         run: |
-          cd packages/shared && npm ci
-          cd ../ai-integration && npm ci
-          cd ../financial-tools && npm ci
-          cd ../mcp-server && npm ci
+          (cd packages/shared && npm ci)
+          (cd packages/ai-integration && npm ci)
+          (cd packages/financial-tools && npm ci)
+          (cd packages/mcp-server && npm ci)
 
       - name: Build all packages
         run: |
-          cd packages/shared && npm run build
-          cd ../ai-integration && npm run build
-          cd ../financial-tools && npm run build
-          cd ../mcp-server && npm run build
+          (cd packages/shared && npm run build)
+          (cd packages/ai-integration && npm run build)
+          (cd packages/financial-tools && npm run build)
+          (cd packages/mcp-server && npm run build)
 
       - name: Build project
         run: npm run build
