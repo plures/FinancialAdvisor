@@ -464,7 +464,11 @@ Create a fully OBP-compatible digital bank/credit union designed for the modern,
 - **Medium-term**: Pursue credit union charter if user base grows
 - **Long-term**: Consider acquisition if strategic fit emerges
 
-### Option C: Cryptocurrency Bridge Services
+### Option C: Cryptocurrency Bridge Services (PRIMARY STRATEGIC FOCUS)
+
+**Status**: Phase 5 - Current Priority for Development
+
+See [ETHEREUM_BRIDGE_SERVICES.md](./ETHEREUM_BRIDGE_SERVICES.md) for comprehensive implementation plan.
 
 #### Opportunity
 
@@ -516,24 +520,47 @@ Leverage cryptocurrency to provide banking services where traditional banking is
 
 #### Technology Stack
 
+**Primary Focus: Ethereum Ecosystem**
+
+See [ETHEREUM_BRIDGE_SERVICES.md](./ETHEREUM_BRIDGE_SERVICES.md) for comprehensive Ethereum-focused implementation details.
+
 **Blockchain Layer**:
-- Bitcoin Lightning Network (fast, cheap BTC)
-- Ethereum/Polygon (smart contracts, stablecoins)
-- Base/Optimism (L2s for lower fees)
-- Multi-chain support for flexibility
+- **Ethereum Mainnet** (Layer 1): High-value transactions, security-critical operations
+- **Polygon** (Layer 2): Everyday transactions, low fees (~$0.01-0.10)
+- **Optimism** (Layer 2): DeFi operations, Coinbase integration
+- **Base** (Layer 2): User onboarding, backed by Coinbase
+- **Arbitrum** (Layer 2): Advanced DeFi, high-frequency trading
+- Bitcoin Lightning Network (supplementary for BTC support)
+
+**Ethereum Tools & Libraries**:
+- **ethers.js**: Primary Ethereum library for wallet management
+- **web3.js**: Alternative Ethereum JavaScript API
+- **WalletConnect**: Mobile wallet connection protocol
+- **MetaMask SDK**: Browser wallet integration
+- **Hardhat/Foundry**: Smart contract development and testing
+- **OpenZeppelin**: Secure, audited smart contract library
+- **The Graph**: Blockchain data indexing and querying
 
 **Wallet Infrastructure**:
 - Non-custodial by default
-- HD wallets (BIP-39/44)
-- Multi-signature option
-- Social recovery
-- Hardware wallet integration
+- HD wallets (BIP-39/44 compatible)
+- Multi-signature via Safe (Gnosis Safe)
+- Social recovery mechanisms
+- Hardware wallet integration (Ledger, Trezor)
+- Account abstraction (ERC-4337) for enhanced UX
 
-**DeFi Integration**:
-- Aave, Compound (lending)
-- Uniswap, Curve (DEXs)
-- Yearn, Beefy (yield aggregators)
-- 1inch, Matcha (DEX aggregators)
+**DeFi Integration** (Ethereum-native protocols):
+- **Aave, Compound**: Lending and borrowing on Ethereum
+- **Uniswap, Curve**: Leading Ethereum DEXs
+- **Yearn, Beefy**: Ethereum yield aggregators
+- **1inch, Matcha**: DEX aggregation for best rates
+- Multi-chain support for maximum liquidity
+
+**Stablecoin Focus**:
+- **USDC** (Primary): Circle-issued, fully regulated
+- **DAI**: Decentralized, overcollateralized
+- **USDT** (Optional): Largest by market cap
+- All primarily on Ethereum and Ethereum L2s
 
 **Compliance**:
 - KYC/AML for fiat on/off ramps
