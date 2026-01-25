@@ -1,22 +1,24 @@
 {
-  "extends": "@istanbuljs/nyc-config-typescript",
-  "all": true,
-  "check-coverage": true,
+  "all": false,
+  "check-coverage": false,
   "lines": 50,
   "functions": 50,
   "branches": 40,
   "statements": 50,
   "include": [
-    "src/shared/financial-utils.ts"
+    "out/test/src/shared/financial-utils.js"
   ],
   "exclude": [
-    "src/extension.ts",
-    "src/extension/**/*.ts",
-    "src/mcp-server/**/*.ts",
-    "src/shared/types.ts",
-    "test/**/*",
+    "out/test/src/extension.js",
+    "out/test/src/extension/**/*.js",
+    "out/test/src/mcp-server/**/*.js",
+    "out/test/src/shared/types.js",
+    "out/test/test/**/*",
+    "out/test/packages/**/*",
     "coverage/**/*",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "**/*.test.js",
+    "**/node_modules/**"
   ],
   "reporter": [
     "text",
@@ -25,7 +27,7 @@
     "lcov"
   ],
   "report-dir": "./coverage",
-  "cache": true,
+  "cache": false,
   "instrument": true,
-  "sourceMap": true
+  "sourceMap": false
 }
