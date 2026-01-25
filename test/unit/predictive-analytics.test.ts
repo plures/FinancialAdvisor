@@ -116,7 +116,7 @@ describe('PredictiveAnalytics', () => {
       
       // Create data with increasing trend
       for (let month = 0; month < 6; month++) {
-        const baseAmount = -1000 - (month * 100); // Increasing spending
+        const baseAmount = -1000 - ((5 - month) * 100); // Increasing spending (older months lower)
         for (let i = 0; i < 10; i++) {
           transactions.push(createTransaction(baseAmount, 'Variable', month * 30 + i));
         }
