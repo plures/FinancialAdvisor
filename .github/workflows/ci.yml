@@ -133,12 +133,7 @@ jobs:
         continue-on-error: true
 
       - name: Run OSV Scanner
-        uses: google/osv-scanner-action@v1.9.0
-        with:
-          scan-args: |-
-            -r
-            --skip-git
-            ./
+        run: npx -y osv-scanner -r --skip-git ./
         continue-on-error: true
 
   # Bundle analysis
