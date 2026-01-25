@@ -149,7 +149,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check commit difference
+        id: check_diff
+        run: |
+          BASE=main
+          DIFF_COMMITS=$(git rev-list --count HEAD ^$BASE 2>/dev/null || echo 0)
+          echo "diff_commits=$DIFF_COMMITS" >> $GITHUB_OUTPUT
+
       - name: Run TruffleHog OSS
+        if: steps.check_diff.outputs.diff_commits != '0'
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
