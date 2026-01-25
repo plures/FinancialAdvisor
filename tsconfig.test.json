@@ -7,6 +7,7 @@
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
@@ -25,13 +26,7 @@
     }
   },
   "include": [
-    "test/**/*",
-    "packages/shared/src/**/*.ts",
-    "packages/ai-integration/src/**/*.ts",
-    "packages/financial-tools/src/**/*.ts",
-    "packages/mcp-server/src/**/*.ts",
-    "src/shared/**/*.ts",
-    "src/mcp-server/**/*.ts"
+    "test/**/*"
   ],
   "exclude": [
     "node_modules",

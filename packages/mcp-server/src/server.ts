@@ -11,12 +11,12 @@ import {
   CallToolRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import type { DatabaseConfig } from './storage';
-import { SecureStorage } from './storage';
-import { TransactionAnalyzer } from '../../financial-tools/src/categorization';
-import type { Account, Transaction } from '../../shared/src/types';
-import { TransactionType } from '../../shared/src/types';
-import { generateId } from '../../shared/src/utils';
+import type { DatabaseConfig } from './storage.js';
+import { SecureStorage } from './storage.js';
+import { TransactionAnalyzer } from '../../financial-tools/src/categorization.js';
+import type { Account, Transaction } from '../../shared/src/types.js';
+import { TransactionType } from '../../shared/src/types.js';
+import { generateId } from '../../shared/src/utils.js';
 
 export class FinancialAdvisorMCPServer {
   private server: Server;

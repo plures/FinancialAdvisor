@@ -3,8 +3,8 @@ import * as assert from 'assert';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-import { FinancialAdvisorMCPServer } from '../../packages/mcp-server/src/server';
-import type { DatabaseConfig } from '../../packages/mcp-server/src/storage';
+import { FinancialAdvisorMCPServer } from '../../packages/mcp-server/dist/server.js';
+import type { DatabaseConfig } from '../../packages/mcp-server/dist/storage.js';
 
 describe('Add Account Tool Tests', () => {
   let server: FinancialAdvisorMCPServer;
