@@ -16,7 +16,7 @@ import type {
   PrivacyLevel,
   AccountIntegrationError,
   AccountIntegrationErrorCode,
-} from './account-integration-types';
+} from './account-integration-types.js';
 
 export interface CSVImportOptions {
   accountId?: string;

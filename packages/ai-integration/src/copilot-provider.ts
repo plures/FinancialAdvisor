@@ -3,7 +3,7 @@
  * Uses MCP (Model Context Protocol) for integration
  */
 
-import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider';
+import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
 import { AIProviderConfig, AIQuery, FinancialContext } from '@financialadvisor/shared';
 
 /**

@@ -3,7 +3,7 @@
  */
 
 import axios, { AxiosInstance } from 'axios';
-import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider';
+import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
 import { AIProviderConfig, AIQuery, FinancialContext } from '@financialadvisor/shared';
 
 export class OllamaProvider extends BaseAIProvider {

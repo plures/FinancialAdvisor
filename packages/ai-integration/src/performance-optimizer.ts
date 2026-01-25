@@ -4,7 +4,7 @@
  */
 
 import type { Transaction } from '@financialadvisor/shared';
-import { BaseAIProvider, AIResponse } from './base-provider';
+import { BaseAIProvider, AIResponse } from './base-provider.js';
 
 export interface BatchProcessingOptions {
   batchSize: number;

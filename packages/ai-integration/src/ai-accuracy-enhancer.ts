@@ -3,7 +3,7 @@
  * Provides confidence scoring, response validation, and quality improvements
  */
 
-import { AIResponse } from './base-provider';
+import { AIResponse } from './base-provider.js';
 import type { FinancialContext, Account } from '@financialadvisor/shared';
 
 export interface ConfidenceScore {

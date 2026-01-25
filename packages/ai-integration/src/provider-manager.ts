@@ -2,10 +2,10 @@
  * AI provider factory and manager
  */
 
-import { BaseAIProvider } from './base-provider';
-import { OpenAIProvider } from './openai-provider';
-import { OllamaProvider } from './ollama-provider';
-import { CopilotProvider } from './copilot-provider';
+import { BaseAIProvider } from './base-provider.js';
+import { OpenAIProvider } from './openai-provider.js';
+import { OllamaProvider } from './ollama-provider.js';
+import { CopilotProvider } from './copilot-provider.js';
 import { AIProviderConfig, AIProviderType } from '@financialadvisor/shared';
 
 export class AIProviderFactory {

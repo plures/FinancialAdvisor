@@ -11,7 +11,7 @@ import type {
   ImportResult,
   CSVTemplate,
   PrivacyLevel,
-} from './account-integration-types';
+} from './account-integration-types.js';
 
 /**
  * Account integration service for local-first file imports
@@ -268,8 +268,8 @@ export class AccountIntegrationService {
   }
 }
 
-import { CSVImporter, createCommonBankTemplates } from './csv-importer';
-import { OFXImporter } from './ofx-importer';
+import { CSVImporter, createCommonBankTemplates } from './csv-importer.js';
+import { OFXImporter } from './ofx-importer.js';
 
 /**
  * Create and configure account integration service
