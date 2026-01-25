@@ -19,6 +19,7 @@
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^25.0.10",
     "typescript": "^5.0.0"
   },
   "files": [

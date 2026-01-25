@@ -1,36 +1,24 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
+    "module": "ES2020",
     "lib": ["ES2020"],
-    "outDir": "out",
-    "rootDir": ".",
-    "strict": true,
+    "outDir": "out/test",
+    "rootDir": "test",
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "types": ["node", "mocha"],
     "noEmit": false
   },
   "include": [
-    "src/mcp-server/**/*",
-    "src/shared/**/*",
-    "test/unit/**/*",
-    "test/integration/**/*",
-    "packages/shared/src/**/*",
-    "packages/ai-integration/src/**/*"
+    "test/**/*"
   ],
   "exclude": [
     "node_modules",
-    ".vscode-test",
-    "src/lib/**/*",
-    "src/routes/**/*",
-    "src/extension/**/*",
-    ".svelte-kit",
-    "build",
-    "dist",
-    "packages"
+    "out"
   ]
 }
