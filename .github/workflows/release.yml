@@ -45,10 +45,10 @@ jobs:
 
       - name: Install package dependencies
         run: |
-          cd packages/shared && npm install
-          cd ../ai-integration && npm install
-          cd ../financial-tools && npm install
-          cd ../mcp-server && npm install
+          cd packages/shared && npm ci
+          cd ../ai-integration && npm ci
+          cd ../financial-tools && npm ci
+          cd ../mcp-server && npm ci
 
       - name: Configure Git
         run: |
