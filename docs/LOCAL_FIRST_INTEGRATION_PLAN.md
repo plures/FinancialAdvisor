@@ -588,6 +588,263 @@ describe('File Import Flow', () => {
 - ✅ Self-hosting guide rated "easy" by users
 - ✅ Zero cloud dependency
 
+## Global Open Bank Project Strategy
+
+### Vision: Empowering Financial Freedom Worldwide
+
+Our users are global. We must support them wherever they are, with whatever financial institutions they choose. Open Bank Project (OBP) is our path to providing true financial choice and freedom worldwide.
+
+### Phase 5: OBP Institution Discovery & Promotion (3-4 weeks)
+
+**Goal**: Help users discover and migrate to OBP-compatible financial institutions globally.
+
+#### Institution Directory Feature
+
+**Workflow**:
+1. Research and compile global list of OBP-participating institutions
+2. Create searchable directory within FinancialAdvisor app
+3. Filter by country, region, services offered
+4. Show user-friendly comparison with traditional banks
+5. Highlight benefits: API access, data portability, lower fees
+
+**Implementation**:
+```typescript
+interface OBPInstitution {
+  id: string;
+  name: string;
+  country: string;
+  region: string;
+  obpApiVersion: string;
+  services: string[]; // ['checking', 'savings', 'investment']
+  features: {
+    apiAccess: boolean;
+    dataPortability: boolean;
+    zeroFees: boolean;
+    cryptoSupport: boolean;
+  };
+  contactInfo: {
+    website: string;
+    email: string;
+    phone?: string;
+  };
+  userRating?: number;
+  integrationStatus: 'verified' | 'testing' | 'reported';
+}
+
+class OBPInstitutionDirectory {
+  async searchInstitutions(filters: {
+    country?: string;
+    services?: string[];
+    features?: string[];
+  }): Promise<OBPInstitution[]>;
+  
+  async suggestAlternatives(
+    currentBank: string,
+    userLocation: string
+  ): Promise<OBPInstitution[]>;
+}
+```
+
+**UI Features**:
+- "Find OBP Banks Near You" search
+- "Compare Your Bank" feature showing OBP alternatives
+- User reviews and ratings
+- Direct links to open accounts
+- Migration guides per institution
+
+#### Data Sources
+
+1. **OBP Official Registry**: Query OBP API for registered institutions
+2. **Community Contributions**: Users report OBP banks they discover
+3. **Verification System**: Community-verified vs. reported institutions
+4. **Automated Updates**: Monthly refresh from OBP registry
+
+### Phase 6: Supporting OBP Ecosystem Growth (Ongoing)
+
+**Goal**: Actively contribute to expanding the Open Banking ecosystem.
+
+#### 1. OBP Advocacy & Education
+
+**Actions**:
+- **Documentation**: Create guides for banks to join OBP
+- **Case Studies**: Show benefits of OBP adoption
+- **Developer Resources**: APIs, SDKs, integration examples
+- **User Testimonials**: Real stories of financial freedom
+- **Conference Presence**: Present at fintech conferences
+- **Blog Series**: "Why Open Banking Matters" content
+
+#### 2. Community Connector Development
+
+**Actions**:
+- **Connector Templates**: Starter kits for new bank integrations
+- **Community Repository**: GitHub repo for community connectors
+- **Bounty Program**: Rewards for verified connectors
+- **Documentation**: Step-by-step connector development guides
+- **Testing Framework**: Automated tests for connector quality
+
+#### 3. Supporting OBP in United States
+
+**Challenge**: US lags behind Europe in Open Banking adoption (no PSD2 equivalent).
+
+**Strategies**:
+
+**A. Grassroots Movement**
+- Partner with credit unions (more innovative than big banks)
+- Target fintech-friendly states (Wyoming, Delaware)
+- Build coalition with consumer rights groups
+- Lobby for Open Banking legislation
+
+**B. Community Banking Initiative**
+- Work with community banks and credit unions
+- Provide free OBP integration support
+- Create "OBP-Ready" certification program
+- Showcase early adopters as innovation leaders
+
+**C. Regulatory Engagement**
+- Engage with CFPB (Consumer Financial Protection Bureau)
+- Support Section 1033 implementation (Dodd-Frank)
+- Comment on proposed Open Banking rules
+- Coalition with other fintech innovators
+
+### Phase 7: Financial Innovation & Services (Long-term Vision)
+
+**Goal**: Expand beyond software to provide direct financial services.
+
+#### Option A: OBP Broker/Aggregator
+
+**Model**: Become a trusted broker connecting users to OBP institutions.
+
+**Services**:
+- **Account Opening**: Streamlined process for multiple OBP banks
+- **Rate Shopping**: Compare rates across OBP institutions
+- **Portfolio Management**: Multi-institution account management
+- **Switching Service**: Help users migrate from traditional banks
+
+**Revenue Model** (sustainable, user-aligned):
+- Referral fees from OBP institutions (disclosed to users)
+- Premium features (advanced analytics, AI insights)
+- Enterprise tier for businesses
+- **Never sell user data** - revenue from services, not data
+
+#### Option B: Become a Financial Institution
+
+**Model**: Charter a digital bank/credit union with OBP at its core.
+
+**Vision**:
+- **Fully OBP-Compatible**: API-first from day one
+- **User-Owned**: Cooperative or public benefit corporation structure
+- **Zero Data Exploitation**: Business model based on services, not data
+- **Global First**: Designed for international users from start
+- **Crypto-Friendly**: Bridge traditional and cryptocurrency banking
+
+**Requirements**:
+- Banking charter (federal or state)
+- Regulatory compliance (FDIC, OCC, NCUA)
+- Significant capital investment
+- Experienced banking team
+- Multi-year timeline
+
+**Feasibility**: High complexity, but precedent exists (Chime, Varo, others got chartered).
+
+#### Option C: Cryptocurrency Bridge Services
+
+**Model**: Leverage crypto to provide banking services where traditional banking is limited.
+
+**Services**:
+- **Crypto-to-Fiat Gateway**: Local currency on/off ramps
+- **Stablecoin Accounts**: USD-pegged accounts via stablecoins
+- **Cross-Border Transfers**: Crypto for low-cost international transfers
+- **DeFi Integration**: Access to decentralized finance services
+- **Self-Custody Support**: Users control their crypto keys
+
+**Markets**:
+- Underbanked populations
+- High-remittance corridors
+- Countries with unstable currencies
+- Users avoiding traditional banking fees
+
+**Technology Stack**:
+- Lightning Network for Bitcoin transactions
+- Ethereum/Polygon for stablecoins
+- DEX aggregators for best rates
+- Self-custody wallets integrated in app
+
+**Regulatory Considerations**:
+- MSB (Money Service Business) license
+- State-by-state money transmitter licenses
+- KYC/AML compliance
+- Crypto-specific regulations (varies by jurisdiction)
+
+### Phase 8: Revenue Model for Sustainability
+
+**Goal**: Generate revenue to fund ongoing development while staying true to values.
+
+#### Revenue Streams (User-Aligned)
+
+**1. Freemium Model**
+- **Free Tier**: Full local-first functionality, file imports, basic AI
+- **Premium Tier** ($5-10/month):
+  - Advanced AI features (GPT-4, Claude)
+  - Multi-device sync via self-hosted server
+  - Premium support
+  - Advanced analytics and forecasting
+  - Unlimited transaction history
+
+**2. Enterprise/Business Tier** ($50-200/month)
+- Team collaboration features
+- Advanced reporting and compliance
+- API access for integrations
+- Dedicated support
+- White-label options
+
+**3. OBP Institution Referrals**
+- Referral fees from OBP banks (fully disclosed)
+- User gets better banking, we get sustainable revenue
+- Never hidden, always transparent
+
+**4. Crypto Services** (if implemented)
+- Small transaction fees for crypto services (disclosed)
+- Competitive with or better than alternatives
+- Optional - users can use external crypto services
+
+**5. Professional Services**
+- Consulting for institutions wanting to adopt OBP
+- Connector development services
+- Custom integration work
+- Training and education
+
+**6. Community Funding**
+- GitHub Sponsors
+- Patreon
+- Grants from open-source foundations
+- Crowdfunding campaigns for major features
+
+### Principles for Revenue Generation
+
+✅ **Transparency**: All revenue sources fully disclosed  
+✅ **User-Aligned**: Revenue from helping users, not exploiting data  
+✅ **Optional**: Users can use free tier forever  
+✅ **Fair Value**: Premium features worth the price  
+✅ **Open Source**: Core remains open source regardless of revenue  
+✅ **No Data Sales**: Never, ever sell or monetize user data  
+
+### Implementation Priority
+
+**Immediate** (Next 6 months):
+1. ✅ Phase 5: OBP Institution Directory
+2. ✅ Phase 6: Connector development support
+3. ✅ Premium tier (funding for development)
+
+**Medium-term** (6-18 months):
+1. ⏳ Grassroots OBP advocacy in US
+2. ⏳ Partner with 2-3 credit unions
+3. ⏳ Crypto bridge services (if market demand)
+
+**Long-term** (18+ months):
+1. 🔮 Evaluate becoming OBP broker
+2. 🔮 Consider banking charter (if resources align)
+3. 🔮 Expand internationally
+
 ## Conclusion
 
 This local-first approach:
