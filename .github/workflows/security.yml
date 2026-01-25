@@ -153,8 +153,8 @@ jobs:
         id: check_diff
         run: |
           BASE=main
-          HEAD=HEAD
-          DIFF_COMMITS=$(git rev-list --left-right --count $BASE...$HEAD | awk '{print $2}')
+          DIFF_COMMITS=$(git rev-list --left-right --count $BASE...HEAD 2>/dev/null | awk '{print $2}')
+          DIFF_COMMITS=${DIFF_COMMITS:-0}
           echo "diff_commits=$DIFF_COMMITS" >> $GITHUB_OUTPUT
 
       - name: Run TruffleHog OSS
