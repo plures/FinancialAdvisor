@@ -1,254 +1,227 @@
 /**
- * Account Integration Service
+ * Local-First Account Integration Service
  * 
- * This service manages account connections and synchronization across
- * different providers (Plaid, Open Bank Project, etc.)
- * 
- * IMPLEMENTATION NOTE: This is a stub/skeleton implementation that documents
- * the structure and approach. Full implementation requires database setup
- * and provider implementations.
+ * This service manages file-based account imports and synchronization
+ * following the local-first, privacy-by-design principles.
  */
 
 import type {
-  IAccountProvider,
-  AccountConnection,
-  SyncConfiguration,
-  SyncResult,
-  AccountIntegrationError,
-} from '@financialadvisor/shared';
+  IFileImporter,
+  ImportSourceConfig,
+  ImportResult,
+  CSVTemplate,
+  PrivacyLevel,
+} from './account-integration-types';
 
 /**
- * Account integration service
+ * Account integration service for local-first file imports
  * 
- * Provides high-level operations for managing account connections
- * and synchronization.
+ * Primary method: File-based import (OFX/QFX/CSV)
+ * Secondary: Self-hosted Open Bank Project
+ * Optional: Plaid (with explicit user consent and privacy warnings)
  */
 export class AccountIntegrationService {
-  private providers: Map<string, IAccountProvider>;
-  private defaultProvider: string;
+  private importers: Map<string, IFileImporter>;
+  private csvTemplates: Map<string, CSVTemplate>;
 
   constructor() {
-    this.providers = new Map();
-    this.defaultProvider = 'plaid';
+    this.importers = new Map();
+    this.csvTemplates = new Map();
   }
 
   /**
-   * Register an account provider
+   * Register a file importer (OFX, QFX, CSV)
    * 
-   * @param provider - Provider implementation
+   * @param extensions - File extensions this importer handles
+   * @param importer - Importer implementation
    */
-  registerProvider(provider: IAccountProvider): void {
-    this.providers.set(provider.getName(), provider);
-  }
-
-  /**
-   * Get a registered provider
-   * 
-   * @param name - Provider name
-   * @returns Provider instance
-   * @throws {Error} If provider not found
-   */
-  getProvider(name: string): IAccountProvider {
-    const provider = this.providers.get(name);
-    if (!provider) {
-      throw new Error(`Provider not found: ${name}`);
+  registerImporter(extensions: string[], importer: IFileImporter): void {
+    for (const ext of extensions) {
+      this.importers.set(ext.toLowerCase(), importer);
     }
-    return provider;
   }
 
   /**
-   * Set default provider
+   * Register a CSV template for a specific bank
    * 
-   * @param name - Provider name
+   * @param template - CSV template configuration
    */
-  setDefaultProvider(name: string): void {
-    if (!this.providers.has(name)) {
-      throw new Error(`Provider not registered: ${name}`);
-    }
-    this.defaultProvider = name;
+  registerCSVTemplate(template: CSVTemplate): void {
+    this.csvTemplates.set(template.id, template);
   }
 
   /**
-   * Initialize account connection flow
+   * Get CSV template by ID
    * 
-   * @param userId - User identifier
-   * @param providerName - Optional provider name (defaults to configured default)
-   * @returns Link token or authorization URL
+   * @param templateId - Template ID
+   * @returns CSV template or undefined
+   */
+  getCSVTemplate(templateId: string): CSVTemplate | undefined {
+    return this.csvTemplates.get(templateId);
+  }
+
+  /**
+   * List all registered CSV templates
+   * 
+   * @returns Array of CSV templates
+   */
+  listCSVTemplates(): CSVTemplate[] {
+    return Array.from(this.csvTemplates.values());
+  }
+
+  /**
+   * Import transactions from a file
+   * 
+   * @param filePath - Path to file to import
+   * @param options - Import options
+   * @returns Import result
    * 
    * @example
    * ```typescript
-   * const linkToken = await service.initiateConnection('user-123', 'plaid');
-   * // Return linkToken to frontend to open Plaid Link
-   * ```
-   */
-  async initiateConnection(
-    userId: string,
-    providerName?: string
-  ): Promise<string> {
-    const provider = this.getProvider(providerName || this.defaultProvider);
-    return provider.createLinkToken(userId);
-  }
-
-  /**
-   * Complete account connection
-   * 
-   * @param userId - User identifier
-   * @param publicToken - Public token from provider auth flow
-   * @param providerName - Provider name
-   * @returns Connection details
-   * 
-   * @example
-   * ```typescript
-   * // After user completes Plaid Link:
-   * const connection = await service.completeConnection(
-   *   'user-123',
-   *   publicToken,
-   *   'plaid'
-   * );
-   * // Save connection to database
-   * ```
-   */
-  async completeConnection(
-    userId: string,
-    publicToken: string,
-    providerName: string
-  ): Promise<{
-    accessToken: string;
-    itemId?: string;
-    accounts: any[];
-  }> {
-    const provider = this.getProvider(providerName);
-    
-    // Exchange public token for access token
-    const { accessToken, itemId } = await provider.exchangeToken(publicToken);
-    
-    // Fetch accounts
-    const accounts = await provider.getAccounts(accessToken);
-    
-    // TODO: Store connection in database with encrypted access token
-    // await this.storage.saveConnection({
-    //   userId,
-    //   provider: providerName,
-    //   accessToken: encrypt(accessToken),
-    //   itemId,
-    //   accounts,
-    // });
-    
-    return {
-      accessToken,
-      itemId,
-      accounts,
-    };
-  }
-
-  /**
-   * Sync accounts for a connection
-   * 
-   * @param connectionId - Account connection ID
-   * @param options - Sync options
-   * @returns Sync result
-   * 
-   * @example
-   * ```typescript
-   * const result = await service.syncConnection('conn-123', {
-   *   force: true,
-   *   importTransactions: true,
+   * const result = await service.importFile('/path/to/transactions.ofx', {
+   *   accountId: 'account-123',
    * });
    * console.log(`Imported ${result.transactionsImported} transactions`);
    * ```
    */
-  async syncConnection(
-    connectionId: string,
+  async importFile(
+    filePath: string,
     options?: {
-      force?: boolean;
-      importTransactions?: boolean;
-      updateBalances?: boolean;
-      startDate?: Date;
-      endDate?: Date;
+      accountId?: string;
+      csvTemplateId?: string;
+      sourceConfigId?: string;
     }
-  ): Promise<SyncResult> {
-    // TODO: Implement sync logic
-    // 1. Load connection from database
-    // 2. Decrypt access token
-    // 3. Fetch transactions and balances from provider
-    // 4. Deduplicate transactions
-    // 5. Resolve conflicts
-    // 6. Save to database
-    // 7. Update sync history
-    // 8. Return result
+  ): Promise<ImportResult> {
+    // TODO: Implement file import logic
+    // 1. Detect file type from extension
+    // 2. Find appropriate importer
+    // 3. For CSV, load template if provided
+    // 4. Call importer.import()
+    // 5. Save import history
+    // 6. Return result
 
-    throw new Error('AccountIntegrationService.syncConnection not implemented');
+    throw new Error('AccountIntegrationService.importFile not implemented');
   }
 
   /**
-   * Disconnect an account connection
+   * Watch a directory for new files to auto-import
    * 
-   * @param connectionId - Connection ID to disconnect
+   * @param directory - Directory to watch
+   * @param options - Watch options
    * 
    * @example
    * ```typescript
-   * await service.disconnect('conn-123');
+   * await service.watchDirectory('~/Downloads/BankStatements', {
+   *   autoImport: true,
+   *   archiveAfterImport: true,
+   * });
    * ```
    */
-  async disconnect(connectionId: string): Promise<void> {
-    // TODO: Implement disconnect logic
-    // 1. Load connection from database
-    // 2. Decrypt access token
-    // 3. Call provider.removeConnection()
-    // 4. Delete connection from database
-    // 5. Mark related accounts as disconnected
-
-    throw new Error('AccountIntegrationService.disconnect not implemented');
-  }
-
-  /**
-   * Get sync status for connections
-   * 
-   * @param connectionId - Optional specific connection ID
-   * @returns Sync status information
-   */
-  async getSyncStatus(connectionId?: string): Promise<any> {
-    // TODO: Implement status retrieval
-    // 1. Load connections from database
-    // 2. Load sync history
-    // 3. Return status information
-
-    throw new Error('AccountIntegrationService.getSyncStatus not implemented');
-  }
-
-  /**
-   * Schedule automatic sync for a connection
-   * 
-   * @param connectionId - Connection ID
-   * @param config - Sync configuration
-   */
-  async scheduleSync(
-    connectionId: string,
-    config: SyncConfiguration
+  async watchDirectory(
+    directory: string,
+    options?: {
+      autoImport?: boolean;
+      archiveAfterImport?: boolean;
+      accountId?: string;
+      csvTemplateId?: string;
+    }
   ): Promise<void> {
-    // TODO: Implement sync scheduling
-    // 1. Update connection configuration in database
-    // 2. Register with sync scheduler
-    // 3. Set up cron job or timer
+    // TODO: Implement directory watcher
+    // 1. Use chokidar to watch directory
+    // 2. On file add event, check if it's a financial file
+    // 3. If auto-import enabled, call importFile()
+    // 4. If archive enabled, move file to archive folder
+    // 5. Track watched directories
 
-    throw new Error('AccountIntegrationService.scheduleSync not implemented');
+    throw new Error('AccountIntegrationService.watchDirectory not implemented');
+  }
+
+  /**
+   * Stop watching a directory
+   * 
+   * @param directory - Directory to stop watching
+   */
+  async unwatchDirectory(directory: string): Promise<void> {
+    // TODO: Implement unwatching
+    throw new Error('AccountIntegrationService.unwatchDirectory not implemented');
+  }
+
+  /**
+   * Get import history for a source
+   * 
+   * @param sourceConfigId - Source configuration ID
+   * @param options - Query options
+   * @returns Array of import history records
+   */
+  async getImportHistory(
+    sourceConfigId?: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      startDate?: Date;
+      endDate?: Date;
+    }
+  ): Promise<any[]> {
+    // TODO: Implement history retrieval
+    throw new Error('AccountIntegrationService.getImportHistory not implemented');
+  }
+
+  /**
+   * Check if user has consented to third-party data sharing (for Plaid)
+   * 
+   * @param sourceConfigId - Source configuration ID
+   * @returns Whether consent was given
+   */
+  async checkPrivacyConsent(sourceConfigId: string): Promise<boolean> {
+    // TODO: Implement consent checking
+    // 1. Load source configuration
+    // 2. Check if it's a third-party source (Plaid)
+    // 3. Verify consent was given
+    // 4. Return result
+
+    throw new Error('AccountIntegrationService.checkPrivacyConsent not implemented');
+  }
+
+  /**
+   * Request user consent for third-party data sharing
+   * 
+   * @param sourceConfigId - Source configuration ID
+   * @param privacyLevel - Privacy level of the source
+   * @returns Whether user consented
+   * 
+   * @example
+   * ```typescript
+   * const consented = await service.requestPrivacyConsent('plaid-config-1', 'third-party');
+   * if (!consented) {
+   *   console.log('User declined third-party data sharing');
+   *   return;
+   * }
+   * ```
+   */
+  async requestPrivacyConsent(
+    sourceConfigId: string,
+    privacyLevel: PrivacyLevel
+  ): Promise<boolean> {
+    // TODO: Implement consent request
+    // 1. Show privacy warning dialog
+    // 2. Explain what data will be shared
+    // 3. Record user's decision
+    // 4. Return consent status
+
+    throw new Error('AccountIntegrationService.requestPrivacyConsent not implemented');
   }
 }
 
 /**
  * Create and configure account integration service
  * 
- * @param config - Service configuration
  * @returns Configured service instance
  */
-export function createAccountIntegrationService(config?: {
-  defaultProvider?: string;
-}): AccountIntegrationService {
+export function createAccountIntegrationService(): AccountIntegrationService {
   const service = new AccountIntegrationService();
   
-  if (config?.defaultProvider) {
-    service.setDefaultProvider(config.defaultProvider);
-  }
+  // TODO: Register default importers (OFX, QFX, CSV)
+  // TODO: Load pre-configured CSV templates for common banks
   
   return service;
 }
@@ -258,40 +231,35 @@ export function createAccountIntegrationService(config?: {
  * 
  * To fully implement this service:
  * 
- * 1. Add database storage layer:
- *    - account_connections table
- *    - sync_history table
- *    - encrypted_tokens table
+ * 1. Add file importers:
+ *    - OFXImporter (use ofx-parser library or build our own)
+ *    - QFXImporter (compatible with OFX)
+ *    - CSVImporter (flexible CSV parsing)
  * 
- * 2. Implement token encryption:
- *    - Use AES-256 encryption
- *    - Store key in environment or keyring
- *    - Never log tokens in plain text
+ * 2. Implement directory watcher:
+ *    - Use chokidar for file watching
+ *    - Support auto-import on file add
+ *    - Handle file archival
  * 
- * 3. Add sync scheduler:
- *    - Use node-cron or similar
- *    - Support multiple frequencies
- *    - Handle concurrent syncs
+ * 3. Add CSV templates:
+ *    - Pre-configure for top 50 US banks
+ *    - Allow user to create custom templates
+ *    - Community template sharing
  * 
- * 4. Implement deduplication:
- *    - Match by transaction ID
+ * 4. Implement privacy consent:
+ *    - Clear warning dialogs
+ *    - Record consent decisions
+ *    - Easy opt-out
+ * 
+ * 5. Add transaction deduplication:
+ *    - Match by transaction ID if available
  *    - Match by date + amount + description
  *    - Handle pending vs. posted
  * 
- * 5. Add conflict resolution:
- *    - prefer-external: Use bank data
- *    - prefer-local: Keep manual entry
- *    - ask: Prompt user
+ * 6. Integrate with PluresDB:
+ *    - Encrypted transaction storage
+ *    - Import history tracking
+ *    - Vector embeddings for AI
  * 
- * 6. Add error handling:
- *    - Retry transient errors
- *    - Log persistent errors
- *    - Notify users appropriately
- * 
- * 7. Add monitoring:
- *    - Track sync success rate
- *    - Monitor API response times
- *    - Alert on failures
- * 
- * See docs/PLAID_INTEGRATION_PLAN.md for complete implementation guide.
+ * See docs/LOCAL_FIRST_INTEGRATION_PLAN.md for complete implementation guide.
  */

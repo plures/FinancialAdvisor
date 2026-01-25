@@ -1,247 +1,212 @@
 /**
- * Types for account integration and synchronization
+ * Types for local-first account integration and synchronization
+ * 
+ * This module supports the local-first, privacy-by-design approach where
+ * users own their data completely. Primary method is file-based import.
  */
 
-export type AccountProvider = 'plaid' | 'obp' | 'manual';
-export type SyncStatus = 'active' | 'error' | 'disconnected' | 'pending';
-export type SyncFrequency = 'realtime' | 'hourly' | 'daily' | 'weekly' | 'manual';
-export type SyncType = 'full' | 'incremental';
-export type ConnectionStatus = 'success' | 'partial' | 'failed';
+export type ImportSource = 'ofx' | 'qfx' | 'csv' | 'obp_selfhosted' | 'plaid_optional' | 'manual';
+export type ImportStatus = 'pending' | 'importing' | 'success' | 'error';
+export type PrivacyLevel = 'local' | 'self-hosted' | 'third-party';
+export type ImportType = 'full' | 'incremental';
 
 /**
- * Represents a connection to an external financial institution
+ * CSV template for bank-specific CSV imports
  */
-export interface AccountConnection {
+export interface CSVTemplate {
   id: string;
-  accountId: string; // Reference to Account in main DB
-  provider: AccountProvider;
-  providerAccountId: string; // External account ID from provider
-  institutionId: string;
-  institutionName: string;
-  accessToken: string; // Encrypted
-  itemId?: string; // Provider-specific identifier (e.g., Plaid item_id)
-  lastSyncAt: Date;
-  syncStatus: SyncStatus;
-  syncError?: string;
-  autoSync: boolean;
-  syncFrequency: SyncFrequency;
+  name: string; // "Chase Checking", "Bank of America"
+  bankName: string;
+  accountType?: string;
+  dateColumn: string | number;
+  descriptionColumn: string | number;
+  amountColumn: string | number;
+  dateFormat: string; // "MM/DD/YYYY", "YYYY-MM-DD"
+  amountFormat?: string; // "1,234.56", "1234.56"
+  headerRow?: number;
+  skipRows?: number;
+  encoding?: string; // "utf-8", "latin1"
+  delimiter?: string; // ",", ";", "\t"
+}
+
+/**
+ * Import source configuration for file-based or self-hosted sync
+ */
+export interface ImportSourceConfig {
+  id: string;
+  type: ImportSource;
+  name: string; // User-friendly name
+  enabled: boolean;
+  privacyLevel: PrivacyLevel;
+  
+  // File-based configuration (primary method)
+  fileConfig?: {
+    watchFolder?: string; // Auto-import from this folder
+    autoImport?: boolean;
+    archiveAfterImport?: boolean;
+    archivePath?: string;
+    supportedFormats?: Array<'ofx' | 'qfx' | 'csv'>;
+  };
+  
+  // CSV-specific configuration
+  csvTemplate?: CSVTemplate;
+  
+  // Self-hosted Open Bank Project configuration
+  obpConfig?: {
+    serverUrl: string; // User's self-hosted OBP server
+    apiKey?: string; // Encrypted
+    accountId?: string;
+  };
+  
+  // Optional Plaid (user must explicitly opt-in with privacy warning)
+  plaidConfig?: {
+    accessToken?: string; // Encrypted
+    itemId?: string;
+    consentGiven?: Date; // When user explicitly consented
+    privacyWarningShown?: boolean;
+  };
+  
+  lastImportAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
 /**
- * History of synchronization attempts
+ * History of file import operations
  */
-export interface SyncHistory {
+export interface ImportHistory {
   id: string;
-  connectionId: string;
-  syncType: SyncType;
-  startedAt: Date;
-  completedAt?: Date;
-  status: ConnectionStatus;
+  sourceConfigId: string;
+  type: ImportSource;
+  status: ImportStatus;
+  
+  // File metadata
+  fileName?: string;
+  filePath?: string;
+  fileHash?: string; // SHA-256 to prevent duplicate imports
+  fileSize?: number;
+  
+  // Import results
+  importedAt: Date;
   transactionsImported: number;
-  balanceUpdated: boolean;
+  transactionsSkipped: number; // Duplicates
+  transactionsFailed: number;
   errors: string[];
+  
+  // Privacy tracking
+  privacyLevel: PrivacyLevel;
+  dataSharedWith?: string[]; // Empty for local, ['self-hosted OBP'] or ['Plaid'] if applicable
+  
   metadata?: Record<string, any>;
 }
 
 /**
- * External account representation from provider
+ * OFX/QFX transaction data
  */
-export interface ExternalAccount {
-  id: string;
-  name: string;
-  officialName?: string;
-  type: string;
-  subtype?: string;
-  mask?: string; // Last 4 digits
-  balance: {
-    current: number;
-    available?: number;
-    limit?: number;
-    currency: string;
-  };
-}
-
-/**
- * External transaction representation from provider
- */
-export interface ExternalTransaction {
-  id: string;
-  accountId: string;
+export interface OFXTransaction {
+  id: string; // FITID from OFX
+  type: 'debit' | 'credit' | 'other';
+  date: string; // DTPOSTED
   amount: number;
-  date: string; // ISO date string
-  name: string;
-  merchantName?: string;
-  category?: string[];
-  pending: boolean;
-  transactionType?: string;
-  paymentChannel?: string;
-  location?: {
-    address?: string;
-    city?: string;
-    region?: string;
-    postalCode?: string;
-    country?: string;
-    lat?: number;
-    lon?: number;
-  };
-  metadata?: Record<string, any>;
+  name: string; // NAME or MEMO
+  memo?: string;
+  checkNum?: string;
 }
 
 /**
- * Account balance information
+ * Parsed CSV transaction data
  */
-export interface AccountBalance {
-  accountId: string;
-  current: number;
-  available?: number;
-  limit?: number;
-  currency: string;
-  asOf: Date;
+export interface ParsedCSVTransaction {
+  date: string;
+  description: string;
+  amount: number;
+  category?: string;
+  balance?: number;
+  metadata?: Record<string, string>;
 }
 
 /**
- * Configuration for account synchronization
+ * Result of a file import operation
  */
-export interface SyncConfiguration {
-  enabled: boolean;
-  frequency: SyncFrequency;
-  autoImportTransactions: boolean;
-  autoUpdateBalances: boolean;
-  notifyOnSync: boolean;
-  notifyOnError: boolean;
-  deduplicationEnabled: boolean;
-  conflictResolution: 'prefer-external' | 'prefer-local' | 'ask';
-  maxTransactionAge?: number; // Days to look back
-  batchSize?: number; // Transactions per sync batch
-}
-
-/**
- * Result of a sync operation
- */
-export interface SyncResult {
+export interface ImportResult {
   success: boolean;
-  connectionId: string;
-  accountsUpdated: number;
+  sourceConfigId: string;
+  fileName?: string;
   transactionsImported: number;
-  transactionsSkipped: number;
-  balancesUpdated: number;
+  transactionsSkipped: number; // Duplicates
+  transactionsFailed: number;
   errors: Array<{
-    code: string;
+    line?: number;
+    field?: string;
     message: string;
-    accountId?: string;
+    transaction?: Partial<ParsedCSVTransaction>;
   }>;
   duration: number; // milliseconds
   timestamp: Date;
+  fileHash?: string;
+  privacyLevel: PrivacyLevel;
 }
 
 /**
- * Provider-agnostic interface for account integration services
+ * Interface for file importers (OFX, QFX, CSV)
  */
-export interface IAccountProvider {
+export interface IFileImporter {
   /**
-   * Get provider name
+   * Get supported file extensions
    */
-  getName(): string;
-
+  getSupportedExtensions(): string[];
+  
   /**
-   * Initialize link/auth flow
-   * Returns URL or token to start connection process
+   * Check if file can be imported
    */
-  createLinkToken(userId: string, options?: {
-    redirectUri?: string;
-    webhook?: string;
-    countryCodes?: string[];
-    language?: string;
-  }): Promise<string>;
-
+  canImport(filePath: string): Promise<boolean>;
+  
   /**
-   * Exchange public token for access token
+   * Import transactions from file
    */
-  exchangeToken(publicToken: string): Promise<{
-    accessToken: string;
-    itemId?: string;
-  }>;
-
+  import(filePath: string, options?: {
+    accountId?: string;
+    csvTemplate?: CSVTemplate;
+  }): Promise<ImportResult>;
+  
   /**
-   * Get accounts for a connection
+   * Validate file format
    */
-  getAccounts(accessToken: string): Promise<ExternalAccount[]>;
-
-  /**
-   * Get transactions for an account
-   */
-  getTransactions(
-    accessToken: string,
-    accountId: string,
-    startDate: Date,
-    endDate: Date
-  ): Promise<ExternalTransaction[]>;
-
-  /**
-   * Get current balances
-   */
-  getBalances(
-    accessToken: string,
-    accountId: string
-  ): Promise<AccountBalance>;
-
-  /**
-   * Remove/disconnect connection
-   */
-  removeConnection(accessToken: string): Promise<void>;
-
-  /**
-   * Refresh connection if needed
-   */
-  refreshConnection?(accessToken: string): Promise<{
-    accessToken: string;
-    expiresAt?: Date;
-  }>;
-
-  /**
-   * Get institution information
-   */
-  getInstitution?(institutionId: string): Promise<{
-    id: string;
-    name: string;
-    url?: string;
-    logo?: string;
-    primaryColor?: string;
+  validate(filePath: string): Promise<{
+    valid: boolean;
+    errors: string[];
   }>;
 }
 
 /**
- * Error types for account integration
+ * Local-first account integration error
  */
 export enum AccountIntegrationErrorCode {
-  // Authentication errors
-  INVALID_CREDENTIALS = 'invalid_credentials',
-  TOKEN_EXPIRED = 'token_expired',
-  ITEM_LOGIN_REQUIRED = 'item_login_required',
-  MFA_REQUIRED = 'mfa_required',
-
-  // Connection errors
-  INSTITUTION_DOWN = 'institution_down',
-  INSTITUTION_NOT_RESPONDING = 'institution_not_responding',
-  NETWORK_ERROR = 'network_error',
-  RATE_LIMIT_EXCEEDED = 'rate_limit_exceeded',
-
-  // Account errors
-  ACCOUNT_NOT_FOUND = 'account_not_found',
-  ACCOUNT_LOCKED = 'account_locked',
-  INSUFFICIENT_PERMISSIONS = 'insufficient_permissions',
-
-  // Data errors
-  INVALID_DATA = 'invalid_data',
+  // File errors
+  FILE_NOT_FOUND = 'file_not_found',
+  FILE_INVALID_FORMAT = 'file_invalid_format',
+  FILE_CORRUPTED = 'file_corrupted',
+  FILE_TOO_LARGE = 'file_too_large',
+  FILE_ALREADY_IMPORTED = 'file_already_imported',
+  
+  // CSV template errors
+  TEMPLATE_NOT_FOUND = 'template_not_found',
+  TEMPLATE_INVALID = 'template_invalid',
+  COLUMN_NOT_FOUND = 'column_not_found',
+  
+  // Import errors
+  IMPORT_FAILED = 'import_failed',
+  PARSE_ERROR = 'parse_error',
   DUPLICATE_TRANSACTION = 'duplicate_transaction',
-  DATA_CONFLICT = 'data_conflict',
-
+  INVALID_DATA = 'invalid_data',
+  
+  // Privacy errors
+  PRIVACY_WARNING_NOT_ACKNOWLEDGED = 'privacy_warning_not_acknowledged',
+  THIRD_PARTY_NOT_CONSENTED = 'third_party_not_consented',
+  
   // System errors
-  PROVIDER_ERROR = 'provider_error',
+  STORAGE_ERROR = 'storage_error',
   INTERNAL_ERROR = 'internal_error',
-  CONFIGURATION_ERROR = 'configuration_error',
 }
 
 /**
@@ -262,32 +227,36 @@ export class AccountIntegrationError extends Error {
    */
   getUserMessage(): string {
     switch (this.code) {
-      case AccountIntegrationErrorCode.INVALID_CREDENTIALS:
-        return 'The credentials you provided are incorrect. Please try again.';
-      case AccountIntegrationErrorCode.TOKEN_EXPIRED:
-      case AccountIntegrationErrorCode.ITEM_LOGIN_REQUIRED:
-        return 'Your bank connection expired. Please reconnect your account.';
-      case AccountIntegrationErrorCode.MFA_REQUIRED:
-        return 'Your bank requires additional authentication. Please complete the verification.';
-      case AccountIntegrationErrorCode.INSTITUTION_DOWN:
-      case AccountIntegrationErrorCode.INSTITUTION_NOT_RESPONDING:
-        return 'Your bank is currently unavailable. Please try again later.';
-      case AccountIntegrationErrorCode.NETWORK_ERROR:
-        return 'Unable to connect to your bank. Please check your internet connection.';
-      case AccountIntegrationErrorCode.RATE_LIMIT_EXCEEDED:
-        return 'Too many requests. Please wait a moment and try again.';
-      case AccountIntegrationErrorCode.ACCOUNT_NOT_FOUND:
-        return 'Account not found. It may have been closed or removed.';
-      case AccountIntegrationErrorCode.ACCOUNT_LOCKED:
-        return 'Your account is locked. Please contact your bank.';
-      case AccountIntegrationErrorCode.INSUFFICIENT_PERMISSIONS:
-        return 'Additional permissions are needed to access this account. Please reconnect.';
+      case AccountIntegrationErrorCode.FILE_NOT_FOUND:
+        return 'File not found. Please check the file path.';
+      case AccountIntegrationErrorCode.FILE_INVALID_FORMAT:
+        return 'File format not recognized. Please use OFX, QFX, or CSV files.';
+      case AccountIntegrationErrorCode.FILE_CORRUPTED:
+        return 'File appears to be corrupted. Please download it again from your bank.';
+      case AccountIntegrationErrorCode.FILE_TOO_LARGE:
+        return 'File is too large to import. Please split it into smaller files.';
+      case AccountIntegrationErrorCode.FILE_ALREADY_IMPORTED:
+        return 'This file has already been imported.';
+      case AccountIntegrationErrorCode.TEMPLATE_NOT_FOUND:
+        return 'No template found for this bank. Please create or select a CSV template.';
+      case AccountIntegrationErrorCode.TEMPLATE_INVALID:
+        return 'CSV template is invalid. Please check column mappings.';
+      case AccountIntegrationErrorCode.COLUMN_NOT_FOUND:
+        return 'Required column not found in CSV file. Check your template configuration.';
+      case AccountIntegrationErrorCode.IMPORT_FAILED:
+        return 'Import failed. Please check the file format and try again.';
+      case AccountIntegrationErrorCode.PARSE_ERROR:
+        return 'Error parsing file. The file may be malformed.';
       case AccountIntegrationErrorCode.DUPLICATE_TRANSACTION:
-        return 'This transaction was already imported.';
-      case AccountIntegrationErrorCode.DATA_CONFLICT:
-        return 'There is a conflict with existing data. Please review manually.';
+        return 'Transaction already exists in the database.';
+      case AccountIntegrationErrorCode.INVALID_DATA:
+        return 'Invalid transaction data found. Please check the file.';
+      case AccountIntegrationErrorCode.PRIVACY_WARNING_NOT_ACKNOWLEDGED:
+        return 'You must acknowledge the privacy implications before proceeding.';
+      case AccountIntegrationErrorCode.THIRD_PARTY_NOT_CONSENTED:
+        return 'Third-party data sharing requires explicit consent.';
       default:
-        return 'An unexpected error occurred. Please try again or contact support.';
+        return 'An unexpected error occurred during import.';
     }
   }
 
@@ -296,24 +265,14 @@ export class AccountIntegrationError extends Error {
    */
   isRecoverable(): boolean {
     const recoverableCodes = [
-      AccountIntegrationErrorCode.INVALID_CREDENTIALS,
-      AccountIntegrationErrorCode.TOKEN_EXPIRED,
-      AccountIntegrationErrorCode.ITEM_LOGIN_REQUIRED,
-      AccountIntegrationErrorCode.MFA_REQUIRED,
-      AccountIntegrationErrorCode.NETWORK_ERROR,
+      AccountIntegrationErrorCode.FILE_NOT_FOUND,
+      AccountIntegrationErrorCode.FILE_INVALID_FORMAT,
+      AccountIntegrationErrorCode.FILE_CORRUPTED,
+      AccountIntegrationErrorCode.TEMPLATE_NOT_FOUND,
+      AccountIntegrationErrorCode.TEMPLATE_INVALID,
+      AccountIntegrationErrorCode.COLUMN_NOT_FOUND,
+      AccountIntegrationErrorCode.PRIVACY_WARNING_NOT_ACKNOWLEDGED,
     ];
     return recoverableCodes.includes(this.code);
-  }
-
-  /**
-   * Check if error should trigger a retry
-   */
-  shouldRetry(): boolean {
-    const retryableCodes = [
-      AccountIntegrationErrorCode.NETWORK_ERROR,
-      AccountIntegrationErrorCode.INSTITUTION_NOT_RESPONDING,
-      AccountIntegrationErrorCode.RATE_LIMIT_EXCEEDED,
-    ];
-    return retryableCodes.includes(this.code);
   }
 }

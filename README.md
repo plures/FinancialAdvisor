@@ -563,8 +563,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - [Developer Guide](docs/developer-guide.md)
 - [Security Guide](docs/security.md)
 - [Network Configuration Guide](docs/guides/network-configuration.md) - Firewall and network setup for CI/CD
-- [Account Integration Guide](docs/ACCOUNT_INTEGRATION.md) - Automated account synchronization with Plaid
-- [Plaid Integration Plan](docs/PLAID_INTEGRATION_PLAN.md) - Detailed implementation roadmap
+- [Local-First Integration Plan](docs/LOCAL_FIRST_INTEGRATION_PLAN.md) - File-based account integration approach
 
 ## 🗺️ Roadmap
 
@@ -587,12 +586,13 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
   - ✅ Production monitoring (health checks, metrics, error tracking)
   - ⏳ Actual Microsoft Copilot API integration
   - ⏳ Production deployment preparation
-- 🔜 **Phase 5:** Bank integrations and real-time data (Future)
-  - ⏳ Plaid automated account integration (In Planning)
-  - Account connection via Plaid Link
-  - Automatic transaction synchronization
-  - Balance updates and reconciliation
-  - Migration path to Open Bank Project for self-hosting
+- 🔜 **Phase 5:** Local-first bank integration (Future)
+  - ⏳ File-based account import (OFX/QFX/CSV) (In Planning)
+  - Drag-and-drop file import with auto-detection
+  - Directory watcher for automatic import
+  - CSV template system for all banks
+  - Self-hosted Open Bank Project option
+  - Complete user data ownership and privacy
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete plan, [docs/PHASE3_IMPLEMENTATION.md](docs/PHASE3_IMPLEMENTATION.md) for Phase 3 details, and [docs/PHASE4_IMPLEMENTATION.md](docs/PHASE4_IMPLEMENTATION.md) for Phase 4 features.
 
