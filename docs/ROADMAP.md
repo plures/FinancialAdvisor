@@ -67,6 +67,68 @@ See [PHASE4_IMPLEMENTATION.md](./PHASE4_IMPLEMENTATION.md) for complete document
 
 ---
 
+## Phase 5 (v0.5.0) — Local-First Bank Integration 🚧 IN PROGRESS
+
+Goal: Implement file-based account import with local-first, privacy-by-design approach.
+
+**Current Status:** Foundation implemented (January 25, 2026)
+
+**Completed Features:**
+
+1. ✅ File Import Framework
+   - CSV importer with template-based column mapping
+   - OFX/QFX importer with SGML and XML format support
+   - File validation and error handling
+   - Import result tracking with detailed errors
+   - File hash calculation for duplicate detection
+
+2. ✅ CSV Template System
+   - Pre-configured templates for common banks (Chase, BofA, Wells Fargo)
+   - Flexible column mapping (name or index-based)
+   - Date format handling
+   - Amount parsing with multiple formats
+   - Delimiter auto-detection
+
+3. ✅ Privacy-First Architecture
+   - All imports happen locally on user's machine
+   - No third-party data sharing by default
+   - Privacy level tracking for each import
+   - Consent management framework
+
+**In Progress:**
+
+4. ⏳ Directory Watcher
+   - Auto-import from designated folders
+   - File archival after import
+   - Real-time file monitoring
+   - Supported formats: OFX, QFX, CSV
+
+**Remaining Work:**
+
+5. ⏳ Transaction Deduplication
+   - Duplicate detection using FITID (OFX) or transaction hash
+   - Fuzzy matching by date + amount + description
+   - Pending vs. posted transaction handling
+
+6. ⏳ Open Bank Project Integration
+   - Self-hosted OBP server support
+   - Direct bank API connectors (no Plaid middleman)
+   - User-controlled bank connections
+
+7. ⏳ Enhanced CSV Support
+   - Community template repository
+   - Custom template builder UI
+   - Template sharing and import
+   - Support for 50+ bank formats
+
+8. ⏳ Import Management UI
+   - Drag-and-drop file import interface
+   - Import history viewer with search
+   - Error recovery and retry tools
+   - Template selector and tester
+
+---
+
 ## Phase 3 (v0.3.0) — AI-Powered Financial Planning ✅ COMPLETE
 
 Goal: Implement comprehensive AI-driven financial planning automation with multi-provider support.

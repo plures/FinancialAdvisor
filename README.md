@@ -585,13 +585,15 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
   - ✅ Performance optimizations (batching, rate limiting, connection pooling)
   - ✅ Production monitoring (health checks, metrics, error tracking)
   - ⏳ Actual Microsoft Copilot API integration
-  - ⏳ Production deployment preparation
-- 🔜 **Phase 5:** Local-first bank integration (Future)
-  - ⏳ File-based account import (OFX/QFX/CSV) (In Planning)
-  - Drag-and-drop file import with auto-detection
-  - Directory watcher for automatic import
-  - CSV template system for all banks
-  - Self-hosted Open Bank Project option
+  - ✅ Production deployment documentation
+- 🔜 **Phase 5:** Local-first bank integration (In Progress)
+  - ✅ File-based account import framework (OFX/QFX/CSV)
+  - ✅ CSV importer with template-based column mapping
+  - ✅ OFX/QFX importer with SGML and XML support
+  - ✅ Pre-configured templates for common banks
+  - ⏳ Directory watcher for automatic import
+  - ⏳ Transaction deduplication engine
+  - ⏳ Self-hosted Open Bank Project option
   - Complete user data ownership and privacy
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete plan, [docs/PHASE3_IMPLEMENTATION.md](docs/PHASE3_IMPLEMENTATION.md) for Phase 3 details, and [docs/PHASE4_IMPLEMENTATION.md](docs/PHASE4_IMPLEMENTATION.md) for Phase 4 features.
