@@ -50,6 +50,13 @@ jobs:
           cd ../financial-tools && npm ci
           cd ../mcp-server && npm ci
 
+      - name: Build all packages
+        run: |
+          cd packages/shared && npm run build
+          cd ../ai-integration && npm run build
+          cd ../financial-tools && npm run build
+          cd ../mcp-server && npm run build
+
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
