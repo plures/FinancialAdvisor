@@ -12,6 +12,13 @@ out/
 .svelte-kit/
 *.tsbuildinfo
 
+# Package source compiled outputs (only dist/ should have compiled files)
+packages/**/src/**/*.js
+packages/**/src/**/*.js.map
+packages/**/src/**/*.d.ts
+packages/**/src/**/*.d.ts.map
+!packages/**/src/**/*.svelte
+
 # TypeScript compiled outputs (except .d.ts in packages)
 src/**/*.js
 src/**/*.js.map
