@@ -1,0 +1,273 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Financial Advisor Configuration",
+  "description": "Configuration schema for Financial Advisor application",
+  "type": "object",
+  "properties": {
+    "dataDirectory": {
+      "type": "string",
+      "description": "Path to data directory where financial data is stored",
+      "default": "~/.financial-advisor/data"
+    },
+    "privacy": {
+      "type": "object",
+      "description": "Privacy and security settings",
+      "properties": {
+        "localOnly": {
+          "type": "boolean",
+          "description": "Keep all data local, no external connections",
+          "default": true
+        },
+        "encryptData": {
+          "type": "boolean",
+          "description": "Encrypt data at rest using AES-256",
+          "default": true
+        },
+        "encryptionKey": {
+          "type": "string",
+          "description": "Base64-encoded encryption key (32 bytes). Generate with: openssl rand -base64 32"
+        }
+      },
+      "required": ["localOnly", "encryptData"]
+    },
+    "ai": {
+      "type": "object",
+      "description": "AI provider configuration",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["openai", "ollama", "copilot", "anthropic", "custom"],
+          "description": "AI provider to use",
+          "default": "openai"
+        },
+        "model": {
+          "type": "string",
+          "description": "AI model name (e.g., gpt-4, llama3, claude-3)",
+          "default": "gpt-4"
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "API key for the provider (can also be set via environment variable)"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "API endpoint URL",
+          "default": "https://api.openai.com/v1"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "description": "Maximum tokens per request",
+          "default": 8000,
+          "minimum": 1000,
+          "maximum": 128000
+        },
+        "temperature": {
+          "type": "number",
+          "description": "Sampling temperature (0-1)",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 1
+        },
+        "cacheResponses": {
+          "type": "boolean",
+          "description": "Enable response caching to reduce API calls",
+          "default": true
+        },
+        "cacheTTL": {
+          "type": "integer",
+          "description": "Cache time-to-live in seconds",
+          "default": 3600
+        }
+      },
+      "required": ["provider"]
+    },
+    "performance": {
+      "type": "object",
+      "description": "Performance optimization settings",
+      "properties": {
+        "batchSize": {
+          "type": "integer",
+          "description": "Number of items to process in each batch",
+          "default": 50,
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "batchDelay": {
+          "type": "integer",
+          "description": "Delay between batches in milliseconds",
+          "default": 100,
+          "minimum": 0
+        },
+        "enableRateLimiting": {
+          "type": "boolean",
+          "description": "Enable rate limiting for API calls",
+          "default": true
+        },
+        "requestsPerMinute": {
+          "type": "integer",
+          "description": "Maximum requests per minute",
+          "default": 60,
+          "minimum": 1
+        },
+        "enableConnectionPooling": {
+          "type": "boolean",
+          "description": "Enable connection pooling for API clients",
+          "default": true
+        },
+        "maxConnections": {
+          "type": "integer",
+          "description": "Maximum concurrent connections",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "description": "Monitoring and observability settings",
+      "properties": {
+        "enableHealthChecks": {
+          "type": "boolean",
+          "description": "Enable health check endpoints",
+          "default": true
+        },
+        "enableMetrics": {
+          "type": "boolean",
+          "description": "Enable Prometheus metrics collection",
+          "default": true
+        },
+        "metricsPort": {
+          "type": "integer",
+          "description": "Port for metrics endpoint",
+          "default": 9090,
+          "minimum": 1024,
+          "maximum": 65535
+        },
+        "metricsPath": {
+          "type": "string",
+          "description": "Path for metrics endpoint",
+          "default": "/metrics"
+        },
+        "healthCheckInterval": {
+          "type": "integer",
+          "description": "Health check interval in milliseconds",
+          "default": 60000,
+          "minimum": 1000
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "description": "Feature flags",
+      "properties": {
+        "budgetTracking": {
+          "type": "boolean",
+          "description": "Enable budget tracking features",
+          "default": true
+        },
+        "investmentAdvice": {
+          "type": "boolean",
+          "description": "Enable investment advice features",
+          "default": true
+        },
+        "goalSetting": {
+          "type": "boolean",
+          "description": "Enable financial goal setting",
+          "default": true
+        },
+        "predictiveAnalytics": {
+          "type": "boolean",
+          "description": "Enable predictive analytics (Phase 4)",
+          "default": true
+        },
+        "fileImport": {
+          "type": "boolean",
+          "description": "Enable file-based account import (Phase 5)",
+          "default": false
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "description": "Database configuration",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to database file",
+          "default": "~/.financial-advisor/data/financial.db"
+        },
+        "encryption": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": ["AES-256-GCM", "AES-256-CBC"],
+              "default": "AES-256-GCM"
+            }
+          }
+        },
+        "backup": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "path": {
+              "type": "string",
+              "default": "~/.financial-advisor/backups"
+            },
+            "interval": {
+              "type": "string",
+              "enum": ["hourly", "daily", "weekly"],
+              "default": "daily"
+            },
+            "retention": {
+              "type": "integer",
+              "description": "Number of days to retain backups",
+              "default": 30,
+              "minimum": 1
+            },
+            "compress": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "description": "Logging configuration",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "default": "info"
+        },
+        "file": {
+          "type": "string",
+          "description": "Log file path",
+          "default": "~/.financial-advisor/logs/app.log"
+        },
+        "maxSize": {
+          "type": "string",
+          "description": "Maximum log file size (e.g., '10M', '100K')",
+          "default": "10M"
+        },
+        "maxFiles": {
+          "type": "integer",
+          "description": "Maximum number of log files to retain",
+          "default": 5,
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "required": ["dataDirectory", "privacy"]
+}

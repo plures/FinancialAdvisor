@@ -1,6 +1,7 @@
 {
   "name": "@financialadvisor/mcp-server",
   "version": "1.0.0",
+  "type": "module",
   "description": "MCP server for secure local financial data storage",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

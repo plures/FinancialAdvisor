@@ -4,21 +4,40 @@
     "module": "ES2020",
     "lib": ["ES2020"],
     "outDir": "out/test",
-    "rootDir": "test",
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
     "types": ["node", "mocha"],
-    "noEmit": false
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@financialadvisor/shared": ["packages/shared/src/index.ts"],
+      "@financialadvisor/shared/*": ["packages/shared/src/*"],
+      "@financialadvisor/ai-integration": ["packages/ai-integration/src/index.ts"],
+      "@financialadvisor/ai-integration/*": ["packages/ai-integration/src/*"],
+      "@financialadvisor/financial-tools": ["packages/financial-tools/src/index.ts"],
+      "@financialadvisor/financial-tools/*": ["packages/financial-tools/src/*"],
+      "@financialadvisor/mcp-server": ["packages/mcp-server/src/index.ts"],
+      "@financialadvisor/mcp-server/*": ["packages/mcp-server/src/*"]
+    }
   },
   "include": [
     "test/**/*"
   ],
   "exclude": [
     "node_modules",
-    "out"
+    "out",
+    "dist",
+    "build",
+    ".svelte-kit",
+    "packages/*/dist",
+    "packages/vscode-extension/**/*",
+    "src/extension/**/*",
+    "test/runTest.ts",
+    "test/suite/**/*"
   ]
 }

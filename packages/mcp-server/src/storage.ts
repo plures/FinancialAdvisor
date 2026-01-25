@@ -5,7 +5,7 @@
 import { Database } from 'sqlite3';
 import * as crypto from 'crypto';
 import * as path from 'path';
-import type { Account, Transaction, SecureCredential } from '../../shared/src/types';
+import type { Account, Transaction, SecureCredential } from '../../shared/src/types.js';
 
 export interface DatabaseConfig {
   dbPath: string;

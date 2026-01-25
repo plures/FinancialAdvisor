@@ -84,6 +84,21 @@ export class AccountIntegrationService {
    * console.log(`Imported ${result.transactionsImported} transactions`);
    * ```
    */
+  /**
+   * Import transactions from a file
+   * 
+   * @param filePath - Path to file to import
+   * @param options - Import options
+   * @returns Import result
+   * 
+   * @example
+   * ```typescript
+   * const result = await service.importFile('/path/to/transactions.ofx', {
+   *   accountId: 'account-123',
+   * });
+   * console.log(`Imported ${result.transactionsImported} transactions`);
+   * ```
+   */
   async importFile(
     filePath: string,
     options?: {
@@ -92,15 +107,38 @@ export class AccountIntegrationService {
       sourceConfigId?: string;
     }
   ): Promise<ImportResult> {
-    // TODO: Implement file import logic
     // 1. Detect file type from extension
+    const extension = filePath.toLowerCase().split('.').pop() || '';
+    
     // 2. Find appropriate importer
+    const importer = this.importers.get(extension);
+    if (!importer) {
+      throw new Error(`No importer found for file type: ${extension}`);
+    }
+    
     // 3. For CSV, load template if provided
+    let csvTemplate: CSVTemplate | undefined;
+    if (extension === 'csv' && options?.csvTemplateId) {
+      csvTemplate = this.csvTemplates.get(options.csvTemplateId);
+      if (!csvTemplate) {
+        throw new Error(`CSV template not found: ${options.csvTemplateId}`);
+      }
+    }
+    
     // 4. Call importer.import()
+    const result = await importer.import(filePath, {
+      accountId: options?.accountId,
+      csvTemplate,
+    });
+    
     // 5. Save import history
+    // TODO: Implement import history storage
+    // Priority: High - Required for duplicate detection
+    // Implementation: packages/shared/src/database/import-history-repository.ts
+    // Will track: fileHash, timestamp, transaction count, errors
+    
     // 6. Return result
-
-    throw new Error('AccountIntegrationService.importFile not implemented');
+    return result;
   }
 
   /**
@@ -127,11 +165,29 @@ export class AccountIntegrationService {
     }
   ): Promise<void> {
     // TODO: Implement directory watcher
+    // Priority: High - Phase 5 objective
+    // Suggested library: chokidar for cross-platform file watching
+    // 
+    // Implementation plan:
     // 1. Use chokidar to watch directory
-    // 2. On file add event, check if it's a financial file
+    // 2. On file add event, check if it's a financial file (OFX/QFX/CSV)
     // 3. If auto-import enabled, call importFile()
     // 4. If archive enabled, move file to archive folder
-    // 5. Track watched directories
+    // 5. Track watched directories in memory or database
+    // 
+    // Example:
+    // const watcher = chokidar.watch(directory, {
+    //   ignored: /(^|[\/\\])\../,
+    //   persistent: true
+    // });
+    // watcher.on('add', async (path) => {
+    //   if (this.isSupportedFile(path)) {
+    //     await this.importFile(path, options);
+    //     if (options?.archiveAfterImport) {
+    //       await this.archiveFile(path);
+    //     }
+    //   }
+    // });
 
     throw new Error('AccountIntegrationService.watchDirectory not implemented');
   }
@@ -212,6 +268,9 @@ export class AccountIntegrationService {
   }
 }
 
+import { CSVImporter, createCommonBankTemplates } from './csv-importer';
+import { OFXImporter } from './ofx-importer';
+
 /**
  * Create and configure account integration service
  * 
@@ -220,8 +279,21 @@ export class AccountIntegrationService {
 export function createAccountIntegrationService(): AccountIntegrationService {
   const service = new AccountIntegrationService();
   
-  // TODO: Register default importers (OFX, QFX, CSV)
-  // TODO: Load pre-configured CSV templates for common banks
+  // Register default importers
+  const csvImporter = new CSVImporter();
+  const ofxImporter = new OFXImporter();
+  
+  // Register CSV importer for .csv and .txt files
+  service.registerImporter(['csv', 'txt'], csvImporter);
+  
+  // Register OFX importer for .ofx and .qfx files
+  service.registerImporter(['ofx', 'qfx'], ofxImporter);
+  
+  // Load pre-configured CSV templates for common banks
+  const commonTemplates = createCommonBankTemplates();
+  for (const template of commonTemplates) {
+    service.registerCSVTemplate(template);
+  }
   
   return service;
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import * as path from 'path';
-import { FinancialAdvisorMCPServer } from './server';
+import { FinancialAdvisorMCPServer } from './server.js';
 
 async function main() {
   const dataDir = process.env.FINANCIAL_ADVISOR_DATA_DIR || path.join(process.cwd(), 'financial-data');
@@ -15,7 +15,7 @@ async function main() {
 
   const server = new FinancialAdvisorMCPServer({
     dbPath,
-    encryptionKey: process.env.FINANCIAL_ADVISOR_ENCRYPTION_KEY,
+    encryptionKey: process.env.FINANCIAL_ADVISOR_ENCRYPTION_KEY || "",
     backupEnabled: true,
     backupPath: path.join(dataDir, 'backups'),
   });

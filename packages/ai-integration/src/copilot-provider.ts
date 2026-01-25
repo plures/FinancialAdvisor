@@ -69,17 +69,69 @@ Always prioritize:
 
   /**
    * Process request through Copilot
-   * This is a placeholder for actual Copilot integration
+   * 
+   * Implementation Options (for future completion):
+   * 
+   * Option 1: Microsoft 365 Copilot API
+   * - Requires Microsoft 365 Enterprise license
+   * - OAuth 2.0 authentication with Azure AD
+   * - Access via Microsoft Graph API
+   * - Endpoint: https://graph.microsoft.com/v1.0/me/copilot
+   * 
+   * Option 2: GitHub Copilot Extensions
+   * - Use GitHub Copilot via MCP protocol
+   * - Requires GitHub Copilot subscription
+   * - MCP server integration already in project
+   * - Endpoint: Via MCP server connection
+   * 
+   * Option 3: Azure OpenAI with Copilot
+   * - Use Azure OpenAI Service
+   * - Requires Azure subscription
+   * - Can use GPT-4 models with Copilot-like features
+   * - Endpoint: https://<your-resource>.openai.azure.com/
+   * 
+   * Current Status: Framework ready, requires API implementation
    */
   private async processWithCopilot(systemPrompt: string, userPrompt: string): Promise<string> {
     // TODO: Implement actual Microsoft Copilot API integration
-    // This would use either:
-    // 1. Microsoft 365 Copilot APIs (Retrieval, Chat, etc.)
-    // 2. GitHub Copilot Extensions via MCP
-    // 3. Azure OpenAI Service with Copilot capabilities
+    // See implementation guide: docs/COPILOT_INTEGRATION_GUIDE.md
     
-    // NOTE: This is a development stub - actual implementation required for production
-    throw new Error('Microsoft Copilot integration not yet implemented. Please configure an alternative AI provider (OpenAI or Ollama) or implement Copilot API integration.');
+    /**
+     * Suggested Implementation (Option 2 - GitHub Copilot via MCP):
+     * 
+     * 1. Import MCP client from project
+     *    import { MCPClient } from '@financialadvisor/mcp-server';
+     * 
+     * 2. Connect to MCP server
+     *    const mcpClient = new MCPClient(this.config.endpoint);
+     *    await mcpClient.connect();
+     * 
+     * 3. Send request via MCP
+     *    const response = await mcpClient.request({
+     *      method: 'tools/call',
+     *      params: {
+     *        name: 'copilot_chat',
+     *        arguments: {
+     *          systemPrompt,
+     *          userPrompt,
+     *          model: this.config.model
+     *        }
+     *      }
+     *    });
+     * 
+     * 4. Return response content
+     *    return response.content;
+     */
+    
+    // Development stub - returns error to guide users to configure alternative provider
+    throw new Error(
+      'Microsoft Copilot integration not yet implemented. ' +
+      'Please configure an alternative AI provider:\n' +
+      '- OpenAI (recommended): Set provider to "openai" and add OPENAI_API_KEY\n' +
+      '- Ollama (local, privacy-first): Set provider to "ollama" and install Ollama\n' +
+      '\n' +
+      'For Copilot implementation, see: docs/COPILOT_INTEGRATION_GUIDE.md'
+    );
   }
 
   async analyzeFinancialData(context: FinancialContext, query: AIQuery): Promise<AIResponse> {

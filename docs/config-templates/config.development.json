@@ -1,0 +1,60 @@
+{
+  "$schema": "./config.schema.json",
+  "dataDirectory": "./dev-data",
+  "privacy": {
+    "localOnly": true,
+    "encryptData": false,
+    "encryptionKey": ""
+  },
+  "ai": {
+    "provider": "ollama",
+    "model": "llama3",
+    "endpoint": "http://localhost:11434",
+    "maxTokens": 4000,
+    "temperature": 0.7,
+    "cacheResponses": true,
+    "cacheTTL": 1800
+  },
+  "performance": {
+    "batchSize": 10,
+    "batchDelay": 50,
+    "enableRateLimiting": false,
+    "requestsPerMinute": 120,
+    "enableConnectionPooling": false,
+    "maxConnections": 5
+  },
+  "monitoring": {
+    "enableHealthChecks": true,
+    "enableMetrics": true,
+    "metricsPort": 9090,
+    "metricsPath": "/metrics",
+    "healthCheckInterval": 30000
+  },
+  "features": {
+    "budgetTracking": true,
+    "investmentAdvice": true,
+    "goalSetting": true,
+    "predictiveAnalytics": true,
+    "fileImport": true
+  },
+  "database": {
+    "path": "./dev-data/financial.db",
+    "encryption": {
+      "enabled": false,
+      "algorithm": "AES-256-GCM"
+    },
+    "backup": {
+      "enabled": false,
+      "path": "./dev-data/backups",
+      "interval": "daily",
+      "retention": 7,
+      "compress": false
+    }
+  },
+  "logging": {
+    "level": "debug",
+    "file": "./dev-data/logs/app.log",
+    "maxSize": "50M",
+    "maxFiles": 10
+  }
+}
