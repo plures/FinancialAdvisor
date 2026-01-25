@@ -95,7 +95,9 @@ export class CSVImporter implements IFileImporter {
       // Process each transaction
       for (const [index, transaction] of transactions.entries()) {
         try {
-          // TODO: Save transaction to database
+          // TODO: Save transaction to database (PluresDB integration)
+          // Implementation pending: packages/shared/src/database/transaction-repository.ts
+          // This will be implemented when PluresDB integration is complete
           // For now, just count as imported
           result.transactionsImported++;
         } catch (error) {
@@ -294,9 +296,18 @@ export class CSVImporter implements IFileImporter {
 
   /**
    * Parse date string to ISO format
+   * 
+   * TODO: Implement comprehensive date parsing with different formats
+   * Priority: Medium
+   * Suggested library: date-fns or dayjs for better format handling
+   * 
+   * Current implementation handles ISO and basic US dates.
+   * For production, should support all formats in CSVTemplate.dateFormat
    */
   private parseDate(dateStr: string, format?: string): string {
-    // TODO: Implement proper date parsing with different formats
+    // TODO: Use date-fns to parse with format string
+    // Example: parse(dateStr, format || 'MM/dd/yyyy', new Date())
+    
     // For now, assume ISO or US format
     const date = new Date(dateStr);
     if (!isNaN(date.getTime())) {

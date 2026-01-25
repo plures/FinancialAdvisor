@@ -94,8 +94,10 @@ export class OFXImporter implements IFileImporter {
       // Process each transaction
       for (const [index, transaction] of transactions.entries()) {
         try {
-          // TODO: Save transaction to database
-          // TODO: Check for duplicates using FITID
+          // TODO: Save transaction to database (PluresDB integration)
+          // TODO: Check for duplicates using FITID (OFX transaction ID)
+          // Implementation pending: packages/shared/src/database/transaction-repository.ts
+          // Duplicate detection will use FITID for exact matches
           // For now, just count as imported
           result.transactionsImported++;
         } catch (error) {
