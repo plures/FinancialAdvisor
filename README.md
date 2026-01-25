@@ -5,102 +5,51 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/github/package-json/v/plures/FinancialAdvisor)](https://github.com/plures/FinancialAdvisor/releases)
 
-> **Personal AI-Powered Financial Advisor** - A multiplatform desktop application for managing your finances with AI assistance, built with Tauri, Svelte, Praxis, and PluresDB.
+> **Personal AI-Powered Financial Advisor** - A local-first multiplatform desktop application for managing your finances with AI assistance.
 
 ## 🎯 Overview
 
-FinancialAdvisor is a modern personal finance management system that combines:
+FinancialAdvisor is a privacy-focused personal finance management system built with modern web technologies:
 
-- **Tauri Desktop App** - Cross-platform desktop application (Windows, macOS, Linux)
-- **SvelteKit UI** - Modern, reactive user interface with Svelte 5
-- **Praxis Framework** - Schema-driven application logic and business rules
-- **PluresDB** - Local-first data storage with real-time sync and vector storage for AI
-- **AI Integration** - Support for multiple AI providers (OpenAI, Ollama, etc.)
-- **MCP Protocol** - Model Context Protocol for AI agent integration
-
-## 🏗️ Architecture
-
-```text
-FinancialAdvisor/
-├── 📱 src/                      # SvelteKit frontend application
-│   ├── routes/                  # Application pages
-│   │   ├── accounts/           # Account management
-│   │   ├── transactions/       # Transaction tracking
-│   │   ├── reports/            # Financial reports
-│   │   └── settings/           # App settings
-│   └── lib/                    # Shared libraries
-│       ├── praxis/             # Praxis schema & logic
-│       ├── pluresdb/           # PluresDB integration
-│       ├── stores/             # Svelte stores
-│       └── components/         # Reusable components
-├── 🦀 src-tauri/               # Tauri Rust backend
-│   ├── src/                    # Rust source code
-│   ├── Cargo.toml              # Rust dependencies
-│   └── tauri.conf.json         # Tauri configuration
-├── 📦 packages/                # Legacy packages (being migrated)
-│   ├── shared/                 # Common types and utilities
-│   ├── financial-tools/        # Core financial calculations
-│   ├── ai-integration/         # AI provider abstractions
-│   └── mcp-server/             # MCP server implementation
-└── 📚 docs/                    # Documentation
-```
+- **🖥️ Tauri Desktop App** - Cross-platform desktop application (Windows, macOS, Linux)
+- **⚡ SvelteKit UI** - Modern, reactive user interface with Svelte 5
+- **🤖 AI Integration** - Support for multiple AI providers (OpenAI, Ollama, Copilot)
+- **🔌 MCP Protocol** - Model Context Protocol server for AI agent integration
+- **🔒 Local-First** - All data stored locally with optional encryption
+- **📦 Modular Architecture** - Well-organized monorepo with shared packages
 
 ## ✨ Features
 
-### 🏦 Financial Management
+### 🏦 Core Financial Management
 
-- **Account Tracking** - Monitor multiple accounts (checking, savings, investment, etc.)
-- **Transaction Management** - Add and categorize transactions
-- **Budget Planning** - Create and track budgets (coming soon)
-- **Goal Setting** - Set and monitor financial goals (coming soon)
-- **Investment Analysis** - Portfolio tracking (coming soon)
+- **Account Tracking** - Monitor multiple accounts (checking, savings, investment, credit cards, loans)
+- **Transaction Management** - Add, categorize, and analyze transactions
+- **Data Import** - Support for OFX, QFX, and CSV file formats
+- **Financial Calculations** - Budget analysis, goal tracking, and net worth calculations
 
-### 🤖 AI-Powered Insights (Phase 3 & 4)
+### 🤖 AI-Powered Insights
 
-- **Multi-Provider AI Support** - Microsoft Copilot (recommended), OpenAI, Ollama, or custom providers
-- **Autonomous Financial Planning** - AI agents create comprehensive financial plans
-- **Smart Categorization** - Automatic transaction categorization with learning
-- **Proactive Assessments** - Continuous AI-driven financial health monitoring
-- **What-If Planning** - AI-powered scenario analysis and predictions
-- **Creative Solutions** - Innovative AI-generated strategies to achieve goals
-- **Budget Optimization** - AI-recommended budgets based on goals and behavior
-- **Learning System** - Improves from user corrections and manual categorizations
-
-**Phase 4 Advanced Features:**
+- **Multi-Provider Support** - OpenAI, GitHub Copilot, Ollama, or custom providers
+- **Smart Categorization** - Automatic transaction categorization
+- **Spending Analysis** - AI-powered pattern recognition and insights
 - **Predictive Analytics** - Spending trends, forecasts, and anomaly detection
-- **Enhanced AI Accuracy** - Confidence scoring, response validation, and intelligent caching
-- **Performance Optimizations** - Batch processing, rate limiting, and connection pooling
-- **Production Monitoring** - Health checks, metrics collection, and error tracking
-
-See [Phase 3 Documentation](docs/PHASE3_IMPLEMENTATION.md) and [Phase 4 Documentation](docs/PHASE4_IMPLEMENTATION.md) for detailed features and setup.
-
-### 🤖 Legacy AI Features
-
-- **Spending Analysis** - AI-powered spending pattern recognition
-- **Financial Advice** - Personalized recommendations based on your data
-- **Report Generation** - Automated financial reports with insights
+- **Confidence Scoring** - AI response validation and accuracy measurement
+- **Performance Optimization** - Batch processing, rate limiting, and intelligent caching
 
 ### 🔐 Security & Privacy
 
-- **Local-First Storage** - All data stored locally using PluresDB
+- **Local-First Storage** - All data stored locally in SQLite database
 - **No Cloud Dependencies** - Complete offline operation capability
-- **Data Encryption** - Secure storage of sensitive information
-- **Vector Storage** - AI embeddings stored locally for privacy
-
-### 🔌 Extensibility
-
-- **Praxis Schema** - Declarative data models and business rules
-- **AI Provider Choice** - Microsoft Copilot (preferred), OpenAI, Anthropic, Ollama, and custom providers
-- **MCP Protocol** - Standard Model Context Protocol for AI integration (future-ready)
-- **Multiplatform** - Desktop support for Windows, macOS, and Linux; Mobile support for iOS and Android
-
+- **Data Encryption** - Optional encryption for sensitive information
+- **Audit Trail** - All operations logged for transparency
+- **No Telemetry** - No usage data collected
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js** 20+ (22+ recommended)
-- **Rust** - Install from [rustup.rs](https://rustup.rs/)
+- **Node.js** 22+ (required for ES module support)
+- **Rust** 1.70+ - Install from [rustup.rs](https://rustup.rs/)
 - **Platform-specific dependencies**:
   - **Windows**: Visual Studio with C++ tools, WebView2
   - **macOS**: Xcode Command Line Tools
@@ -114,7 +63,7 @@ git clone https://github.com/plures/FinancialAdvisor.git
 cd FinancialAdvisor
 
 # Install dependencies
-npm install
+npm ci
 
 # Run in development mode
 npm run tauri:dev
@@ -123,68 +72,76 @@ npm run tauri:dev
 npm run tauri:build
 ```
 
-## 🛠️ Development
+## 🏗️ Architecture
 
-### Setup Development Environment
-
-```bash
-# One-command setup
-make bootstrap
-
-# Or manually:
-npm install
-npm run setup:hooks
-npm run build
-npm run test
+```text
+FinancialAdvisor/
+├── 📱 src/                      # SvelteKit frontend
+│   ├── routes/                  # Application pages
+│   ├── lib/                    # Shared UI components
+│   └── shared/                 # Shared utilities
+├── 🦀 src-tauri/               # Tauri Rust backend
+│   ├── src/                    # Rust source code
+│   ├── Cargo.toml              # Rust dependencies
+│   └── tauri.conf.json         # Tauri configuration
+├── 📦 packages/                # Monorepo packages
+│   ├── shared/                 # Common types and utilities
+│   ├── financial-tools/        # Financial calculations
+│   ├── ai-integration/         # AI provider abstractions
+│   └── mcp-server/             # MCP server implementation
+└── 🧪 test/                    # Test suites
+    ├── unit/                   # Unit tests
+    └── integration/            # Integration tests
 ```
 
-### Available Commands
+## 🛠️ Development
+
+### Available Scripts
 
 ```bash
 # Development
-make build          # Build the project
-make watch          # Watch for changes
-make test           # Run all tests
-make lint           # Run linting
-make format         # Format code
+npm run dev                # Start SvelteKit dev server
+npm run tauri:dev         # Start Tauri app in dev mode
+npm run build             # Build SvelteKit frontend
+npm run tauri:build       # Build Tauri app for production
 
-# Quality checks
-make check-all      # Run all quality checks
-make coverage       # Generate coverage report
-make audit          # Security audit
+# Testing
+npm run test              # Run all tests
+npm run test:unit         # Run unit tests (80/80 passing)
+npm run test:integration  # Run integration tests
+npm run coverage          # Generate coverage report
 
-# Package & Release
-make package        # Create VSIX package
-make release-check  # Check release readiness
+# Code Quality
+npm run lint              # Run ESLint
+npm run lint:fix          # Fix linting issues
+npm run format            # Format code with Prettier
+npm run format:check      # Check code formatting
+npm run check             # Type check with svelte-check
+
+# Package Management
+npm run build:packages    # Build all monorepo packages
 ```
 
-### Project Structure
+### ES Module Support
 
-```text
-├── src/
-│   ├── extension/          # VSCode extension code
-│   │   ├── providers/      # Financial advice providers
-│   │   └── mcp/           # MCP server integration
-│   ├── mcp-server/        # MCP server implementation
-│   └── shared/            # Shared types and utilities
-├── test/
-│   ├── unit/              # Unit tests
-│   └── integration/       # Integration tests
-├── .github/
-│   ├── workflows/         # CI/CD pipelines
-│   └── ISSUE_TEMPLATE/    # Issue templates
-└── docs/                  # Documentation
-```
+This project uses **ES2020 modules** with the following requirements:
+
+- All imports must include `.js` extensions: `import { foo } from './bar.js'`
+- `package.json` has `"type": "module"`
+- TypeScript configured with `"module": "ES2020"`
+- Node.js 22+ required for full ES module support
 
 ## 🧪 Testing
+
+The project has comprehensive test coverage with **80 passing unit tests**:
 
 ```bash
 # Run all tests
 npm test
 
 # Run specific test suites
-npm run test:unit
-npm run test:integration
+npm run test:unit              # All unit tests
+npm run test:integration       # Integration tests including AI providers
 
 # With coverage
 npm run coverage
@@ -192,428 +149,145 @@ npm run coverage
 
 ### AI Integration Testing
 
-The project includes comprehensive integration tests for AI providers (OpenAI, GitHub Copilot) that validate real API connections. These tests automatically skip when API keys are not available.
+Integration tests validate real API connections to AI providers. Tests automatically skip when API keys are not available:
 
 ```bash
-# Run AI integration tests with OpenAI API key
+# Run with OpenAI API key
 export OPENAI_API_KEY="sk-your-api-key-here"
 npm run test:integration
 
-# Tests will skip gracefully without API key
-npm run test:integration  # Skips AI tests if no key
+# Tests skip gracefully without API key
+npm run test:integration
 ```
 
-See [AI Integration Testing Guide](docs/AI_INTEGRATION_TESTING.md) for detailed documentation on:
-- Setting up API keys for testing
-- Running tests locally and in CI/CD
-- Understanding test coverage
-- Cost management and best practices
-- Adding new AI integration tests
+See [docs/AI_INTEGRATION_TESTING.md](docs/AI_INTEGRATION_TESTING.md) for detailed testing documentation.
 
-## 📦 Building & Packaging
+## 📦 Packages
 
-```bash
-# Build TypeScript
-npm run build
-
-# Package extension
-npm run package
-
-# Publish (requires tokens)
-npm run publish
-```
-
-### Manual Installation
-
-1. **Clone and Setup**
-
-  ```bash
-   git clone https://github.com/plures/FinancialAdvisor.git
-   cd FinancialAdvisor
-   npm install
-   npm run build
-   ```
-
-1. **Install VSCode Extension**
-
-  ```bash
-   cd packages/vscode-extension
-   npm run package
-   code --install-extension financial-advisor-1.0.0.vsix
-   ```
-
-1. **Configure MCP Server**
-
-  ```bash
-   # Set data directory
-   export FINANCIAL_ADVISOR_DATA_DIR="$HOME/.financial-advisor"
-   
-   # Optional: Set encryption key
-   export FINANCIAL_ADVISOR_ENCRYPTION_KEY="your-secure-key"
-   
-   # Start MCP server
-   npm run start --workspace=@financialadvisor/mcp-server
-   ```
-
-### First Steps
-
-1. **Open VSCode** and activate the Financial Advisor extension
-2. **Setup MCP Server** via Command Palette: `Financial Advisor: Setup MCP Server`
-3. **Add Your First Account** using the dashboard or command: `Financial Advisor: Add Account`
-4. **Import Transactions** or add them manually
-5. **Configure AI Provider** for intelligent insights
-
-## 📖 Documentation
-
-### 📋 User Guide
-
-#### Adding Financial Accounts
-
-The Add Account feature allows you to register your financial accounts for tracking and analysis.
-
-##### Via VS Code Extension
-
-1. **Open Command Palette** (`Ctrl+Shift+P` / `Cmd+Shift+P`)
-2. **Run Command**: `Financial Advisor: Add Account`
-3. **Fill in the details** when prompted:
-   - **Account Name**: A unique identifier for your account
-   - **Account Type**: Choose from available types
-   - **Current Balance**: Enter the current account balance
-   - **Institution** (optional): Your bank or financial institution
-
-##### Supported Account Types
-
-- **`checking`** - Primary checking accounts
-- **`savings`** - Savings accounts and money market accounts
-- **`credit_card`** - Credit card accounts (balances can be negative)
-- **`investment`** - Investment and brokerage accounts
-- **`loan`** - Personal loans and lines of credit
-- **`mortgage`** - Home mortgages and property loans
-- **`retirement`** - 401(k), IRA, and other retirement accounts
-
-##### Input Validation
-
-The system validates your input to ensure data integrity:
-
-- ✅ **Account names must be unique** - Duplicate names are not allowed
-- ✅ **Required fields** - Name, type, and balance are mandatory
-- ✅ **Valid account types** - Only predefined types are accepted
-- ✅ **Numeric balance** - Balance must be a valid number (negative allowed for credit cards)
-- ✅ **Whitespace handling** - Leading/trailing spaces are automatically trimmed
-
-##### Examples
-
-**Basic Checking Account:**
-```
-Name: "Primary Checking"
-Type: checking
-Balance: 2,500.75
-Institution: "Bank of America"
-```
-
-**Credit Card (with negative balance):**
-```
-Name: "Chase Freedom"
-Type: credit_card
-Balance: -1,250.00
-Institution: "Chase Bank"
-```
-
-**Investment Account:**
-```
-Name: "Fidelity 401k"
-Type: retirement
-Balance: 125,000.00
-Institution: "Fidelity Investments"
-```
-
-##### Via MCP Server API
-
-You can also add accounts programmatically via the MCP server:
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "tools/call",
-  "params": {
-    "name": "add_account",
-    "arguments": {
-      "name": "Savings Account",
-      "type": "savings",
-      "balance": 5000.00,
-      "currency": "USD",
-      "institution": "Local Credit Union"
-    }
-  }
-}
-```
-
-### Package Documentation
-
-#### 🔧 Shared Package (`@financialadvisor/shared`)
-
+### `@financialadvisor/shared`
 Common types, interfaces, and utilities used across all packages.
 
 ```typescript
 import { Account, Transaction, formatCurrency } from '@financialadvisor/shared';
-
-const account: Account = {
-  id: 'acc-1',
-  name: 'Checking Account',
-  type: AccountType.CHECKING,
-  balance: 1500.00,
-  currency: 'USD',
-  lastUpdated: new Date(),
-  isActive: true
-};
-
-console.log(formatCurrency(account.balance)); // $1,500.00
 ```
 
-#### 🧮 Financial Tools (`@financialadvisor/financial-tools`)
-
-Core financial calculations and analysis tools.
+### `@financialadvisor/financial-tools`
+Core financial calculations and analysis tools including budget calculator, transaction analyzer, and predictive analytics.
 
 ```typescript
-import { BudgetCalculator, TransactionAnalyzer } from '@financialadvisor/financial-tools';
-
-// Analyze spending patterns
-const insights = TransactionAnalyzer.analyzeTransactions(transactions, timeframe);
-console.log(`Savings rate: ${insights.savingsRate.toFixed(1)}%`);
-
-// Budget analysis
-const budgetAnalysis = BudgetCalculator.analyzeBudget(budget, transactions);
-console.log(`Budget used: ${budgetAnalysis.percentageUsed.toFixed(1)}%`);
+import { BudgetCalculator, TransactionAnalyzer, PredictiveAnalytics } 
+  from '@financialadvisor/financial-tools';
 ```
 
-#### 🤖 AI Integration (`@financialadvisor/ai-integration`)
-
-AI provider abstractions for financial analysis.
+### `@financialadvisor/ai-integration`
+AI provider abstractions with support for OpenAI, GitHub Copilot, and Ollama.
 
 ```typescript
 import { AIProviderFactory, AIProviderType } from '@financialadvisor/ai-integration';
-
-// OpenAI provider
-const provider = AIProviderFactory.createProvider(AIProviderType.OPENAI, {
-  apiKey: 'your-api-key',
-  model: 'gpt-4'
-});
-
-// Analyze financial data
-const response = await provider.analyzeFinancialData(context, {
-  type: 'analysis',
-  prompt: 'What are my spending patterns?'
-});
 ```
 
-#### 🔐 MCP Server (`@financialadvisor/mcp-server`)
-
-Secure local storage with MCP protocol support.
+### `@financialadvisor/mcp-server`
+Secure local storage with Model Context Protocol support.
 
 ```typescript
 import { FinancialAdvisorMCPServer } from '@financialadvisor/mcp-server';
-
-const server = new FinancialAdvisorMCPServer({
-  dbPath: './financial.db',
-  encryptionKey: 'your-encryption-key',
-  backupEnabled: true
-});
-
-await server.run();
 ```
-
-### VSCode Extension
-
-The VSCode extension provides a complete UI for managing your financial data:
-
-#### Commands
-
-- `Financial Advisor: Open Dashboard` - Main financial dashboard
-- `Financial Advisor: Add Transaction` - Quick transaction entry
-- `Financial Advisor: Add Account` - Account management
-- `Financial Advisor: Analyze Spending` - AI-powered spending analysis
-- `Financial Advisor: Generate Report` - Custom financial reports
-- `Financial Advisor: Configure AI` - AI provider setup
-
-#### Views
-
-- **Accounts View** - List and manage all accounts
-- **Transactions View** - Recent transaction history
-- **Budgets View** - Budget tracking and alerts
-- **Goals View** - Financial goal monitoring
-
-#### Dashboard Features
-
-- Real-time account balances
-- Transaction categorization
-- Spending analysis charts
-- Budget progress indicators
-- Goal tracking widgets
 
 ## 🔧 Configuration
 
-### Network Configuration (CI/CD)
-
-For organizations using IP allow lists or self-hosted runners, network access must be configured to allow connections to external services like the OpenAI API. See the [Network Configuration Guide](docs/guides/network-configuration.md) for detailed setup instructions.
-
-**Quick reference:**
-- OpenAI API: `api.openai.com:443` (required for AI features)
-- NPM Registry: `registry.npmjs.org:443` (required for package installation)
-- See [`.github/network-policy.yml`](.github/network-policy.yml) for complete network policy
-
 ### MCP Server Configuration
 
-Create a `.financial-advisor-config.json` file:
+Set environment variables for the MCP server:
 
-```json
-{
-  "aiModel": {
-    "provider": "local",
-    "model": "llama3",
-    "endpoint": "http://localhost:11434"
-  },
-  "privacy": {
-    "localOnly": true,
-    "encryptData": true
-  },
-  "features": {
-    "budgetTracking": true,
-    "investmentAdvice": true,
-    "goalSetting": true
-  }
-}
+```bash
+# Data directory
+export FINANCIAL_ADVISOR_DATA_DIR="$HOME/.financial-advisor"
+
+# Optional encryption key
+export FINANCIAL_ADVISOR_ENCRYPTION_KEY="your-secure-key"
+
+# Start MCP server
+npm run start --workspace=@financialadvisor/mcp-server
 ```
 
-### VS Code Settings
+### AI Provider Setup
 
-```json
-{
-  "financialAdvisor.autoStart": true,
-  "financialAdvisor.notifications": true,
-  "financialAdvisor.dataPath": "./financial-data"
-}
+Configure AI providers via environment variables:
+
+```bash
+# OpenAI
+export OPENAI_API_KEY="sk-your-api-key"
+
+# GitHub Copilot
+export GITHUB_TOKEN="ghp_your-token"
+
+# Ollama (local)
+export OLLAMA_HOST="http://localhost:11434"
 ```
-
-### Quick MCP setup (Windows PowerShell)
-
-- In VS Code, open Settings (Ctrl+,) and set:
-  - financialAdvisor.mcpServer.dataDir → e.g., C:\\Users\\YOUR_USER\\.financial-advisor
-  - financialAdvisor.mcpServer.path → optional full path to financial-advisor-mcp if it’s not on PATH
-
-- Or add to your .vscode/settings.json:
-
-```jsonc
-{
-  "financialAdvisor.mcpServer.dataDir": "C:\\Users\\YOUR_USER\\.financial-advisor",
-  "financialAdvisor.security.encryptionEnabled": true
-}
-```
-
-- Optional: start the MCP server manually for troubleshooting:
-
-```powershell
-# If installed globally or available on PATH
-financial-advisor-mcp
-
-# Or from the package (after building the monorepo)
-pwsh -NoProfile -Command "npm run build:all:win; cd packages/mcp-server; node dist/cli.js"
-```
-
-## 🔒 Security & Privacy
-
-- **Local-First**: Financial data never leaves your machine by default
-- **Encryption**: Sensitive data is encrypted at rest
-- **Audit Trail**: All operations are logged for transparency
-- **No Telemetry**: No usage data is collected without explicit consent
-
-### Security Features
-
-- 🔐 End-to-end encryption for financial data
-- 🛡️ Regular security scans (CodeQL, OSV)
-- 🔍 Dependency vulnerability monitoring
-- 📋 SBOM generation for supply chain transparency
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please follow these guidelines:
 
-### Development Workflow
+1. **Fork and Clone** - Fork the repository and clone locally
+2. **Create Branch** - `git checkout -b feature/amazing-feature`
+3. **Make Changes** - Add tests for new functionality
+4. **Quality Checks** - Run `npm run lint && npm run test`
+5. **Commit** - Use conventional commits: `feat: add amazing feature`
+6. **Push and PR** - Push to your fork and open a pull request
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make changes and add tests
-4. Run quality checks: `make check-all`
-5. Commit changes: `git commit -m 'feat: add amazing feature'`
-6. Push to branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
+### Code Standards
 
-### Code Style
+- **TypeScript** with strict mode enabled
+- **ES2020 modules** with `.js` extensions on imports
+- **ESLint + Prettier** for code formatting
+- **Conventional Commits** for commit messages
+- **Test coverage** for new features
 
-- TypeScript with strict mode
-- ESLint + Prettier for formatting
-- Conventional Commits for commit messages
-- 80%+ test coverage requirement
-
-## 📚 Docs & Guides
+## 📚 Documentation
 
 - [API Documentation](docs/api.md)
-- [Architecture Decisions](docs/adr/)
-- [User Guide](docs/user-guide.md)
 - [Developer Guide](docs/developer-guide.md)
-- [Security Guide](docs/security.md)
-- [Network Configuration Guide](docs/guides/network-configuration.md) - Firewall and network setup for CI/CD
-- [Local-First Integration Plan](docs/LOCAL_FIRST_INTEGRATION_PLAN.md) - File-based account integration approach
+- [AI Integration Testing](docs/AI_INTEGRATION_TESTING.md)
+- [Network Configuration](docs/guides/network-configuration.md)
+- [Architecture Decisions](docs/adr/)
 
-## 🗺️ Roadmap
+## 📊 Project Status
 
-**Current Status: Phase 4 In Progress 🔄**
+### Recent Accomplishments
 
-- ✅ **Phase 1:** Core functionality and data management
-- ✅ **Phase 2:** UI, budgets, goals, and advanced reporting
-- ✅ **Phase 3:** AI-driven automation and intelligent financial planning
-  - Microsoft Copilot integration
-  - Multi-provider AI support (OpenAI, Ollama, local AI)
-  - Autonomous financial planning agents
-  - AI-powered categorization and learning
-  - Proactive financial assessments
-  - What-if scenario planning
-  - Creative financial solutions engine
-- 🔄 **Phase 4:** Advanced analytics and production readiness (IN PROGRESS)
-  - ✅ Predictive analytics (spending trends, forecasts, anomaly detection)
-  - ✅ Enhanced AI accuracy (confidence scoring, validation, caching)
-  - ✅ Performance optimizations (batching, rate limiting, connection pooling)
-  - ✅ Production monitoring (health checks, metrics, error tracking)
-  - ⏳ Actual Microsoft Copilot API integration
-  - ⏳ Production deployment preparation
-- 🔄 **Phase 5:** Ethereum Cryptocurrency Bridge Services (CURRENT PRIORITY)
-  - 🎯 Ethereum ecosystem integration targeting underbanked populations (1.7B globally)
-  - 💸 Cross-border remittances ($700B annual market, <1% fees)
-  - 💵 Stablecoin accounts for USD access (USDC, DAI)
-  - 🏦 DeFi integration and self-custody education
-  - ⚖️ MSB licensing and compliance framework
-  - 🌐 Multi-network support (Ethereum, Polygon, Optimism, Base, Arbitrum)
-  - See [ETHEREUM_BRIDGE_SERVICES.md](docs/ETHEREUM_BRIDGE_SERVICES.md) for complete details
-- 🔜 **Phase 6:** Local-first bank integration (Future)
-  - ⏳ File-based account import (OFX/QFX/CSV)
-  - Drag-and-drop file import with auto-detection
-  - Directory watcher for automatic import
-  - CSV template system for all banks
-  - Self-hosted Open Bank Project option
-  - Complete user data ownership and privacy
+- ✅ **ES Module Migration** - Full ES2020 module support with proper imports
+- ✅ **Test Suite** - 80/80 unit tests passing with comprehensive coverage
+- ✅ **AI Integration** - Multi-provider support (OpenAI, Copilot, Ollama)
+- ✅ **Predictive Analytics** - Spending forecasts and anomaly detection
+- ✅ **Performance Optimization** - Batch processing, rate limiting, caching
+- ✅ **Build System** - Robust CI/CD with proper package dependencies
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete plan, [docs/PHASE3_IMPLEMENTATION.md](docs/PHASE3_IMPLEMENTATION.md) for Phase 3 details, [docs/PHASE4_IMPLEMENTATION.md](docs/PHASE4_IMPLEMENTATION.md) for Phase 4 features, and [docs/ETHEREUM_BRIDGE_SERVICES.md](docs/ETHEREUM_BRIDGE_SERVICES.md) for Ethereum cryptocurrency bridge services.
+### Current Focus
 
-## 📊 Metrics & Analytics
+- Building out Tauri desktop application features
+- Enhancing AI-powered financial insights
+- Improving test coverage and documentation
+- Security hardening and code quality improvements
 
-- Code Coverage: ![codecov](https://codecov.io/gh/plures/FinancialAdvisor/branch/main/graph/badge.svg)
-- Build Status: [![CI](https://github.com/plures/FinancialAdvisor/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/plures/FinancialAdvisor/actions)
-- Security Score: [![Security](https://github.com/plures/FinancialAdvisor/workflows/Security%20Scanning/badge.svg)](https://github.com/plures/FinancialAdvisor/actions)
+## 🔒 Security
+
+- **Local-First Architecture** - Data never leaves your machine by default
+- **Encryption at Rest** - Optional AES encryption for database
+- **Regular Security Scans** - CodeQL and OSV scanner in CI/CD
+- **Dependency Monitoring** - Automated vulnerability detection
+- **No Telemetry** - Zero data collection without explicit consent
 
 ## 🆘 Support
 
-- 📋 [Issues](https://github.com/plures/FinancialAdvisor/issues)
-- 💬 [Discussions](https://github.com/plures/FinancialAdvisor/discussions)
-- 📧 Email: [support@financial-advisor.dev](mailto:support@financial-advisor.dev)
-- 📚 [Documentation](https://docs.financial-advisor.dev)
- 
+- 📋 [Issues](https://github.com/plures/FinancialAdvisor/issues) - Bug reports and feature requests
+- 💬 [Discussions](https://github.com/plures/FinancialAdvisor/discussions) - Questions and community chat
+- 📚 [Documentation](docs/) - Guides and API documentation
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+**Built with ❤️ using Tauri, SvelteKit, and TypeScript**
