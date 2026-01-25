@@ -1,0 +1,61 @@
+{
+  "$schema": "./config.schema.json",
+  "dataDirectory": "~/.financial-advisor/data",
+  "privacy": {
+    "localOnly": true,
+    "encryptData": true,
+    "encryptionKey": "REPLACE_WITH_YOUR_KEY"
+  },
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-4",
+    "apiKey": "REPLACE_WITH_YOUR_OPENAI_KEY",
+    "endpoint": "https://api.openai.com/v1",
+    "maxTokens": 8000,
+    "temperature": 0.7,
+    "cacheResponses": true,
+    "cacheTTL": 3600
+  },
+  "performance": {
+    "batchSize": 50,
+    "batchDelay": 100,
+    "enableRateLimiting": true,
+    "requestsPerMinute": 60,
+    "enableConnectionPooling": true,
+    "maxConnections": 10
+  },
+  "monitoring": {
+    "enableHealthChecks": true,
+    "enableMetrics": true,
+    "metricsPort": 9090,
+    "metricsPath": "/metrics",
+    "healthCheckInterval": 60000
+  },
+  "features": {
+    "budgetTracking": true,
+    "investmentAdvice": true,
+    "goalSetting": true,
+    "predictiveAnalytics": true,
+    "fileImport": false
+  },
+  "database": {
+    "path": "~/.financial-advisor/data/financial.db",
+    "encryption": {
+      "enabled": true,
+      "algorithm": "AES-256-GCM"
+    },
+    "backup": {
+      "enabled": true,
+      "path": "~/.financial-advisor/backups",
+      "interval": "daily",
+      "retention": 30,
+      "compress": true
+    }
+  },
+  "logging": {
+    "level": "info",
+    "file": "~/.financial-advisor/logs/app.log",
+    "maxSize": "10M",
+    "maxFiles": 5
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "./config.schema.json",
+  "dataDirectory": "./test-data",
+  "privacy": {
+    "localOnly": true,
+    "encryptData": false
+  },
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-3.5-turbo",
+    "endpoint": "https://api.openai.com/v1",
+    "maxTokens": 2000,
+    "temperature": 0.5,
+    "cacheResponses": false,
+    "cacheTTL": 0
+  },
+  "performance": {
+    "batchSize": 5,
+    "batchDelay": 10,
+    "enableRateLimiting": false,
+    "requestsPerMinute": 200,
+    "enableConnectionPooling": false,
+    "maxConnections": 2
+  },
+  "monitoring": {
+    "enableHealthChecks": false,
+    "enableMetrics": false,
+    "metricsPort": 9091,
+    "healthCheckInterval": 10000
+  },
+  "features": {
+    "budgetTracking": true,
+    "investmentAdvice": true,
+    "goalSetting": true,
+    "predictiveAnalytics": true,
+    "fileImport": true
+  },
+  "database": {
+    "path": ":memory:",
+    "encryption": {
+      "enabled": false,
+      "algorithm": "AES-256-GCM"
+    },
+    "backup": {
+      "enabled": false
+    }
+  },
+  "logging": {
+    "level": "debug",
+    "file": "./test-data/logs/test.log",
+    "maxSize": "10M",
+    "maxFiles": 2
+  }
+}
