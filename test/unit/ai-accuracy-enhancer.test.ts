@@ -4,9 +4,9 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { AIAccuracyEnhancer } from '../../packages/ai-integration/src/ai-accuracy-enhancer';
-import { AIResponse } from '../../packages/ai-integration/src/base-provider';
-import { FinancialContext, Account, AccountType } from '../../packages/shared/src/types';
+import { AIAccuracyEnhancer } from '../../packages/ai-integration/dist/ai-accuracy-enhancer.js';
+import { AIResponse } from '../../packages/ai-integration/dist/base-provider.js';
+import { FinancialContext, Account, AccountType } from '../../packages/shared/dist/types.js';
 
 describe('AIAccuracyEnhancer', () => {
   let enhancer: AIAccuracyEnhancer;
