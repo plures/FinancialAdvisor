@@ -116,11 +116,10 @@ jobs:
           # Simple changelog generation - in production use conventional-changelog
           git log --pretty=format:"- %s (%h)" --since="$(git describe --tags --abbrev=0 2>/dev/null || echo 'HEAD~10')" > CHANGELOG_TEMP.md
           {
-            echo "changelog<<EOF"
-            cat CHANGELOG_TEMP.md
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
-
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            cat CHANGELOG_TEMP.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          }
       - name: Package extension
         run: npm run package
 
