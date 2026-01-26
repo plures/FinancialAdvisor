@@ -22,8 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "@financialadvisor/shared": "file:../shared",
-    "axios": "^1.6.0",
-    "financial-advisor": "file:../.."
+    "axios": "^1.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.30",

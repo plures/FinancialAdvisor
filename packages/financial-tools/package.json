@@ -19,8 +19,7 @@
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "dependencies": {
-    "@financialadvisor/shared": "file:../shared",
-    "financial-advisor": "file:../.."
+    "@financialadvisor/shared": "file:../shared"
   },
   "devDependencies": {
     "@types/node": "^25.0.10",
