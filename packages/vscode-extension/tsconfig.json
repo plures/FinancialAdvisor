@@ -5,12 +5,6 @@
     "rootDir": "./src",
     "lib": ["ES2020"],
     "sourceMap": true,
-    "strict": false,
-    "exactOptionalPropertyTypes": false,
-    "noUncheckedIndexedAccess": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitOverride": false,
     "verbatimModuleSyntax": false,
     "noEmit": false
   },
