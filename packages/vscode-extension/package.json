@@ -148,7 +148,7 @@
   "scripts": {
     "build": "tsc -p ./",
     "dev": "tsc -watch -p ./",
-    "package": "vsce package",
+    "package": "vsce package --no-dependencies",
     "publish": "vsce publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -164,7 +164,15 @@
   "dependencies": {
     "@financialadvisor/ai-integration": "file:../ai-integration",
     "@financialadvisor/financial-tools": "file:../financial-tools",
-    "@financialadvisor/shared": "file:../shared",
-    "financial-advisor": "file:../.."
-  }
+    "@financialadvisor/shared": "file:../shared"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/plures/FinancialAdvisor.git",
+    "directory": "packages/vscode-extension"
+  },
+  "license": "MIT",
+  "files": [
+    "dist/**/*"
+  ]
 }

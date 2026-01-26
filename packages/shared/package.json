@@ -26,7 +26,6 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "csv-parse": "^5.5.3",
-    "financial-advisor": "file:../.."
+    "csv-parse": "^5.5.3"
   }
 }
