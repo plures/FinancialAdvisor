@@ -201,10 +201,13 @@ jobs:
         include:
           - platform: 'windows-latest'
             args: '--target x86_64-pc-windows-msvc'
+            rust_target: 'x86_64-pc-windows-msvc'
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
+            rust_target: 'aarch64-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: '--target x86_64-unknown-linux-gnu'
+            rust_target: 'x86_64-unknown-linux-gnu'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -222,7 +225,7 @@ jobs:
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || matrix.platform == 'windows-latest' && 'x86_64-pc-windows-msvc' || 'x86_64-unknown-linux-gnu' }}
+          targets: ${{ matrix.rust_target }}
 
       - name: Install dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -242,10 +245,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ needs.release.outputs.tag }}
-          releaseName: 'Release ${{ needs.release.outputs.tag }}'
-          releaseBody: 'See the release notes for details.'
-          releaseDraft: false
-          prerelease: ${{ contains(needs.release.outputs.version, 'rc') }}
           args: ${{ matrix.args }}
 
   # Fallback notification if publishing fails
