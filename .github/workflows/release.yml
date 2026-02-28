@@ -17,6 +17,11 @@ on:
           - major
           - prerelease
 
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
 jobs:
   # Determine version and create release
   release:
