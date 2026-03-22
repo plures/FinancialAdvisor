@@ -1,7 +1,7 @@
 {
   "name": "@financialadvisor/financial-tools",
   "version": "1.0.0",
-  "description": "Core financial calculation and analysis tools",
+  "description": "Core financial calculation and analysis tools — deprecated, use analytics/resolution/ledger",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -19,6 +19,9 @@
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "dependencies": {
+    "@financialadvisor/analytics": "file:../analytics",
+    "@financialadvisor/resolution": "file:../resolution",
+    "@financialadvisor/ledger": "file:../ledger",
     "@financialadvisor/shared": "file:../shared"
   },
   "devDependencies": {

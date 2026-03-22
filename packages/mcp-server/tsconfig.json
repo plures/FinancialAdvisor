@@ -10,7 +10,7 @@
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"],
   "references": [
-    { "path": "../shared" },
-    { "path": "../financial-tools" }
+    { "path": "../domain" },
+    { "path": "../resolution" }
   ]
 }

@@ -1,10 +1,8 @@
-// Main exports for the shared package
-export * from './types.js';
-export * from './utils.js';
-export * from './account-integration-types.js';
-export * from './account-integration-service.js';
-export * from './csv-importer.js';
-export * from './ofx-importer.js';
+// @deprecated — use @financialadvisor/domain, @financialadvisor/ledger or @financialadvisor/ingestion directly.
+// This package is kept for backward compatibility only.
+export * from '@financialadvisor/domain';
+export * from '@financialadvisor/ledger';
+export * from '@financialadvisor/ingestion';
 
 // Version information
 export const VERSION = '1.0.0';

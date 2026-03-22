@@ -4,7 +4,7 @@
 
 import * as vscode from 'vscode';
 import { MCPServerManager } from '../services/mcpServerManager';
-import { AIProviderManager } from '@financialadvisor/ai-integration';
+import { AIProviderManager } from '@financialadvisor/ai-providers';
 
 export class DashboardViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'financialAdvisor.dashboard';

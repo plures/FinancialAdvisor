@@ -25,8 +25,8 @@
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "dependencies": {
-    "@financialadvisor/financial-tools": "file:../financial-tools",
-    "@financialadvisor/shared": "file:../shared",
+    "@financialadvisor/domain": "file:../domain",
+    "@financialadvisor/resolution": "file:../resolution",
     "@modelcontextprotocol/sdk": "^1.25.2",
     "bcrypt": "^5.1.1",
     "express": "^4.22.1",
