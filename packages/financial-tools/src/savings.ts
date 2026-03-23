@@ -2,7 +2,7 @@
  * Goal tracking and savings planning tools
  */
 
-import { Goal, GoalCategory, Priority, Transaction, TransactionType } from '@financialadvisor/shared';
+import { Goal, GoalCategory, Priority, Transaction, TransactionType, moneyToDecimal } from '@financialadvisor/shared';
 
 export interface GoalProgress {
   goal: Goal;
@@ -226,7 +226,7 @@ export class SavingsPlanner {
     // For now, return sample data
     return transactions
       .filter(t => t.type === TransactionType.INCOME && t.tags.includes(`goal:${goalId}`))
-      .map(t => t.amount);
+      .map(t => moneyToDecimal(t.amount));
   }
 
   private static calculateAverageMonthlyContribution(contributions: number[]): number {

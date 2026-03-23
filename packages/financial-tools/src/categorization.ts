@@ -3,7 +3,7 @@
  */
 
 import type { Transaction } from '../../shared/dist/index.js';
-import { TransactionType } from '../../shared/dist/index.js';
+import { TransactionType, moneyToDecimal } from '../../shared/dist/index.js';
 
 export interface CategorySummary {
   category: string;
@@ -67,11 +67,11 @@ export class TransactionAnalyzer {
 
     const income = filteredTransactions
       .filter(t => t.type === TransactionType.INCOME)
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0);
 
     const expenses = Math.abs(filteredTransactions
       .filter(t => t.type === TransactionType.EXPENSE)
-      .reduce((sum, t) => sum + t.amount, 0));
+      .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0));
 
     const netIncome = income - expenses;
     const savingsRate = income > 0 ? (netIncome / income) * 100 : 0;
@@ -106,7 +106,7 @@ export class TransactionAnalyzer {
     const searchText = `${description} ${merchant}`;
 
     // Check for income indicators
-    if (transaction.amount > 0 && (
+    if (transaction.amount.cents > 0 && (
       searchText.includes('salary') || 
       searchText.includes('payroll') || 
       searchText.includes('dividend') ||
@@ -132,7 +132,7 @@ export class TransactionAnalyzer {
     const categoryMap = new Map<string, Transaction[]>();
     const totalAmount = Math.abs(transactions
       .filter(t => t.type === TransactionType.EXPENSE)
-      .reduce((sum, t) => sum + t.amount, 0));
+      .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0));
 
     transactions.forEach(transaction => {
       const category = transaction.category || this.categorizeTransaction(transaction);
@@ -145,7 +145,7 @@ export class TransactionAnalyzer {
     return Array.from(categoryMap.entries())
       .map(([category, categoryTransactions]) => {
         const expenseTransactions = categoryTransactions.filter(t => t.type === TransactionType.EXPENSE);
-        const categoryTotal = Math.abs(expenseTransactions.reduce((sum, t) => sum + t.amount, 0));
+        const categoryTotal = Math.abs(expenseTransactions.reduce((sum, t) => sum + moneyToDecimal(t.amount), 0));
         
         return {
           category,
@@ -169,7 +169,7 @@ export class TransactionAnalyzer {
     transactions
       .filter(t => t.type === TransactionType.EXPENSE && t.merchant)
       .forEach(transaction => {
-        const key = `${transaction.merchant}-${Math.round(Math.abs(transaction.amount) / 10) * 10}`;
+        const key = `${transaction.merchant}-${Math.round(Math.abs(moneyToDecimal(transaction.amount)) / 10) * 10}`;
         if (!patterns.has(key)) {
           patterns.set(key, []);
         }
@@ -180,7 +180,7 @@ export class TransactionAnalyzer {
       .filter(([, transactions]) => transactions.length >= 3) // At least 3 similar transactions
       .map(([, transactions]) => {
         const sortedTransactions = transactions.sort((a, b) => b.date.getTime() - a.date.getTime());
-        const totalAmount = transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        const totalAmount = transactions.reduce((sum, t) => sum + Math.abs(moneyToDecimal(t.amount)), 0);
         const averageAmount = totalAmount / transactions.length;
         
         // Calculate frequency (transactions per month)
@@ -210,7 +210,7 @@ export class TransactionAnalyzer {
     const expenseTransactions = transactions.filter(t => t.type === TransactionType.EXPENSE);
     if (expenseTransactions.length === 0) return [];
 
-    const amounts = expenseTransactions.map(t => Math.abs(t.amount));
+    const amounts = expenseTransactions.map(t => Math.abs(moneyToDecimal(t.amount)));
     const mean = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
     const variance = amounts.reduce((sum, amount) => sum + Math.pow(amount - mean, 2), 0) / amounts.length;
     const standardDeviation = Math.sqrt(variance);
@@ -218,15 +218,15 @@ export class TransactionAnalyzer {
     const threshold = mean + (2 * standardDeviation); // 2 standard deviations above mean
 
     return expenseTransactions
-      .filter(t => Math.abs(t.amount) > threshold)
-      .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
+      .filter(t => Math.abs(moneyToDecimal(t.amount)) > threshold)
+      .sort((a, b) => Math.abs(moneyToDecimal(b.amount)) - Math.abs(moneyToDecimal(a.amount)))
       .slice(0, 10); // Top 10 unusual transactions
   }
 
   private static getLargestExpenses(transactions: Transaction[], count: number): Transaction[] {
     return transactions
       .filter(t => t.type === TransactionType.EXPENSE)
-      .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
+      .sort((a, b) => Math.abs(moneyToDecimal(b.amount)) - Math.abs(moneyToDecimal(a.amount)))
       .slice(0, count);
   }
 }

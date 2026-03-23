@@ -376,17 +376,20 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
             function updateTransactions(transactions) {
                 const transactionsList = document.getElementById('transactions-list');
                 if (transactions && transactions.length > 0) {
-                    transactionsList.innerHTML = transactions.map(transaction => 
-                        \`<div class="transaction-item">
+                    transactionsList.innerHTML = transactions.map(transaction => {
+                        const amountDecimal = typeof transaction.amount === 'object'
+                            ? transaction.amount.cents / 100
+                            : transaction.amount;
+                        return \`<div class="transaction-item">
                             <div>
                                 <div>\${transaction.description}</div>
                                 <small>\${transaction.category || 'Uncategorized'} • \${new Date(transaction.date).toLocaleDateString()}</small>
                             </div>
-                            <span class="\${transaction.amount >= 0 ? 'amount-positive' : 'amount-negative'}">
-                                \${transaction.amount >= 0 ? '+' : ''}\${transaction.amount.toFixed(2)}
+                            <span class="\${amountDecimal >= 0 ? 'amount-positive' : 'amount-negative'}">
+                                \${amountDecimal >= 0 ? '+' : ''}\${amountDecimal.toFixed(2)}
                             </span>
-                        </div>\`
-                    ).join('');
+                        </div>\`;
+                    }).join('');
                 } else {
                     transactionsList.innerHTML = '<p>No transactions found. Add a transaction to get started.</p>';
                 }

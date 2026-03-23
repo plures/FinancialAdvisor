@@ -5,7 +5,7 @@
 
 import { BaseAIProvider } from '../base-provider.js';
 import type { FinancialContext, Goal, Budget } from '@financialadvisor/domain';
-import { BudgetPeriod } from '@financialadvisor/domain';
+import { BudgetPeriod, moneyToDecimal } from '@financialadvisor/domain';
 
 export interface FinancialPlan {
   id: string;
@@ -254,10 +254,10 @@ Extract patterns and rules that can improve future categorization accuracy.`;
     if (context.transactions?.length) {
       const income = context.transactions
         .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0);
       const expenses = context.transactions
         .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        .reduce((sum, t) => sum + Math.abs(moneyToDecimal(t.amount)), 0);
       parts.push(`Transactions: ${context.transactions.length} total`);
       parts.push(`Monthly Income: ~$${(income / 12).toFixed(2)}`);
       parts.push(`Monthly Expenses: ~$${(expenses / 12).toFixed(2)}`);

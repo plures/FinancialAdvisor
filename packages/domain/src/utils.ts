@@ -2,7 +2,9 @@
  * Common utility functions for the FinancialAdvisor system
  */
 
-import type { Currency, DateRange } from './types.js';
+import type { Currency } from './money.js';
+import type { DateRange } from './temporal.js';
+export { isDateInRange } from './temporal.js';
 
 /**
  * Format currency amount with proper locale and currency symbol
@@ -26,13 +28,6 @@ export function formatPercentage(value: number, decimals: number = 2): string {
  */
 export function parseDate(date: string | Date): Date {
   return typeof date === 'string' ? new Date(date) : date;
-}
-
-/**
- * Check if a date is within a given range
- */
-export function isDateInRange(date: Date, range: DateRange): boolean {
-  return date >= range.start && date <= range.end;
 }
 
 /**

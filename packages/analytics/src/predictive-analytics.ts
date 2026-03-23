@@ -4,6 +4,7 @@
  */
 
 import type { Transaction } from '@financialadvisor/domain';
+import { moneyToDecimal } from '@financialadvisor/domain';
 
 export interface TrendAnalysis {
   category: string;
@@ -60,8 +61,8 @@ export class PredictiveAnalytics {
       const firstHalf = recentTxns.slice(0, midpoint);
       const secondHalf = recentTxns.slice(midpoint);
 
-      const firstHalfAvg = this.calculateAverage(firstHalf.map(t => Math.abs(t.amount)));
-      const secondHalfAvg = this.calculateAverage(secondHalf.map(t => Math.abs(t.amount)));
+      const firstHalfAvg = this.calculateAverage(firstHalf.map(t => Math.abs(moneyToDecimal(t.amount))));
+      const secondHalfAvg = this.calculateAverage(secondHalf.map(t => Math.abs(moneyToDecimal(t.amount))));
 
       if (firstHalfAvg === 0) {
         // Cannot compute a meaningful percentage change from a zero baseline; skip this category
@@ -80,7 +81,7 @@ export class PredictiveAnalytics {
       }
 
       // Confidence based on sample size and variance
-      const confidence = this.calculateConfidence(recentTxns.length, this.calculateStdDev(recentTxns.map(t => Math.abs(t.amount))));
+      const confidence = this.calculateConfidence(recentTxns.length, this.calculateStdDev(recentTxns.map(t => Math.abs(moneyToDecimal(t.amount)))));
 
       trends.push({
         category,
@@ -147,12 +148,12 @@ export class PredictiveAnalytics {
     for (const [, txns] of Object.entries(categoryData)) {
       if (txns.length < 5) continue; // Need enough data
 
-      const amounts = txns.map(t => Math.abs(t.amount));
+      const amounts = txns.map(t => Math.abs(moneyToDecimal(t.amount)));
       const mean = this.calculateAverage(amounts);
       const stdDev = this.calculateStdDev(amounts);
 
       for (const txn of txns) {
-        const amount = Math.abs(txn.amount);
+        const amount = Math.abs(moneyToDecimal(txn.amount));
         const zScore = stdDev > 0 ? (amount - mean) / stdDev : 0;
 
         if (Math.abs(zScore) > sensitivityFactor) {
@@ -213,7 +214,7 @@ export class PredictiveAnalytics {
       const latestTxn = Math.max(...txnDates);
       const daysElapsed = Math.max(1, Math.ceil((latestTxn - earliestTxn) / (1000 * 60 * 60 * 24)) + 1);
       
-      const currentSpending = periodTxns.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      const currentSpending = periodTxns.reduce((sum, t) => sum + Math.abs(moneyToDecimal(t.amount)), 0);
       const dailyAverage = currentSpending / daysElapsed;
       const predictedEndOfPeriod = dailyAverage * daysInPeriod;
       
@@ -269,7 +270,7 @@ export class PredictiveAnalytics {
       if (!monthlyData[month]) {
         monthlyData[month] = 0;
       }
-      monthlyData[month] += Math.abs(txn.amount);
+      monthlyData[month] += Math.abs(moneyToDecimal(txn.amount));
     }
 
     return Object.entries(monthlyData)

@@ -4,7 +4,7 @@
 
 import * as vscode from 'vscode';
 import { MCPServerManager } from '../services/mcpServerManager';
-import { Account, Transaction } from '@financialadvisor/domain';
+import { Account, Transaction, moneyToDecimal } from '@financialadvisor/domain';
 
 export class FinancialAdvisorProvider implements vscode.TreeDataProvider<FinancialItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<FinancialItem | undefined | null | void> = new vscode.EventEmitter<FinancialItem | undefined | null | void>();
@@ -83,14 +83,15 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
       const transactions: Transaction[] = JSON.parse(resource.contents[0].text);
       
       return transactions.slice(0, 10).map(transaction => {
+        const amountDecimal = moneyToDecimal(transaction.amount);
         const item = new FinancialItem(
-          `${transaction.amount > 0 ? '+' : ''}${transaction.amount.toFixed(2)} - ${transaction.description}`,
+          `${amountDecimal > 0 ? '+' : ''}${amountDecimal.toFixed(2)} - ${transaction.description}`,
           vscode.TreeItemCollapsibleState.None,
           'transaction'
         );
-        item.description = transaction.category || 'Uncategorized';
-        item.tooltip = `${transaction.description}\nAmount: ${transaction.amount.toFixed(2)}\nCategory: ${transaction.category || 'Uncategorized'}\nDate: ${transaction.date.toLocaleDateString()}\nMerchant: ${transaction.merchant || 'N/A'}`;
-        item.iconPath = new vscode.ThemeIcon(transaction.amount > 0 ? 'arrow-up' : 'arrow-down');
+        item.description = transaction.category ?? 'Uncategorized';
+        item.tooltip = `${transaction.description}\nAmount: ${amountDecimal.toFixed(2)}\nCategory: ${transaction.category ?? 'Uncategorized'}\nDate: ${transaction.date.toLocaleDateString()}\nMerchant: ${transaction.merchant ?? 'N/A'}`;
+        item.iconPath = new vscode.ThemeIcon(amountDecimal > 0 ? 'arrow-up' : 'arrow-down');
         return item;
       });
     } catch (error) {
