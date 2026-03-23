@@ -1,4 +1,5 @@
 name: Copilot PR Lifecycle
+
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
@@ -8,47 +9,96 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   lifecycle:
     runs-on: ubuntu-latest
+    if: >-
+      github.event.pull_request.user.login == 'Copilot' ||
+      github.event.pull_request.user.login == 'copilot-swe-agent[bot]'
     steps:
-      - uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: 3158960
-          private-key: ${{ secrets.PRAXIS_BOT_PRIVATE_KEY }}
-      - uses: actions/github-script@v7
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          script: |
-            const pr = context.payload.pull_request;
-            if (!pr) return;
-            const author = pr.user?.login;
-            const isCopilot = author === 'Copilot' || author === 'app/copilot-swe-agent' || author === 'copilot-swe-agent[bot]';
-            if (!isCopilot) return core.info(`Not a Copilot PR (author: ${author})`);
-            if (pr.draft) return core.info('PR is draft, waiting...');
+      - name: Mark ready for review
+        if: github.event.action == 'opened' && github.event.pull_request.draft == true
+        run: gh pr ready ${{ github.event.pull_request.number }} -R ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            const reviews = await github.rest.pulls.listReviews({ ...context.repo, pull_number: pr.number });
-            const hasReview = reviews.data.some(r => r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED');
-            if (!hasReview) {
-              try {
-                await github.rest.pulls.requestReviewers({ ...context.repo, pull_number: pr.number, reviewers: ['Copilot'] });
-                core.info('Requested Copilot review');
-              } catch (e) { core.warning(`Review request failed: ${e.message}`); }
+      - name: Request review
+        if: github.event.action == 'opened' || github.event.action == 'ready_for_review'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} -R ${{ github.repository }} \
+            --add-reviewer kayodebristol || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-merge on approval
+        if: >-
+          github.event_name == 'pull_request_review' &&
+          github.event.review.state == 'approved'
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} -R ${{ github.repository }} \
+            --squash --auto --delete-branch || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  queue-advance:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Assign next issue to Copilot
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Check if Copilot already has an open issue
+            const issues = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', per_page: 100
+            });
+            const copilotIssues = issues.data.filter(i =>
+              !i.pull_request &&
+              i.assignees.some(a => a.login === 'Copilot')
+            );
+            if (copilotIssues.length > 0) {
+              console.log(`Copilot already assigned to #${copilotIssues[0].number}, skipping`);
               return;
             }
 
-            const lastReview = reviews.data.filter(r => ['APPROVED', 'CHANGES_REQUESTED'].includes(r.state)).pop();
-            if (lastReview?.state === 'CHANGES_REQUESTED') return core.info('Changes requested, waiting for update');
+            // Find milestones sorted by title
+            const milestones = await github.rest.issues.listMilestones({
+              owner, repo, state: 'open', sort: 'title', direction: 'asc'
+            });
 
-            const prData = await github.rest.pulls.get({ ...context.repo, pull_number: pr.number });
-            if (prData.data.mergeable_state === 'dirty') return core.info('Merge conflicts exist');
+            // Find first unassigned issue in earliest milestone
+            for (const ms of milestones.data) {
+              const msIssues = await github.rest.issues.listForRepo({
+                owner, repo, state: 'open', milestone: ms.number,
+                sort: 'created', direction: 'asc', per_page: 20
+              });
+              const next = msIssues.data.find(i =>
+                !i.pull_request &&
+                !i.assignees.some(a => a.login === 'Copilot')
+              );
+              if (next) {
+                // Assign via GraphQL (triggers Copilot)
+                const botId = 'BOT_kgDOC9w8XQ';
+                await github.graphql(`
+                  mutation($id: ID!, $assignees: [ID!]!) {
+                    addAssigneesToAssignable(input: { assignableId: $id, assigneeIds: $assignees }) {
+                      clientMutationId
+                    }
+                  }
+                `, { id: next.node_id, assignees: [botId] });
 
-            if (lastReview?.state === 'APPROVED') {
-              try {
-                await github.rest.pulls.merge({ ...context.repo, pull_number: pr.number, merge_method: 'squash' });
-                core.info(`Merged PR #${pr.number}`);
-                try { await github.rest.git.deleteRef({ ...context.repo, ref: `heads/${pr.head.ref}` }); } catch {}
-              } catch (e) { core.warning(`Merge failed: ${e.message}`); }
+                // Nudge
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: next.number,
+                  body: '@copilot Please implement this issue.'
+                });
+                console.log(`Assigned Copilot to #${next.number}: ${next.title}`);
+                return;
+              }
             }
+            console.log('No unassigned milestone issues found');
