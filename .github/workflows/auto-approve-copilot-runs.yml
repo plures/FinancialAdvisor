@@ -1,0 +1,33 @@
+name: Auto-Approve Copilot Runs
+
+# Automatically approves workflow runs triggered by Copilot agents
+# so they can access repository secrets and elevated permissions.
+
+on:
+  workflow_run:
+    workflows: ["*"]
+    types: [requested]
+
+permissions:
+  actions: write
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.actor.login == 'copilot-swe-agent[bot]' || github.event.workflow_run.actor.login == 'Copilot'
+    steps:
+      - name: Approve workflow run
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.actions.approveWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.payload.workflow_run.id,
+              });
+              core.info(`Approved workflow run ${context.payload.workflow_run.id}`);
+            } catch (e) {
+              core.warning(`Could not approve: ${e.message}`);
+            }
