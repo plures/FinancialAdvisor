@@ -27,7 +27,12 @@ export class BudgetCalculator {
     const budgetTransactions = this.filterTransactionsForBudget(budget, transactions);
     const totalSpent = budgetTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
     const remaining = budget.amount - totalSpent;
-    const percentageUsed = (totalSpent / budget.amount) * 100;
+    const percentageUsed =
+      budget.amount > 0
+        ? (totalSpent / budget.amount) * 100
+        : totalSpent > 0
+          ? 100
+          : 0;
     
     const periodDays = this.getPeriodDays(budget.period);
     const daysPassed = this.getDaysPassed(budget.startDate, currentDate);

@@ -55,7 +55,7 @@ export class SavingsPlanner {
     if (averageMonthlyContribution > 0) {
       const monthsToCompletion = remaining / averageMonthlyContribution;
       projectedCompletionDate = new Date(currentDate);
-      projectedCompletionDate.setMonth(projectedCompletionDate.getMonth() + monthsToCompletion);
+      projectedCompletionDate.setMonth(projectedCompletionDate.getMonth() + Math.ceil(monthsToCompletion));
     } else {
       projectedCompletionDate = new Date(goal.targetDate);
       projectedCompletionDate.setFullYear(projectedCompletionDate.getFullYear() + 10); // Far future
@@ -207,11 +207,11 @@ export class SavingsPlanner {
       if (remainingAmount <= 0) return;
       
       const needed = progress.goal.targetAmount - progress.goal.currentAmount;
-      const allocation_amount = Math.min(needed, remainingAmount);
+      const allocationAmount = Math.min(needed, remainingAmount);
       
-      if (allocation_amount > 0) {
-        allocation[progress.goal.id] = allocation_amount;
-        remainingAmount -= allocation_amount;
+      if (allocationAmount > 0) {
+        allocation[progress.goal.id] = allocationAmount;
+        remainingAmount -= allocationAmount;
       }
     });
 

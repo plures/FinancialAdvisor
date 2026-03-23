@@ -4,7 +4,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
-import { AIProviderConfig, AIQuery, FinancialContext } from '@financialadvisor/domain';
+import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
 
 export class OllamaProvider extends BaseAIProvider {
   private client: AxiosInstance;
@@ -19,6 +19,10 @@ export class OllamaProvider extends BaseAIProvider {
       },
       timeout: 60000 // Longer timeout for local processing
     });
+  }
+
+  get providerType(): AIProviderType {
+    return AIProviderType.OLLAMA;
   }
 
   getCapabilities(): AIProviderCapabilities {

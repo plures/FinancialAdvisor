@@ -4,7 +4,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
-import { AIProviderConfig, AIQuery, FinancialContext } from '@financialadvisor/domain';
+import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
 
 export class OpenAIProvider extends BaseAIProvider {
   private client: AxiosInstance;
@@ -19,6 +19,10 @@ export class OpenAIProvider extends BaseAIProvider {
         'Content-Type': 'application/json'
       }
     });
+  }
+
+  get providerType(): AIProviderType {
+    return AIProviderType.OPENAI;
   }
 
   getCapabilities(): AIProviderCapabilities {

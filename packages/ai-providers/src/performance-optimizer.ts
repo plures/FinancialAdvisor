@@ -71,16 +71,18 @@ export class PerformanceOptimizer {
         batch.map(item => processor(item))
       );
 
-      for (const result of batchResults) {
+      for (let j = 0; j < batchResults.length; j++) {
+        const result = batchResults[j];
         if (result.status === 'fulfilled') {
           results.push(result.value);
         } else if (options.onError) {
-          options.onError(result.reason, batch);
+          options.onError(result.reason, batch[j]);
         }
       }
 
       if (options.onProgress) {
-        options.onProgress((i + 1) * options.batchSize, items.length);
+        const processed = Math.min((i + 1) * options.batchSize, items.length);
+        options.onProgress(processed, items.length);
       }
 
       // Delay between batches to respect rate limits

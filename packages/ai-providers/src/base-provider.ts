@@ -38,6 +38,11 @@ export abstract class BaseAIProvider {
   abstract generateReport(context: FinancialContext, reportType: string): Promise<string>;
 
   /**
+   * The provider's type — must be implemented by each concrete provider
+   */
+  abstract get providerType(): AIProviderType;
+
+  /**
    * Test the connection to the AI provider
    */
   abstract testConnection(): Promise<boolean>;
@@ -48,8 +53,7 @@ export abstract class BaseAIProvider {
   getInfo(): AIProvider {
     return {
       name: this.name,
-      type: this.config.model.includes('gpt') ? AIProviderType.OPENAI : 
-            this.config.model.includes('claude') ? AIProviderType.ANTHROPIC : AIProviderType.CUSTOM,
+      type: this.providerType,
       config: this.config
     };
   }

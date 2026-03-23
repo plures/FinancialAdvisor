@@ -6,6 +6,7 @@
  */
 
 import * as fs from 'fs';
+import * as path from 'path';
 import * as crypto from 'crypto';
 import { parse } from 'csv-parse/sync';
 import type {
@@ -64,7 +65,7 @@ export class CSVImporter implements IFileImporter {
     const result: ImportResult = {
       success: false,
       sourceConfigId: options.accountId || 'unknown',
-      fileName: filePath.split('/').pop(),
+      fileName: path.basename(filePath),
       transactionsImported: 0,
       transactionsSkipped: 0,
       transactionsFailed: 0,
@@ -195,12 +196,17 @@ export class CSVImporter implements IFileImporter {
     const delimiter = template?.delimiter || this.detectDelimiter(content);
     
     // Parse CSV
+    // Use column-name mode only when the template uses string column identifiers;
+    // keep array mode (columns: false) when numeric indices are used so that
+    // getColumnValue(record, number) works correctly.
+    const useColumnHeaders = template?.headerRow !== undefined &&
+      typeof template.dateColumn === 'string';
     const records = parse(content, {
       delimiter,
       skip_empty_lines: true,
       relax_column_count: true,
       from_line: template?.skipRows ? template.skipRows + 1 : 1,
-      columns: template?.headerRow !== undefined ? true : false,
+      columns: useColumnHeaders,
     });
 
     // If no template, use default mapping (first 3 columns: date, description, amount)

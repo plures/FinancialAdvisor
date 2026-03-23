@@ -63,6 +63,11 @@ export class PredictiveAnalytics {
       const firstHalfAvg = this.calculateAverage(firstHalf.map(t => Math.abs(t.amount)));
       const secondHalfAvg = this.calculateAverage(secondHalf.map(t => Math.abs(t.amount)));
 
+      if (firstHalfAvg === 0) {
+        // Cannot compute a meaningful percentage change from a zero baseline; skip this category
+        continue;
+      }
+
       const percentageChange = ((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100;
       
       let trend: 'increasing' | 'decreasing' | 'stable';
@@ -212,12 +217,20 @@ export class PredictiveAnalytics {
       const dailyAverage = currentSpending / daysElapsed;
       const predictedEndOfPeriod = dailyAverage * daysInPeriod;
       
-      const variancePercentage = ((predictedEndOfPeriod - limit) / limit) * 100;
-      
+      let variancePercentage: number;
       let riskLevel: 'safe' | 'warning' | 'danger';
-      if (variancePercentage <= -10) riskLevel = 'safe';
-      else if (variancePercentage < 10) riskLevel = 'warning';
-      else riskLevel = 'danger';
+
+      if (limit <= 0) {
+        // Sentinel behavior for zero/negative budget limits to avoid division by zero
+        variancePercentage = 0;
+        riskLevel = 'warning';
+      } else {
+        variancePercentage = ((predictedEndOfPeriod - limit) / limit) * 100;
+
+        if (variancePercentage <= -10) riskLevel = 'safe';
+        else if (variancePercentage < 10) riskLevel = 'warning';
+        else riskLevel = 'danger';
+      }
 
       predictions.push({
         category,

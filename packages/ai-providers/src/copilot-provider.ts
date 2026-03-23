@@ -4,7 +4,7 @@
  */
 
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
-import { AIProviderConfig, AIQuery, FinancialContext } from '@financialadvisor/domain';
+import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
 
 /**
  * Microsoft Copilot provider for financial advisor integration
@@ -18,6 +18,10 @@ export class CopilotProvider extends BaseAIProvider {
     if (!this.config.model) {
       this.config.model = 'gpt-4';
     }
+  }
+
+  get providerType(): AIProviderType {
+    return AIProviderType.COPILOT;
   }
 
   getCapabilities(): AIProviderCapabilities {
