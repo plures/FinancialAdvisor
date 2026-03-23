@@ -5,7 +5,7 @@
 import * as vscode from 'vscode';
 import { FinancialAdvisorProvider } from './providers/financialAdvisorProvider';
 import { MCPServerManager } from './services/mcpServerManager';
-import { AIProviderManager } from '@financialadvisor/ai-integration';
+import { AIProviderManager } from '@financialadvisor/ai-providers';
 import { DashboardViewProvider } from './views/dashboardView';
 
 let mcpServerManager: MCPServerManager;

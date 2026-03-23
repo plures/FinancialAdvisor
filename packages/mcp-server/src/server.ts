@@ -13,9 +13,9 @@ import {
 
 import type { DatabaseConfig } from './storage.js';
 import { SecureStorage } from './storage.js';
-import { TransactionAnalyzer } from '../../financial-tools/dist/categorization.js';
-import type { Account, Transaction } from '../../shared/dist/index.js';
-import { TransactionType, generateId } from '../../shared/dist/index.js';
+import { TransactionAnalyzer } from '@financialadvisor/resolution';
+import type { Account, Transaction } from '@financialadvisor/domain';
+import { TransactionType, generateId } from '@financialadvisor/domain';
 
 export class FinancialAdvisorMCPServer {
   private server: Server;

@@ -1,7 +1,7 @@
 {
   "name": "@financialadvisor/shared",
   "version": "1.0.0",
-  "description": "Shared utilities and types for FinancialAdvisor",
+  "description": "Shared utilities and types for FinancialAdvisor — deprecated, use domain/ledger/ingestion",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -26,6 +26,9 @@
     "dist/**/*"
   ],
   "dependencies": {
+    "@financialadvisor/domain": "file:../domain",
+    "@financialadvisor/ledger": "file:../ledger",
+    "@financialadvisor/ingestion": "file:../ingestion",
     "csv-parse": "^5.5.3"
   }
 }

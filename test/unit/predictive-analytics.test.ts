@@ -4,8 +4,8 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { PredictiveAnalytics } from '../../packages/financial-tools/dist/predictive-analytics.js';
-import { Transaction, TransactionType } from '../../packages/shared/dist/types.js';
+import { PredictiveAnalytics } from '../../packages/analytics/dist/predictive-analytics.js';
+import { Transaction, TransactionType } from '../../packages/domain/dist/types.js';
 
 describe('PredictiveAnalytics', () => {
   const createTransaction = (amount: number, category: string, daysAgo: number = 0): Transaction => {

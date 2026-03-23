@@ -4,7 +4,7 @@
 
 import * as vscode from 'vscode';
 import { MCPServerManager } from '../services/mcpServerManager';
-import { Account, Transaction } from '@financialadvisor/shared';
+import { Account, Transaction } from '@financialadvisor/domain';
 
 export class FinancialAdvisorProvider implements vscode.TreeDataProvider<FinancialItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<FinancialItem | undefined | null | void> = new vscode.EventEmitter<FinancialItem | undefined | null | void>();

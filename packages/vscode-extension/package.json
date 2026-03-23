@@ -162,9 +162,9 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@financialadvisor/ai-integration": "file:../ai-integration",
-    "@financialadvisor/financial-tools": "file:../financial-tools",
-    "@financialadvisor/shared": "file:../shared"
+    "@financialadvisor/ai-providers": "file:../ai-providers",
+    "@financialadvisor/analytics": "file:../analytics",
+    "@financialadvisor/domain": "file:../domain"
   },
   "repository": {
     "type": "git",

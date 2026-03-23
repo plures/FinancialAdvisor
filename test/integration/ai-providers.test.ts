@@ -9,9 +9,9 @@
 
 import * as assert from 'assert';
 import { describe, it, before } from 'mocha';
-import { OpenAIProvider } from '../../packages/ai-integration/dist/openai-provider.js';
-import { CopilotProvider } from '../../packages/ai-integration/dist/copilot-provider.js';
-import { AIProviderFactory, AIProviderManager } from '../../packages/ai-integration/dist/provider-manager.js';
+import { OpenAIProvider } from '../../packages/ai-providers/dist/openai-provider.js';
+import { CopilotProvider } from '../../packages/ai-providers/dist/copilot-provider.js';
+import { AIProviderFactory, AIProviderManager } from '../../packages/ai-providers/dist/provider-manager.js';
 import { 
   AIProviderType, 
   AIProviderConfig, 
@@ -26,7 +26,7 @@ import {
   GoalCategory,
   Priority,
   QueryType
-} from '../../packages/shared/dist/index.js';
+} from '../../packages/domain/dist/index.js';
 
 describe('AI Provider Integration Tests', function() {
   // Increase timeout for API calls

@@ -5,7 +5,7 @@
 import sqlite3 from 'sqlite3';
 import * as crypto from 'crypto';
 import * as path from 'path';
-import type { Account, Transaction, SecureCredential } from '../../shared/dist/index.js';
+import type { Account, Transaction, SecureCredential } from '@financialadvisor/domain';
 
 const { Database } = sqlite3;
 

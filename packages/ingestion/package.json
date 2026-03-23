@@ -1,0 +1,30 @@
+{
+  "name": "@financialadvisor/ingestion",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "dependencies": {
+    "@financialadvisor/domain": "file:../domain",
+    "@financialadvisor/ledger": "file:../ledger",
+    "csv-parse": "^5.5.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "typescript": "^5.0.0"
+  }
+}
