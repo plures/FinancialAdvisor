@@ -5,7 +5,9 @@
  * single `PraxisEngine` instance that is ready to use on application start.
  *
  * Usage:
- *   import { praxisEngine } from '@financialadvisor/praxis/lifecycle';
+ *   import { initializePraxisEngine, getPraxisEngine } from '@financialadvisor/praxis/lifecycle';
+ *   initializePraxisEngine();
+ *   const praxisEngine = getPraxisEngine();
  *   praxisEngine.evaluate('import.quality', { session, transactions });
  *   await praxisEngine.emit('import.completed', { session, transactions });
  *   praxisEngine.logDecision({ category: 'budget', decision: '...', context: {} });
