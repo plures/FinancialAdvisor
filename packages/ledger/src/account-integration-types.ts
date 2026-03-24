@@ -144,6 +144,8 @@ export interface ImportResult {
   duration: number; // milliseconds
   timestamp: Date;
   fileHash?: string;
+  /** The ImportSession id created for this import (undefined when skipped as duplicate). */
+  importSessionId?: string;
   privacyLevel: PrivacyLevel;
 }
 
