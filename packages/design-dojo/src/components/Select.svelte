@@ -11,11 +11,12 @@
     hint?: string;
     error?: string;
     children: Snippet;
+    value?: HTMLSelectAttributes['value'];
   }
 
-  const { label, hint, error, id, children, class: className = '', ...restProps }: Props = $props();
+  let { label, hint, error, id, children, value = $bindable(), class: className = '', ...restProps }: Props = $props();
 
-  const selectId = id ?? `dojo-select-${++_idCounter}`;
+  let selectId = id ?? `dojo-select-${++_idCounter}`;
 </script>
 
 <div class="dojo-field {className}">
@@ -29,6 +30,7 @@
       class:dojo-select--error={!!error}
       aria-describedby={hint || error ? `${selectId}-desc` : undefined}
       aria-invalid={!!error}
+      bind:value
       {...restProps}
     >
       {@render children()}

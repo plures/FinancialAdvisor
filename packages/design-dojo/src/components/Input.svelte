@@ -9,11 +9,12 @@
     label?: string;
     hint?: string;
     error?: string;
+    value?: HTMLInputAttributes['value'];
   }
 
-  const { label, hint, error, id, class: className = '', ...restProps }: Props = $props();
+  let { label, hint, error, id, value = $bindable(), class: className = '', ...restProps }: Props = $props();
 
-  const inputId = id ?? `dojo-input-${++_idCounter}`;
+  let inputId = id ?? `dojo-input-${++_idCounter}`;
 </script>
 
 <div class="dojo-field {className}">
@@ -26,6 +27,7 @@
     class:dojo-input--error={!!error}
     aria-describedby={hint || error ? `${inputId}-desc` : undefined}
     aria-invalid={!!error}
+    bind:value
     {...restProps}
   />
   {#if error}

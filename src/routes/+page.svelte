@@ -30,6 +30,7 @@
         <li><a href="/budgets">Budget Management</a></li>
         <li><a href="/goals">Goals Tracking</a></li>
         <li><a href="/reports">Financial Reports</a></li>
+        <li><a href="/review">Ingestion Review</a></li>
         <li><a href="/settings">Settings</a></li>
       </ul>
     </nav>
