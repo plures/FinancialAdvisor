@@ -95,9 +95,11 @@ export class PraxisEngine {
     return (expectation as Expectation<T>).evaluate(data);
   }
 
-  evaluateAll<T>(data: T): ExpectationResult[] {
+  evaluateAll(
+    getDataFor: (expectationName: string) => unknown
+  ): ExpectationResult[] {
     return Array.from(this.expectations.values()).map(exp =>
-      (exp as Expectation<T>).evaluate(data)
+      (exp as Expectation<unknown>).evaluate(getDataFor(exp.name))
     );
   }
 
