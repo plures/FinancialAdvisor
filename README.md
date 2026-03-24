@@ -20,7 +20,7 @@ A local-first personal finance library and MCP server — the backend domain log
 
 ## What's In Progress
 
-- **SvelteKit frontend** — route scaffolds exist (`/accounts`, `/transactions`, `/budgets`, `/goals`, `/reports`, `/settings`) but pages are minimal containers with no data binding to the backend packages
+- **SvelteKit frontend** — route pages exist (`/accounts`, `/transactions`, `/budgets`, `/goals`, `/reports`, `/settings`) with local UI flows (forms, lists) backed by a `FinancialDataStore` (currently `localStorage`); logic is duplicated from backend packages and not yet wired to ledger/ingestion/analytics crates or Tauri IPC
 - **Tauri desktop shell** — the app launches and loads the SvelteKit frontend; the Rust side currently exposes only a `greet` command stub; no business logic is wired through Tauri IPC yet
 
 ## What's Planned
