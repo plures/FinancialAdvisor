@@ -10,7 +10,7 @@ A local-first personal finance library and MCP server — the backend domain log
 
 - **Domain models** — `Money` (cent-based integer arithmetic), `Account`, `Transaction`, `Budget`, `Goal`, `Period`/`DateRange`, `MerchantEntity`, `ImportSession`, `Posting`, `CanonicalTransaction` (`packages/domain`)
 - **Double-entry ledger** — journal entries, account balances, transfers, balance snapshots, and account reconciliation (`packages/ledger`)
-- **File import** — CSV importer with common-bank templates (Chase, Mint, Capital One format detection), OFX/QFX importer, hash-based deduplication across sessions (`packages/ingestion`)
+- **File import** — CSV importer with common-bank templates (Chase, Bank of America, Wells Fargo, plus a generic CSV mapping; delimiter-based format detection only), OFX/QFX importer, hash-based deduplication across sessions (`packages/ingestion`)
 - **Transaction categorization** — keyword-based auto-categorization with pattern detection and recurring-transaction identification (`packages/resolution`)
 - **Budget & investment analytics** — `BudgetCalculator` (variance, over-budget detection), `InvestmentCalculator` (portfolio diversification, sector allocation), `PredictiveAnalytics` (linear-regression trends, anomaly detection, spending forecasts) (`packages/analytics`)
 - **AI provider integrations** — `OpenAIProvider`, `OllamaProvider`, `CopilotProvider`, `ProviderManager` with retry, rate limiting, accuracy scoring, and performance optimization (`packages/ai-providers`)
