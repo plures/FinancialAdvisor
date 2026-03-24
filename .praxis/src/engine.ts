@@ -8,8 +8,17 @@
  *  - PraxisEngine     – orchestrates expectations, triggers and decisions
  */
 
-import { randomUUID } from 'crypto';
+const randomUUID = (): string => {
+  if (
+    typeof globalThis !== 'undefined' &&
+    typeof globalThis.crypto !== 'undefined' &&
+    typeof globalThis.crypto.randomUUID === 'function'
+  ) {
+    return globalThis.crypto.randomUUID();
+  }
 
+  throw new Error('globalThis.crypto.randomUUID is not available in this environment.');
+};
 // ─── Expectations ────────────────────────────────────────────────────────────
 
 export interface ExpectationResult {
