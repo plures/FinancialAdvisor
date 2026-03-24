@@ -1,0 +1,17 @@
+{
+  "extends": "../packages/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["node"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules"],
+  "references": [
+    { "path": "../packages/domain" },
+    { "path": "../packages/ledger" },
+    { "path": "../packages/ingestion" },
+    { "path": "../packages/resolution" },
+    { "path": "../packages/analytics" }
+  ]
+}
