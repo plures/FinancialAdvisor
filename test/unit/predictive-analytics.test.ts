@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { PredictiveAnalytics } from '../../packages/analytics/dist/predictive-analytics.js';
 import { Transaction, TransactionType } from '../../packages/domain/dist/types.js';
+import { moneyFromDecimal, moneyToDecimal } from '../../packages/domain/dist/money.js';
 
 describe('PredictiveAnalytics', () => {
   const createTransaction = (amount: number, category: string, daysAgo: number = 0): Transaction => {
@@ -14,8 +15,9 @@ describe('PredictiveAnalytics', () => {
     
     return {
       id: `txn-${Math.random()}`,
+      importSessionId: 'test-session',
       accountId: 'acc-1',
-      amount,
+      amount: moneyFromDecimal(amount, 'USD'),
       category,
       date,
       description: `Test transaction for ${category}`,
@@ -142,7 +144,7 @@ describe('PredictiveAnalytics', () => {
       const anomalies = PredictiveAnalytics.detectAnomalies(transactions, 2.5);
 
       expect(anomalies.length).to.be.greaterThan(0);
-      const largeAnomaly = anomalies.find(a => Math.abs(a.transaction.amount) === 500);
+      const largeAnomaly = anomalies.find(a => Math.abs(moneyToDecimal(a.transaction.amount)) === 500);
       expect(largeAnomaly).to.exist;
       expect(largeAnomaly!.severity).to.be.oneOf(['medium', 'high']);
     });
@@ -158,7 +160,7 @@ describe('PredictiveAnalytics', () => {
       const anomalies = PredictiveAnalytics.detectAnomalies(transactions, 2.5);
 
       expect(anomalies).to.not.be.empty;
-      const detected = anomalies.find(a => Math.abs(a.transaction.amount) === 1000);
+      const detected = anomalies.find(a => Math.abs(moneyToDecimal(a.transaction.amount)) === 1000);
       expect(detected).to.exist;
       expect(detected!.anomalyScore).to.be.greaterThan(2.5);
     });

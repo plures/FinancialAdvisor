@@ -15,7 +15,7 @@ import type { DatabaseConfig } from './storage.js';
 import { SecureStorage } from './storage.js';
 import { TransactionAnalyzer } from '@financialadvisor/resolution';
 import type { Account, Transaction } from '@financialadvisor/domain';
-import { TransactionType, generateId } from '@financialadvisor/domain';
+import { TransactionType, generateId, moneyFromDecimal, moneyToDecimal } from '@financialadvisor/domain';
 
 export class FinancialAdvisorMCPServer {
   private server: Server;
@@ -289,14 +289,16 @@ export class FinancialAdvisorMCPServer {
     merchant?: string;
     date?: string;
   }) {
+    const money = moneyFromDecimal(args.amount, 'USD');
     const transaction: Transaction = {
       id: generateId(),
+      importSessionId: 'manual',
       accountId: args.accountId,
-      amount: args.amount,
+      amount: money,
       description: args.description,
       date: args.date ? new Date(args.date) : new Date(),
       tags: [],
-      type: args.amount > 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
+      type: money.cents > 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
     };
 
     // Add optional fields if they exist
@@ -329,7 +331,7 @@ export class FinancialAdvisorMCPServer {
     endDate?: string;
     accountId?: string;
   }) {
-    const filters: any = {};
+    const filters: { startDate?: Date; endDate?: Date; accountId?: string; limit?: number } = {};
     
     if (args.startDate) filters.startDate = new Date(args.startDate);
     if (args.endDate) filters.endDate = new Date(args.endDate);
@@ -351,17 +353,17 @@ export class FinancialAdvisorMCPServer {
 - **Savings Rate**: ${insights.savingsRate.toFixed(1)}%
 
 ## Top Spending Categories
-${insights.topCategories.map((cat: any) => 
+${insights.topCategories.map((cat: { category: string; totalAmount: number; percentage: number }) => 
   `- **${cat.category}**: $${cat.totalAmount.toFixed(2)} (${cat.percentage.toFixed(1)}%)`
 ).join('\n')}
 
 ## Largest Expenses
-${insights.largestExpenses.slice(0, 5).map((t: any) => 
-  `- $${Math.abs(t.amount).toFixed(2)} - ${t.description} (${t.category || 'Uncategorized'})`
+${insights.largestExpenses.slice(0, 5).map((t: Transaction) => 
+  `- $${Math.abs(moneyToDecimal(t.amount)).toFixed(2)} - ${t.description} (${t.category ?? 'Uncategorized'})`
 ).join('\n')}
 
 ## Recurring Patterns
-${insights.recurringPatterns.slice(0, 5).map((p: any) => 
+${insights.recurringPatterns.slice(0, 5).map((p: { merchant?: string; averageAmount: number; frequency: number }) => 
   `- **${p.merchant}**: $${p.averageAmount.toFixed(2)} avg, ${p.frequency.toFixed(1)}x/month`
 ).join('\n')}
     `;

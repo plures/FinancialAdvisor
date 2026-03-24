@@ -1,5 +1,7 @@
 // Core types for the FinancialAdvisor system
 
+import type { Money } from './money.js';
+
 export interface Account {
   id: string;
   name: string;
@@ -14,6 +16,9 @@ export interface Account {
 export enum AccountType {
   CHECKING = 'checking',
   SAVINGS = 'savings',
+  /** Canonical value per domain model — prefer over CREDIT_CARD for new code. */
+  CREDIT = 'credit',
+  /** @deprecated Use AccountType.CREDIT instead. Kept for backward compatibility. */
   CREDIT_CARD = 'credit_card',
   INVESTMENT = 'investment',
   LOAN = 'loan',
@@ -23,8 +28,11 @@ export enum AccountType {
 
 export interface Transaction {
   id: string;
+  /** Every transaction must be traceable to an import session. */
+  importSessionId: string;
   accountId: string;
-  amount: number;
+  /** Amount stored as Money (integer cents) to prevent floating-point errors. */
+  amount: Money;
   description: string;
   date: Date;
   category?: string;
@@ -187,7 +195,7 @@ export interface Report {
   content: string;
   format: ReportFormat;
   generatedAt: Date;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export enum ReportType {
@@ -218,18 +226,12 @@ export interface ExtensionManifest {
 }
 
 export interface PluginContext {
-  storage: any; // MCP storage interface
-  ai: any; // AI provider interface
-  notifications: any; // Notification system
+  storage: unknown; // MCP storage interface
+  ai: unknown; // AI provider interface
+  notifications: unknown; // Notification system
 }
 
-// Utility types
-export type Currency = 'USD' | 'EUR' | 'GBP' | 'CAD' | 'JPY' | 'AUD' | string;
-
-export interface DateRange {
-  start: Date;
-  end: Date;
-}
+// Note: Currency is exported from ./money, DateRange from ./temporal
 
 export interface PaginationOptions {
   page: number;
@@ -242,5 +244,5 @@ export interface SortOptions {
 }
 
 export interface FilterOptions {
-  [key: string]: any;
+  [key: string]: unknown;
 }

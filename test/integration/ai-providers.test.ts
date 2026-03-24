@@ -25,7 +25,8 @@ import {
   Goal,
   GoalCategory,
   Priority,
-  QueryType
+  QueryType,
+  moneyFromDecimal
 } from '../../packages/domain/dist/index.js';
 
 describe('AI Provider Integration Tests', function() {
@@ -60,8 +61,9 @@ describe('AI Provider Integration Tests', function() {
     transactions: [
       {
         id: 't1',
+        importSessionId: 'test-session',
         accountId: '1',
-        amount: -50.00,
+        amount: moneyFromDecimal(-50.00, 'USD'),
         description: 'Starbucks Coffee',
         date: new Date('2024-01-15'),
         type: TransactionType.EXPENSE,
@@ -70,8 +72,9 @@ describe('AI Provider Integration Tests', function() {
       } as Transaction,
       {
         id: 't2',
+        importSessionId: 'test-session',
         accountId: '1',
-        amount: -120.00,
+        amount: moneyFromDecimal(-120.00, 'USD'),
         description: 'Whole Foods Market',
         date: new Date('2024-01-16'),
         type: TransactionType.EXPENSE,
@@ -80,8 +83,9 @@ describe('AI Provider Integration Tests', function() {
       } as Transaction,
       {
         id: 't3',
+        importSessionId: 'test-session',
         accountId: '1',
-        amount: 3000.00,
+        amount: moneyFromDecimal(3000.00, 'USD'),
         description: 'Monthly Salary',
         date: new Date('2024-01-01'),
         type: TransactionType.INCOME,

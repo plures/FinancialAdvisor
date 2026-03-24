@@ -2,7 +2,7 @@
  * Budget analysis and management tools
  */
 
-import { Budget, Transaction, BudgetPeriod } from '@financialadvisor/domain';
+import { Budget, Transaction, BudgetPeriod, moneyToDecimal } from '@financialadvisor/domain';
 
 export interface BudgetAnalysis {
   budget: Budget;
@@ -25,7 +25,7 @@ export class BudgetCalculator {
     currentDate: Date = new Date()
   ): BudgetAnalysis {
     const budgetTransactions = this.filterTransactionsForBudget(budget, transactions);
-    const totalSpent = budgetTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const totalSpent = budgetTransactions.reduce((sum, t) => sum + Math.abs(moneyToDecimal(t.amount)), 0);
     const remaining = budget.amount - totalSpent;
     const percentageUsed =
       budget.amount > 0
@@ -83,7 +83,7 @@ export class BudgetCalculator {
       transaction.category === budget.category &&
       transaction.date >= periodStart &&
       transaction.date <= periodEnd &&
-      transaction.amount < 0 // Expenses only
+      transaction.amount.cents < 0 // Expenses only
     );
   }
 

@@ -54,8 +54,10 @@ export class SecureStorage {
       
       `CREATE TABLE IF NOT EXISTS transactions (
         id TEXT PRIMARY KEY,
+        import_session_id TEXT NOT NULL DEFAULT 'manual',
         account_id TEXT NOT NULL,
-        amount REAL NOT NULL,
+        amount_cents INTEGER NOT NULL,
+        amount_currency TEXT NOT NULL DEFAULT 'USD',
         description TEXT NOT NULL,
         date INTEGER NOT NULL,
         category TEXT,
@@ -285,20 +287,21 @@ export class SecureStorage {
    */
   async saveTransaction(transaction: Transaction): Promise<void> {
     const sql = `INSERT OR REPLACE INTO transactions 
-      (id, account_id, amount, description, date, category, subcategory, tags, type, merchant, location, is_recurring, encrypted_data)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      (id, import_session_id, account_id, amount_cents, amount_currency, description, date, category, subcategory, tags, type, merchant, location, is_recurring, encrypted_data)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     
     const encryptedData = this.encrypt(JSON.stringify({
       merchant: transaction.merchant,
       location: transaction.location,
-      // Add other sensitive fields here
     }));
 
     return new Promise((resolve, reject) => {
       this.db.run(sql, [
         transaction.id,
+        transaction.importSessionId,
         transaction.accountId,
-        transaction.amount,
+        transaction.amount.cents,
+        transaction.amount.currency,
         transaction.description,
         transaction.date.getTime(),
         transaction.category,
@@ -327,7 +330,7 @@ export class SecureStorage {
     limit?: number;
   }): Promise<Transaction[]> {
     let sql = 'SELECT * FROM transactions WHERE 1=1';
-    const params: any[] = [];
+    const params: (string | number)[] = [];
     
     if (filters?.accountId) {
       sql += ' AND account_id = ?';
@@ -357,26 +360,36 @@ export class SecureStorage {
     }
     
     return new Promise((resolve, reject) => {
-      this.db.all(sql, params, (err, rows: any[]) => {
+      this.db.all(sql, params, (err, rows: Record<string, unknown>[]) => {
         if (err) {
           reject(err);
           return;
         }
         
-        const transactions = rows.map(row => ({
-          id: row.id,
-          accountId: row.account_id,
-          amount: row.amount,
-          description: row.description,
-          date: new Date(row.date),
-          category: row.category,
-          subcategory: row.subcategory,
-          tags: JSON.parse(row.tags || '[]'),
-          type: row.type,
-          merchant: row.merchant,
-          location: row.location,
-          isRecurring: row.is_recurring === 1
-        }));
+        const transactions: Transaction[] = rows.map(row => {
+          // Support both new schema (amount_cents) and legacy schema (amount as REAL)
+          const cents = typeof row['amount_cents'] === 'number'
+            ? row['amount_cents'] as number
+            : Math.round((row['amount'] as number) * 100);
+          const currency = typeof row['amount_currency'] === 'string'
+            ? row['amount_currency'] as string
+            : 'USD';
+          return {
+            id: row['id'] as string,
+            importSessionId: (row['import_session_id'] as string | undefined) ?? 'manual',
+            accountId: row['account_id'] as string,
+            amount: { cents, currency },
+            description: row['description'] as string,
+            date: new Date(row['date'] as number),
+            category: row['category'] as string | undefined,
+            subcategory: row['subcategory'] as string | undefined,
+            tags: JSON.parse((row['tags'] as string | undefined) ?? '[]') as string[],
+            type: row['type'] as Transaction['type'],
+            merchant: row['merchant'] as string | undefined,
+            location: row['location'] as string | undefined,
+            isRecurring: row['is_recurring'] === 1
+          };
+        });
         
         resolve(transactions);
       });

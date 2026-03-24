@@ -2,7 +2,7 @@
  * Base AI provider interface and types
  */
 
-import { AIProvider, AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
+import { AIProvider, AIProviderConfig, AIProviderType, AIQuery, FinancialContext, moneyToDecimal } from '@financialadvisor/domain';
 
 export interface AIResponse {
   content: string;
@@ -70,11 +70,11 @@ export abstract class BaseAIProvider {
     
     if (context.transactions && context.transactions.length > 0) {
       const totalExpenses = context.transactions
-        .filter(t => t.amount < 0)
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        .filter(t => t.amount.cents < 0)
+        .reduce((sum, t) => sum + Math.abs(moneyToDecimal(t.amount)), 0);
       const totalIncome = context.transactions
-        .filter(t => t.amount > 0)
-        .reduce((sum, t) => sum + t.amount, 0);
+        .filter(t => t.amount.cents > 0)
+        .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0);
       
       summary.push(`Transactions: ${context.transactions.length} transactions`);
       summary.push(`Total Income: $${totalIncome.toFixed(2)}`);
