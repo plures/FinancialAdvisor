@@ -10,6 +10,10 @@ export default defineConfig({
 		strictPort: true,
 		watch: {
 			ignored: ['**/src-tauri/**']
+		},
+		fs: {
+			// Allow serving files from workspace packages (symlinked via node_modules)
+			allow: ['..']
 		}
 	},
 	envPrefix: ['VITE_', 'TAURI_'],
