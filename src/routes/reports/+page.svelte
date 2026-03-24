@@ -2,6 +2,7 @@
   import { accounts, transactions, totalBalance } from '$lib/stores/financial';
   import { onMount, onDestroy } from 'svelte';
   import { Chart, registerables } from 'chart.js';
+  import { Card } from '@plures/design-dojo';
 
   Chart.register(...registerables);
 
@@ -18,22 +19,11 @@
   });
 
   onDestroy(() => {
-    // Clean up chart instances to prevent memory leaks
-    if (spendingByCategoryChart) {
-      spendingByCategoryChart.destroy();
-      spendingByCategoryChart = null;
-    }
-    if (incomeExpensesChart) {
-      incomeExpensesChart.destroy();
-      incomeExpensesChart = null;
-    }
-    if (accountBalancesChart) {
-      accountBalancesChart.destroy();
-      accountBalancesChart = null;
-    }
+    spendingByCategoryChart?.destroy();
+    incomeExpensesChart?.destroy();
+    accountBalancesChart?.destroy();
   });
 
-  // Reactive statement to initialize charts when data is loaded
   $: if (dataLoaded && !chartsInitialized) {
     chartsInitialized = true;
     requestAnimationFrame(() => {
@@ -50,9 +40,8 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Aggregate transactions by category
     const categoryTotals: Record<string, number> = {};
-    $transactions.forEach(transaction => {
+    $transactions.forEach((transaction) => {
       if (transaction.type === 'debit') {
         const category = transaction.category || 'Uncategorized';
         categoryTotals[category] = (categoryTotals[category] || 0) + transaction.amount;
@@ -62,9 +51,7 @@
     const categories = Object.keys(categoryTotals);
     const amounts = Object.values(categoryTotals);
 
-    if (spendingByCategoryChart) {
-      spendingByCategoryChart.destroy();
-    }
+    spendingByCategoryChart?.destroy();
 
     spendingByCategoryChart = new Chart(ctx, {
       type: 'pie',
@@ -74,14 +61,8 @@
           {
             data: amounts.length > 0 ? amounts : [1],
             backgroundColor: [
-              '#FF6384',
-              '#36A2EB',
-              '#FFCE56',
-              '#4BC0C0',
-              '#9966FF',
-              '#FF9F40',
-              '#E91E63',
-              '#C9CBCF',
+              '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+              '#9966FF', '#FF9F40', '#E91E63', '#C9CBCF',
             ],
           },
         ],
@@ -90,13 +71,8 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          title: {
-            display: true,
-            text: 'Spending by Category',
-          },
-          legend: {
-            position: 'bottom',
-          },
+          title: { display: true, text: 'Spending by Category' },
+          legend: { position: 'bottom' },
         },
       },
     });
@@ -109,10 +85,9 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Calculate income vs expenses
     let totalIncome = 0;
     let totalExpenses = 0;
-    $transactions.forEach(transaction => {
+    $transactions.forEach((transaction) => {
       if (transaction.type === 'credit') {
         totalIncome += transaction.amount;
       } else {
@@ -120,9 +95,7 @@
       }
     });
 
-    if (incomeExpensesChart) {
-      incomeExpensesChart.destroy();
-    }
+    incomeExpensesChart?.destroy();
 
     incomeExpensesChart = new Chart(ctx, {
       type: 'bar',
@@ -133,9 +106,11 @@
             label: 'Amount ($)',
             data: [totalIncome, totalExpenses, totalIncome - totalExpenses],
             backgroundColor: [
-              '#28a745',
-              '#dc3545',
-              totalIncome - totalExpenses >= 0 ? '#28a745' : '#dc3545',
+              'var(--color-success-500)',
+              'var(--color-danger-500)',
+              totalIncome - totalExpenses >= 0
+                ? 'var(--color-success-500)'
+                : 'var(--color-danger-500)',
             ],
           },
         ],
@@ -144,19 +119,10 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          title: {
-            display: true,
-            text: 'Income vs Expenses',
-          },
-          legend: {
-            display: false,
-          },
+          title: { display: true, text: 'Income vs Expenses' },
+          legend: { display: false },
         },
-        scales: {
-          y: {
-            beginAtZero: true,
-          },
-        },
+        scales: { y: { beginAtZero: true } },
       },
     });
   }
@@ -168,12 +134,10 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const accountNames = $accounts.map(a => a.name);
-    const balances = $accounts.map(a => a.balance);
+    const accountNames = $accounts.map((a) => a.name);
+    const balances = $accounts.map((a) => a.balance);
 
-    if (accountBalancesChart) {
-      accountBalancesChart.destroy();
-    }
+    accountBalancesChart?.destroy();
 
     accountBalancesChart = new Chart(ctx, {
       type: 'doughnut',
@@ -182,7 +146,14 @@
         datasets: [
           {
             data: balances.length > 0 ? balances : [1],
-            backgroundColor: ['#0066cc', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1'],
+            backgroundColor: [
+              'var(--color-primary-600)',
+              'var(--color-success-500)',
+              'var(--color-warning-500)',
+              'var(--color-danger-500)',
+              'var(--color-primary-400)',
+              'var(--color-neutral-500)',
+            ],
           },
         ],
       },
@@ -190,13 +161,8 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          title: {
-            display: true,
-            text: 'Account Balances Distribution',
-          },
-          legend: {
-            position: 'bottom',
-          },
+          title: { display: true, text: 'Account Balances Distribution' },
+          legend: { position: 'bottom' },
         },
       },
     });
@@ -207,107 +173,116 @@
   <title>Financial Reports - Financial Advisor</title>
 </svelte:head>
 
-<div class="container">
-  <h1>Financial Reports</h1>
+<div class="page">
+  <h1 class="page-title">Financial Reports</h1>
 
-  <div class="summary-cards">
-    <div class="card">
-      <h3>Total Balance</h3>
-      <p class="value">${$totalBalance.toFixed(2)}</p>
-    </div>
-
-    <div class="card">
-      <h3>Total Accounts</h3>
-      <p class="value">{$accounts.length}</p>
-    </div>
-
-    <div class="card">
-      <h3>Total Transactions</h3>
-      <p class="value">{$transactions.length}</p>
-    </div>
+  <div class="summary-grid">
+    <Card elevated>
+      <div class="stat-card">
+        <p class="stat-label">Total Balance</p>
+        <p class="stat-value">${$totalBalance.toFixed(2)}</p>
+      </div>
+    </Card>
+    <Card elevated>
+      <div class="stat-card">
+        <p class="stat-label">Total Accounts</p>
+        <p class="stat-value">{$accounts.length}</p>
+      </div>
+    </Card>
+    <Card elevated>
+      <div class="stat-card">
+        <p class="stat-label">Total Transactions</p>
+        <p class="stat-value">{$transactions.length}</p>
+      </div>
+    </Card>
   </div>
 
-  <div class="reports-section">
-    <h2>Financial Charts</h2>
-
+  <section class="charts-section">
+    <h2 class="section-heading">Financial Charts</h2>
     <div class="charts-grid">
-      <div class="chart-container">
-        <canvas id="spendingByCategory"></canvas>
-      </div>
-
-      <div class="chart-container">
-        <canvas id="incomeExpenses"></canvas>
-      </div>
-
-      <div class="chart-container">
-        <canvas id="accountBalances"></canvas>
-      </div>
+      <Card elevated padding="md">
+        <div class="chart-wrapper">
+          <canvas id="spendingByCategory"></canvas>
+        </div>
+      </Card>
+      <Card elevated padding="md">
+        <div class="chart-wrapper">
+          <canvas id="incomeExpenses"></canvas>
+        </div>
+      </Card>
+      <Card elevated padding="md">
+        <div class="chart-wrapper">
+          <canvas id="accountBalances"></canvas>
+        </div>
+      </Card>
     </div>
-  </div>
+  </section>
 </div>
 
 <style>
-  .container {
-    max-width: 1200px;
+  .page {
+    max-width: 75rem;
     margin: 0 auto;
-    padding: 2rem;
+    padding: var(--space-8);
   }
 
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 2rem;
+  .page-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    margin: 0 0 var(--space-6) 0;
   }
 
-  .summary-cards {
+  .summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
   }
 
-  .card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
-  .card h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    color: #666;
-  }
-
-  .value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #0066cc;
+  .stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin: 0;
   }
 
-  .reports-section {
-    background: #f9f9f9;
-    padding: 2rem;
-    border-radius: 8px;
+  .stat-value {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .charts-section {
+    margin-top: var(--space-4);
+  }
+
+  .section-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
   .charts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
-    margin-top: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+    gap: var(--space-6);
   }
 
-  .chart-container {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem;
-    height: 400px;
+  .chart-wrapper {
+    height: 22rem;
   }
 
-  .chart-container canvas {
+  .chart-wrapper canvas {
     max-height: 100%;
   }
 </style>

@@ -3,6 +3,7 @@
   import { transactions, accounts } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Transaction } from '$lib/praxis/schema';
+  import { Button, Input, Select, Card, Badge, Alert, EmptyState, dojoSlide } from '@plures/design-dojo';
 
   let showAddForm = false;
   let errors: string[] = [];
@@ -33,7 +34,6 @@
       return;
     }
 
-    // Auto-categorize if no category provided
     const category =
       newTransaction.category || FinancialLogic.categorizeTransaction(newTransaction.description);
 
@@ -49,7 +49,6 @@
       createdAt: new Date(),
     };
 
-    // Validate using Praxis logic
     const validation = FinancialLogic.validateTransaction(transaction);
     if (!validation.valid) {
       errors = validation.errors;
@@ -74,11 +73,10 @@
   }
 
   function getAccountName(accountId: string): string {
-    const account = $accounts.find(a => a.id === accountId);
+    const account = $accounts.find((a) => a.id === accountId);
     return account?.name || 'Unknown Account';
   }
 
-  // Auto-suggest category as user types description
   $: suggestedCategory = newTransaction.description
     ? FinancialLogic.categorizeTransaction(newTransaction.description)
     : '';
@@ -88,48 +86,51 @@
   <title>Transactions - Financial Advisor</title>
 </svelte:head>
 
-<div class="container">
-  <header>
-    <h1>Transactions</h1>
-    <button on:click={() => (showAddForm = !showAddForm)}>
+<div class="page">
+  <header class="page-header">
+    <h1 class="page-title">Transactions</h1>
+    <Button
+      variant={showAddForm ? 'secondary' : 'primary'}
+      onclick={() => (showAddForm = !showAddForm)}
+    >
       {showAddForm ? 'Cancel' : 'Add Transaction'}
-    </button>
+    </Button>
   </header>
 
   {#if showAddForm}
-    <div class="add-form">
-      <h2>Add New Transaction</h2>
+    <div transition:dojoSlide>
+      <Card class="add-form-card">
+        <h2 class="form-heading">Add New Transaction</h2>
 
-      {#if errors.length > 0}
-        <div class="error-box">
-          {#each errors as error}
-            <p class="error">{error}</p>
-          {/each}
-        </div>
-      {/if}
+        {#if errors.length > 0}
+          <Alert variant="danger" class="form-errors">
+            {#each errors as error}
+              <p>{error}</p>
+            {/each}
+          </Alert>
+        {/if}
 
-      <form on:submit|preventDefault={handleAddTransaction}>
-        <div class="form-group">
-          <label for="account">Account *</label>
-          <select id="account" bind:value={newTransaction.accountId} required>
+        <form
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleAddTransaction();
+          }}
+          class="txn-form"
+        >
+          <Select label="Account *" id="account" bind:value={newTransaction.accountId} required>
             <option value="">Select an account</option>
             {#each $accounts as account}
               <option value={account.id}>{account.name}</option>
             {/each}
-          </select>
-        </div>
+          </Select>
 
-        <div class="form-group">
-          <label for="type">Type *</label>
-          <select id="type" bind:value={newTransaction.type} required>
+          <Select label="Type *" id="type" bind:value={newTransaction.type} required>
             <option value="debit">Debit (Expense)</option>
             <option value="credit">Credit (Income)</option>
-          </select>
-        </div>
+          </Select>
 
-        <div class="form-group">
-          <label for="amount">Amount *</label>
-          <input
+          <Input
+            label="Amount *"
             id="amount"
             type="number"
             step="0.01"
@@ -137,219 +138,190 @@
             placeholder="0.00"
             required
           />
-        </div>
 
-        <div class="form-group">
-          <label for="description">Description *</label>
-          <input
+          <Input
+            label="Description *"
             id="description"
             type="text"
             bind:value={newTransaction.description}
             placeholder="e.g., Grocery shopping"
             required
           />
-        </div>
 
-        <div class="form-group">
-          <label for="category">
-            Category
-            {#if suggestedCategory && !newTransaction.category}
-              <span class="suggestion">(Suggested: {suggestedCategory})</span>
-            {/if}
-          </label>
-          <input
+          <Input
+            label={suggestedCategory && !newTransaction.category
+              ? `Category (Suggested: ${suggestedCategory})`
+              : 'Category'}
             id="category"
             type="text"
             bind:value={newTransaction.category}
             placeholder={suggestedCategory || 'e.g., Food, Transport'}
           />
-        </div>
 
-        <div class="form-group">
-          <label for="date">Date</label>
-          <input id="date" type="date" bind:value={newTransaction.date} />
-        </div>
+          <Input label="Date" id="date" type="date" bind:value={newTransaction.date} />
 
-        <button type="submit" class="btn-primary">Add Transaction</button>
-      </form>
+          <div class="form-actions">
+            <Button type="submit" variant="primary">Add Transaction</Button>
+          </div>
+        </form>
+      </Card>
     </div>
   {/if}
 
-  <div class="transactions-list">
-    <h2>Recent Transactions</h2>
+  <section class="txn-section">
+    <h2 class="section-heading">Recent Transactions</h2>
     {#if $transactions.length === 0}
-      <p class="empty-state">No transactions yet. Click "Add Transaction" to get started.</p>
+      <EmptyState
+        icon="💳"
+        title="No transactions yet"
+        description='Click "Add Transaction" to get started.'
+      />
     {:else}
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Account</th>
-            <th>Description</th>
-            <th>Category</th>
-            <th>Type</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each $transactions as transaction (transaction.id)}
-            <tr>
-              <td>{formatDate(transaction.date)}</td>
-              <td>{getAccountName(transaction.accountId)}</td>
-              <td>{transaction.description}</td>
-              <td>{transaction.category || '-'}</td>
-              <td class="type" class:credit={transaction.type === 'credit'}>
-                {transaction.type}
-              </td>
-              <td class="amount" class:credit={transaction.type === 'credit'}>
-                ${transaction.amount.toFixed(2)}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <Card padding="none" elevated>
+        <div class="table-scroll">
+          <table class="txn-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Account</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th class="col-amount">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each $transactions as transaction (transaction.id)}
+                <tr>
+                  <td>{formatDate(transaction.date)}</td>
+                  <td>{getAccountName(transaction.accountId)}</td>
+                  <td>{transaction.description}</td>
+                  <td>{transaction.category || '—'}</td>
+                  <td>
+                    <Badge variant={transaction.type === 'credit' ? 'success' : 'danger'}>
+                      {transaction.type}
+                    </Badge>
+                  </td>
+                  <td
+                    class="col-amount"
+                    class:amount-credit={transaction.type === 'credit'}
+                    class:amount-debit={transaction.type === 'debit'}
+                  >
+                    ${transaction.amount.toFixed(2)}
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     {/if}
-  </div>
+  </section>
 </div>
 
 <style>
-  .container {
-    max-width: 1200px;
+  .page {
+    max-width: 75rem;
     margin: 0 auto;
-    padding: 2rem;
+    padding: var(--space-8);
   }
 
-  header {
+  .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-6);
   }
 
-  h1 {
-    font-size: 2rem;
+  .page-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
     margin: 0;
   }
 
-  button {
-    padding: 0.75rem 1.5rem;
-    background: #0066cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
+  .add-form-card {
+    margin-bottom: var(--space-6);
   }
 
-  button:hover {
-    background: #0052a3;
+  .form-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
-  .add-form {
-    background: #f9f9f9;
-    padding: 2rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
+  .form-errors p {
+    margin: 0;
   }
 
-  .add-form h2 {
-    margin-top: 0;
+  .txn-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
   }
 
-  .form-group {
-    margin-bottom: 1rem;
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--space-2);
   }
 
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
+  .txn-section {
+    margin-top: var(--space-6);
   }
 
-  input,
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
+  .section-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
-  .btn-primary {
-    background: #28a745;
+  .table-scroll {
+    overflow-x: auto;
   }
 
-  .btn-primary:hover {
-    background: #218838;
-  }
-
-  table {
+  .txn-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  th,
-  td {
-    padding: 1rem;
+  .txn-table th,
+  .txn-table td {
+    padding: var(--space-3) var(--space-4);
     text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border-default);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
   }
 
-  th {
-    background: #f5f5f5;
-    font-weight: 600;
+  .txn-table th {
+    background-color: var(--color-bg-subtle);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.05em;
   }
 
-  tr:last-child td {
+  .txn-table tbody tr:last-child td {
     border-bottom: none;
   }
 
-  .type {
-    text-transform: capitalize;
+  .txn-table tbody tr:hover {
+    background-color: var(--color-bg-subtle);
   }
 
-  .type.credit {
-    color: #28a745;
+  .col-amount {
+    text-align: right;
+    font-weight: var(--font-weight-semibold);
+    font-variant-numeric: tabular-nums;
   }
 
-  .amount {
-    font-weight: 600;
-    color: #dc3545;
+  .amount-credit {
+    color: var(--color-success-600);
   }
 
-  .amount.credit {
-    color: #28a745;
-  }
-
-  .empty-state {
-    text-align: center;
-    color: #666;
-    padding: 3rem;
-    background: #f9f9f9;
-    border-radius: 8px;
-  }
-
-  .error-box {
-    background: #fff5f5;
-    border: 1px solid #ffcccc;
-    border-radius: 4px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .error {
-    color: #dc3545;
-    margin: 0.25rem 0;
-  }
-
-  .suggestion {
-    color: #28a745;
-    font-size: 0.85rem;
-    font-weight: normal;
-    margin-left: 0.5rem;
+  .amount-debit {
+    color: var(--color-danger-600);
   }
 </style>

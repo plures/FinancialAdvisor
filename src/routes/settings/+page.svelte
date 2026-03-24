@@ -1,131 +1,133 @@
 <script lang="ts">
-  // Settings page placeholder
+  import { Button, Select, Card, Alert } from '@plures/design-dojo';
 </script>
 
 <svelte:head>
   <title>Settings - Financial Advisor</title>
 </svelte:head>
 
-<div class="container">
-  <h1>Settings</h1>
+<div class="page">
+  <h1 class="page-title">Settings</h1>
 
-  <div class="settings-section">
-    <h2>Application Settings</h2>
-    <p class="info">Configure your Financial Advisor preferences</p>
+  <Card elevated class="settings-card">
+    <h2 class="section-title">Application Settings</h2>
+    <p class="section-desc">Configure your Financial Advisor preferences</p>
 
-    <div class="setting-group">
-      <h3>Data Storage</h3>
-      <p>
-        Data is stored locally using PluresDB for privacy and security. All your financial data
-        stays on your device.
-      </p>
+    <div class="settings-groups">
+      <div class="setting-group">
+        <h3 class="setting-group__title">Data Storage</h3>
+        <p class="setting-group__body">
+          Data is stored locally using PluresDB for privacy and security. All your financial data
+          stays on your device.
+        </p>
+      </div>
+
+      <div class="setting-group">
+        <h3 class="setting-group__title">AI Integration</h3>
+        <p class="setting-group__body">
+          Connect to AI providers for intelligent financial insights and transaction categorization.
+        </p>
+        <Button variant="secondary">Configure AI Provider</Button>
+      </div>
+
+      <div class="setting-group">
+        <h3 class="setting-group__title">Currency</h3>
+        <Select label="Default Currency">
+          <option selected>USD - US Dollar</option>
+          <option>EUR - Euro</option>
+          <option>GBP - British Pound</option>
+          <option>JPY - Japanese Yen</option>
+        </Select>
+      </div>
+
+      <div class="setting-group">
+        <h3 class="setting-group__title">Data Export</h3>
+        <div class="setting-group__actions">
+          <Button variant="secondary">Export All Data (JSON)</Button>
+          <Button variant="secondary">Export All Data (CSV)</Button>
+        </div>
+      </div>
+
+      <div class="setting-group setting-group--danger">
+        <h3 class="setting-group__title">Danger Zone</h3>
+        <Alert variant="warning">
+          Clearing all data is irreversible. Make sure you have exported a backup first.
+        </Alert>
+        <div class="setting-group__actions">
+          <Button variant="danger">Clear All Data</Button>
+        </div>
+      </div>
     </div>
-
-    <div class="setting-group">
-      <h3>AI Integration</h3>
-      <p>
-        Connect to AI providers for intelligent financial insights and transaction categorization.
-      </p>
-      <button>Configure AI Provider</button>
-    </div>
-
-    <div class="setting-group">
-      <h3>Currency</h3>
-      <select>
-        <option selected>USD - US Dollar</option>
-        <option>EUR - Euro</option>
-        <option>GBP - British Pound</option>
-        <option>JPY - Japanese Yen</option>
-      </select>
-    </div>
-
-    <div class="setting-group">
-      <h3>Data Export</h3>
-      <button>Export All Data (JSON)</button>
-      <button>Export All Data (CSV)</button>
-    </div>
-
-    <div class="setting-group danger">
-      <h3>Danger Zone</h3>
-      <button class="danger-btn">Clear All Data</button>
-    </div>
-  </div>
+  </Card>
 </div>
 
 <style>
-  .container {
-    max-width: 800px;
+  .page {
+    max-width: 50rem;
     margin: 0 auto;
-    padding: 2rem;
+    padding: var(--space-8);
   }
 
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 2rem;
+  .page-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    margin: 0 0 var(--space-6) 0;
   }
 
-  .settings-section {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  .settings-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
   }
 
-  h2 {
-    margin-top: 0;
+  .section-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
   }
 
-  .info {
-    color: #666;
-    margin-bottom: 2rem;
+  .section-desc {
+    color: var(--color-text-secondary);
+    margin: var(--space-1) 0 0 0;
+    font-size: var(--font-size-sm);
+  }
+
+  .settings-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
   .setting-group {
-    padding: 1.5rem;
-    margin: 1rem 0;
-    background: #f9f9f9;
-    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background-color: var(--color-bg-subtle);
+    border-radius: var(--radius-md);
   }
 
-  .setting-group h3 {
-    margin-top: 0;
+  .setting-group--danger {
+    background-color: var(--color-danger-50);
+    border: 1px solid var(--color-danger-100);
   }
 
-  .setting-group.danger {
-    background: #fff5f5;
-    border: 1px solid #ffcccc;
+  .setting-group__title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
   }
 
-  button,
-  select {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-    margin-right: 0.5rem;
+  .setting-group__body {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: var(--line-height-relaxed);
   }
 
-  button {
-    background: #0066cc;
-    color: white;
-    border: none;
-  }
-
-  button:hover {
-    background: #0052a3;
-  }
-
-  .danger-btn {
-    background: #dc3545;
-  }
-
-  .danger-btn:hover {
-    background: #c82333;
-  }
-
-  select {
-    min-width: 200px;
+  .setting-group__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
   }
 </style>

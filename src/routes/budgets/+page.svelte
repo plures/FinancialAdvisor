@@ -3,6 +3,7 @@
   import { budgets, transactions } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Budget } from '$lib/praxis/schema';
+  import { Button, Input, Select, Card, Badge, Alert, EmptyState, dojoSlide } from '@plures/design-dojo';
 
   let showAddForm = false;
   let errors: string[] = [];
@@ -101,57 +102,56 @@
   <title>Budget Management - Financial Advisor</title>
 </svelte:head>
 
-<div class="container">
-  <div class="header">
-    <h1>Budget Management</h1>
-    <button class="btn-primary" onclick={() => (showAddForm = !showAddForm)}>
+<div class="page">
+  <header class="page-header">
+    <h1 class="page-title">Budget Management</h1>
+    <Button
+      variant={showAddForm ? 'secondary' : 'primary'}
+      onclick={() => (showAddForm = !showAddForm)}
+    >
       {showAddForm ? 'Cancel' : 'Add Budget'}
-    </button>
-  </div>
+    </Button>
+  </header>
 
   {#if showAddForm}
-    <div class="form-container">
-      <h2>Create New Budget</h2>
+    <div transition:dojoSlide>
+      <Card class="add-form-card">
+        <h2 class="form-heading">Create New Budget</h2>
 
-      {#if errors.length > 0}
-        <div class="errors">
-          {#each errors as error}
-            <p>{error}</p>
-          {/each}
-        </div>
-      {/if}
+        {#if errors.length > 0}
+          <Alert variant="danger" class="form-errors">
+            {#each errors as error}
+              <p>{error}</p>
+            {/each}
+          </Alert>
+        {/if}
 
-      <form
-        onsubmit={e => {
-          e.preventDefault();
-          handleAddBudget();
-        }}
-      >
-        <div class="form-group">
-          <label for="name">Budget Name *</label>
-          <input
+        <form
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleAddBudget();
+          }}
+          class="budget-form"
+        >
+          <Input
+            label="Budget Name *"
             id="name"
             type="text"
             bind:value={newBudget.name}
             placeholder="e.g., Monthly Groceries"
             required
           />
-        </div>
 
-        <div class="form-group">
-          <label for="category">Category *</label>
-          <select id="category" bind:value={newBudget.category} required>
+          <Select label="Category *" id="category" bind:value={newBudget.category} required>
             <option value="">Select a category</option>
             {#each categories as category}
               <option value={category}>{category}</option>
             {/each}
-          </select>
-        </div>
+          </Select>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="amount">Amount *</label>
-            <input
+          <div class="form-row">
+            <Input
+              label="Amount *"
               id="amount"
               type="number"
               step="0.01"
@@ -159,312 +159,256 @@
               placeholder="500.00"
               required
             />
-          </div>
-
-          <div class="form-group">
-            <label for="period">Period *</label>
-            <select id="period" bind:value={newBudget.period} required>
+            <Select label="Period *" id="period" bind:value={newBudget.period} required>
               <option value="weekly">Weekly</option>
               <option value="monthly">Monthly</option>
               <option value="yearly">Yearly</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="startDate">Start Date *</label>
-            <input id="startDate" type="date" bind:value={newBudget.startDate} required />
+            </Select>
           </div>
 
-          <div class="form-group">
-            <label for="endDate">End Date (Optional)</label>
-            <input id="endDate" type="date" bind:value={newBudget.endDate} />
+          <div class="form-row">
+            <Input
+              label="Start Date *"
+              id="startDate"
+              type="date"
+              bind:value={newBudget.startDate}
+              required
+            />
+            <Input
+              label="End Date (Optional)"
+              id="endDate"
+              type="date"
+              bind:value={newBudget.endDate}
+            />
           </div>
-        </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" onclick={resetForm}> Reset </button>
-          <button type="submit" class="btn-primary"> Create Budget </button>
-        </div>
-      </form>
+          <div class="form-actions">
+            <Button type="button" variant="secondary" onclick={resetForm}>Reset</Button>
+            <Button type="submit" variant="primary">Create Budget</Button>
+          </div>
+        </form>
+      </Card>
     </div>
   {/if}
 
-  <div class="budgets-list">
-    <h2>Your Budgets</h2>
+  <section class="budgets-section">
+    <h2 class="section-heading">Your Budgets</h2>
 
     {#if $budgets.length === 0}
-      <div class="empty-state">
-        <p>No budgets created yet. Create your first budget to start tracking your spending!</p>
-      </div>
+      <EmptyState
+        icon="💰"
+        title="No budgets yet"
+        description="Create your first budget to start tracking your spending!"
+      />
     {:else}
       <div class="budget-grid">
         {#each $budgets as budget}
           {@const progress = getBudgetProgress(budget)}
-          <div class="budget-card" class:inactive={!budget.isActive}>
-            <div class="budget-header">
-              <h3>{budget.name}</h3>
-              <span class="badge">{budget.period}</span>
-            </div>
-
-            <div class="budget-details">
-              <p><strong>Category:</strong> {budget.category}</p>
-              <p><strong>Amount:</strong> ${budget.amount.toFixed(2)}</p>
-              <p><strong>Start Date:</strong> {new Date(budget.startDate).toLocaleDateString()}</p>
-              {#if budget.endDate}
-                <p><strong>End Date:</strong> {new Date(budget.endDate).toLocaleDateString()}</p>
-              {/if}
-            </div>
-
-            <div class="budget-progress">
-              <div class="progress-bar">
-                <div
-                  class="progress-fill"
-                  style="width: {Math.min(100, progress.percentageUsed)}%"
-                ></div>
+          <Card elevated class={budget.isActive ? '' : 'budget-inactive'}>
+            <div class="budget-content">
+              <div class="budget-top">
+                <h3 class="budget-name">{budget.name}</h3>
+                <Badge variant="primary">{budget.period}</Badge>
               </div>
-              <p class="progress-text">
-                ${progress.totalSpent.toFixed(2)} spent of ${budget.amount.toFixed(2)}
-              </p>
-            </div>
 
-            <div class="budget-actions">
-              <button class="btn-small" onclick={() => toggleBudgetStatus(budget.id)}>
-                {budget.isActive ? 'Deactivate' : 'Activate'}
-              </button>
-              <button class="btn-small btn-danger" onclick={() => deleteBudget(budget.id)}>
-                Delete
-              </button>
+              <dl class="budget-details">
+                <div class="budget-detail-row">
+                  <dt>Category</dt>
+                  <dd>{budget.category}</dd>
+                </div>
+                <div class="budget-detail-row">
+                  <dt>Amount</dt>
+                  <dd>${budget.amount.toFixed(2)}</dd>
+                </div>
+                <div class="budget-detail-row">
+                  <dt>Start Date</dt>
+                  <dd>{new Date(budget.startDate).toLocaleDateString()}</dd>
+                </div>
+                {#if budget.endDate}
+                  <div class="budget-detail-row">
+                    <dt>End Date</dt>
+                    <dd>{new Date(budget.endDate).toLocaleDateString()}</dd>
+                  </div>
+                {/if}
+              </dl>
+
+              <div class="budget-progress">
+                <div class="progress-track" role="progressbar" aria-label="{budget.name} budget progress" aria-valuenow={Math.min(100, progress.percentageUsed)} aria-valuemin={0} aria-valuemax={100}>
+                  <div
+                    class="progress-fill"
+                    class:progress-fill--over={progress.percentageUsed > 100}
+                    style="width: {Math.min(100, progress.percentageUsed)}%"
+                  ></div>
+                </div>
+                <p class="progress-label">
+                  ${progress.totalSpent.toFixed(2)} spent of ${budget.amount.toFixed(2)}
+                </p>
+              </div>
+
+              <div class="budget-actions">
+                <Button size="sm" variant="secondary" onclick={() => toggleBudgetStatus(budget.id)}>
+                  {budget.isActive ? 'Deactivate' : 'Activate'}
+                </Button>
+                <Button size="sm" variant="danger" onclick={() => deleteBudget(budget.id)}>
+                  Delete
+                </Button>
+              </div>
             </div>
-          </div>
+          </Card>
         {/each}
       </div>
     {/if}
-  </div>
+  </section>
 </div>
 
 <style>
-  .container {
-    max-width: 1200px;
+  .page {
+    max-width: 75rem;
     margin: 0 auto;
-    padding: 2rem;
+    padding: var(--space-8);
   }
 
-  .header {
+  .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-6);
   }
 
-  h1 {
-    font-size: 2rem;
+  .page-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
     margin: 0;
   }
 
-  .btn-primary {
-    background: #0066cc;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
+  .add-form-card {
+    margin-bottom: var(--space-6);
   }
 
-  .btn-primary:hover {
-    background: #0052a3;
+  .form-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
-  .btn-secondary {
-    background: #6c757d;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
+  .form-errors p {
+    margin: 0;
   }
 
-  .btn-secondary:hover {
-    background: #5a6268;
-  }
-
-  .btn-small {
-    background: #f0f0f0;
-    border: 1px solid #ddd;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.875rem;
-  }
-
-  .btn-small:hover {
-    background: #e0e0e0;
-  }
-
-  .btn-danger {
-    background: #dc3545;
-    color: white;
-    border-color: #dc3545;
-  }
-
-  .btn-danger:hover {
-    background: #c82333;
-  }
-
-  .form-container {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  .form-container h2 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-  }
-
-  .form-group {
-    margin-bottom: 1.5rem;
-    flex: 1;
+  .budget-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
   }
 
   .form-row {
-    display: flex;
-    gap: 1rem;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-
-  input[type='text'],
-  input[type='number'],
-  input[type='date'],
-  select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
   }
 
   .form-actions {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-3);
     justify-content: flex-end;
-    margin-top: 1.5rem;
+    padding-top: var(--space-2);
   }
 
-  .errors {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
+  .budgets-section {
+    margin-top: var(--space-6);
   }
 
-  .errors p {
-    margin: 0.25rem 0;
-  }
-
-  .budgets-list h2 {
-    margin-bottom: 1.5rem;
+  .section-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
   .budget-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+    gap: var(--space-6);
   }
 
-  .budget-card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem;
-    transition: box-shadow 0.2s;
+  :global(.budget-inactive) {
+    opacity: 0.65;
   }
 
-  .budget-card:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  .budget-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 
-  .budget-card.inactive {
-    opacity: 0.6;
-    background: #f9f9f9;
-  }
-
-  .budget-header {
+  .budget-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+    align-items: flex-start;
+    gap: var(--space-2);
   }
 
-  .budget-header h3 {
+  .budget-name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
     margin: 0;
-    font-size: 1.25rem;
-  }
-
-  .badge {
-    background: #0066cc;
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    text-transform: capitalize;
   }
 
   .budget-details {
-    margin-bottom: 1rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
-  .budget-details p {
-    margin: 0.5rem 0;
-    font-size: 0.875rem;
+  .budget-detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+  }
+
+  .budget-detail-row dt {
+    color: var(--color-text-secondary);
+  }
+
+  .budget-detail-row dd {
+    margin: 0;
+    font-weight: var(--font-weight-medium);
   }
 
   .budget-progress {
-    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
-  .progress-bar {
-    background: #e9ecef;
-    border-radius: 4px;
-    height: 8px;
+  .progress-track {
+    background-color: var(--color-neutral-200);
+    border-radius: var(--radius-full);
+    height: 0.5rem;
     overflow: hidden;
-    margin-bottom: 0.5rem;
   }
 
   .progress-fill {
-    background: #0066cc;
+    background-color: var(--color-accent);
     height: 100%;
-    transition: width 0.3s;
+    border-radius: var(--radius-full);
+    transition: width var(--motion-duration-slow) var(--motion-easing-default);
   }
 
-  .progress-text {
-    font-size: 0.875rem;
-    color: #666;
+  .progress-fill--over {
+    background-color: var(--color-danger-500);
+  }
+
+  .progress-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
     margin: 0;
   }
 
   .budget-actions {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-  }
-
-  .empty-state {
-    background: #f9f9f9;
-    padding: 3rem;
-    text-align: center;
-    border-radius: 8px;
-    color: #666;
+    gap: var(--space-2);
   }
 </style>
+

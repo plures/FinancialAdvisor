@@ -4,6 +4,7 @@ import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import sveltePlugin from 'eslint-plugin-svelte';
 import svelteParser from 'svelte-eslint-parser';
 import globals from 'globals';
+import designDojoPlugin from '@plures/eslint-plugin-design-dojo';
 
 export default [
   js.configs.recommended,
@@ -37,7 +38,8 @@ export default [
   {
     files: ['**/*.svelte'],
     plugins: {
-      svelte: sveltePlugin
+      svelte: sveltePlugin,
+      'design-dojo': designDojoPlugin,
     },
     languageOptions: {
       parser: svelteParser,
@@ -53,7 +55,9 @@ export default [
     },
     rules: {
       'no-unused-vars': 'off',
-      'no-undef': 'off'
+      'no-undef': 'off',
+      'design-dojo/no-local-primitives': 'error',
+      'design-dojo/prefer-design-dojo-imports': 'warn',
     }
   },
   {
