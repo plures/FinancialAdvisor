@@ -23,11 +23,9 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "@financialadvisor/analytics": "file:../packages/analytics",
     "@financialadvisor/domain": "file:../packages/domain",
     "@financialadvisor/ingestion": "file:../packages/ingestion",
-    "@financialadvisor/ledger": "file:../packages/ledger",
-    "@financialadvisor/resolution": "file:../packages/resolution"
+    "@financialadvisor/ledger": "file:../packages/ledger"
   },
   "devDependencies": {
     "@types/node": "^25.0.10",
