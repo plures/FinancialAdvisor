@@ -3,6 +3,7 @@
   import { goals } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Goal } from '$lib/praxis/schema';
+  import { Button, Input, Select, Card, Badge, Alert, EmptyState, dojoSlide, dojoFade } from '@plures/design-dojo';
 
   let showAddForm = false;
   let showProgressForm = false;
@@ -66,14 +67,13 @@
   function updateGoalProgress(id: string, amount: number) {
     errors = [];
 
-    // Validate the progress amount
     const parsedAmount = Number(amount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       errors = ['Progress amount must be a valid positive number'];
       return;
     }
 
-    const goal = $goals.find(g => g.id === id);
+    const goal = $goals.find((g) => g.id === id);
     if (goal) {
       const newAmount = Math.max(0, goal.currentAmount || 0) + parsedAmount;
       goals.update({
@@ -82,7 +82,6 @@
         isCompleted: newAmount >= goal.targetAmount,
       });
 
-      // Only reset and close the form after successful update
       showProgressForm = false;
       progressAmount = 0;
       selectedGoalId = '';
@@ -111,7 +110,6 @@
     return FinancialLogic.calculateGoalProgress(goal);
   }
 
-  // Common goal categories
   const categories = [
     'Emergency Fund',
     'Vacation',
@@ -129,57 +127,56 @@
   <title>Goals Tracking - Financial Advisor</title>
 </svelte:head>
 
-<div class="container">
-  <div class="header">
-    <h1>Goals Tracking</h1>
-    <button class="btn-primary" onclick={() => (showAddForm = !showAddForm)}>
+<div class="page">
+  <header class="page-header">
+    <h1 class="page-title">Goals Tracking</h1>
+    <Button
+      variant={showAddForm ? 'secondary' : 'primary'}
+      onclick={() => (showAddForm = !showAddForm)}
+    >
       {showAddForm ? 'Cancel' : 'Add Goal'}
-    </button>
-  </div>
+    </Button>
+  </header>
 
   {#if showAddForm}
-    <div class="form-container">
-      <h2>Create New Goal</h2>
+    <div transition:dojoSlide>
+      <Card class="add-form-card">
+        <h2 class="form-heading">Create New Goal</h2>
 
-      {#if errors.length > 0}
-        <div class="errors">
-          {#each errors as error}
-            <p>{error}</p>
-          {/each}
-        </div>
-      {/if}
+        {#if errors.length > 0}
+          <Alert variant="danger" class="form-errors">
+            {#each errors as error}
+              <p>{error}</p>
+            {/each}
+          </Alert>
+        {/if}
 
-      <form
-        onsubmit={e => {
-          e.preventDefault();
-          handleAddGoal();
-        }}
-      >
-        <div class="form-group">
-          <label for="name">Goal Name *</label>
-          <input
+        <form
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleAddGoal();
+          }}
+          class="goal-form"
+        >
+          <Input
+            label="Goal Name *"
             id="name"
             type="text"
             bind:value={newGoal.name}
             placeholder="e.g., Emergency Fund"
             required
           />
-        </div>
 
-        <div class="form-group">
-          <label for="category">Category</label>
-          <select id="category" bind:value={newGoal.category}>
+          <Select label="Category" id="category" bind:value={newGoal.category}>
             <option value="">Select a category</option>
             {#each categories as category}
               <option value={category}>{category}</option>
             {/each}
-          </select>
-        </div>
+          </Select>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="targetAmount">Target Amount *</label>
-            <input
+          <div class="form-row">
+            <Input
+              label="Target Amount *"
               id="targetAmount"
               type="number"
               step="0.01"
@@ -187,11 +184,8 @@
               placeholder="10000.00"
               required
             />
-          </div>
-
-          <div class="form-group">
-            <label for="currentAmount">Current Amount</label>
-            <input
+            <Input
+              label="Current Amount"
               id="currentAmount"
               type="number"
               step="0.01"
@@ -199,34 +193,38 @@
               placeholder="0.00"
             />
           </div>
-        </div>
 
-        <div class="form-group">
-          <label for="deadline">Deadline (Optional)</label>
-          <input id="deadline" type="date" bind:value={newGoal.deadline} />
-        </div>
+          <Input
+            label="Deadline (Optional)"
+            id="deadline"
+            type="date"
+            bind:value={newGoal.deadline}
+          />
 
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" onclick={resetForm}> Reset </button>
-          <button type="submit" class="btn-primary"> Create Goal </button>
-        </div>
-      </form>
+          <div class="form-actions">
+            <Button type="button" variant="secondary" onclick={resetForm}>Reset</Button>
+            <Button type="submit" variant="primary">Create Goal</Button>
+          </div>
+        </form>
+      </Card>
     </div>
   {/if}
 
   {#if showProgressForm}
-    <div class="modal-overlay" onclick={cancelProgress}>
-      <div class="modal-content" onclick={e => e.stopPropagation()}>
-        <h2>Add Progress</h2>
-        <form
-          onsubmit={e => {
-            e.preventDefault();
-            updateGoalProgress(selectedGoalId, progressAmount);
-          }}
-        >
-          <div class="form-group">
-            <label for="progressAmount">Amount to Add *</label>
-            <input
+    <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="progress-modal-title">
+      <div transition:dojoFade class="modal-backdrop" onclick={cancelProgress}></div>
+      <div class="modal-card">
+        <Card elevated>
+          <h2 id="progress-modal-title" class="form-heading">Add Progress</h2>
+          <form
+            onsubmit={(e) => {
+              e.preventDefault();
+              updateGoalProgress(selectedGoalId, progressAmount);
+            }}
+            class="progress-form"
+          >
+            <Input
+              label="Amount to Add *"
               id="progressAmount"
               type="number"
               step="0.01"
@@ -235,355 +233,276 @@
               required
               autofocus
             />
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" onclick={cancelProgress}> Cancel </button>
-            <button type="submit" class="btn-primary"> Add Progress </button>
-          </div>
-        </form>
+            <div class="form-actions">
+              <Button type="button" variant="secondary" onclick={cancelProgress}>Cancel</Button>
+              <Button type="submit" variant="primary">Add Progress</Button>
+            </div>
+          </form>
+        </Card>
       </div>
     </div>
   {/if}
 
-  <div class="goals-list">
-    <h2>Your Goals</h2>
+  <section class="goals-section">
+    <h2 class="section-heading">Your Goals</h2>
 
     {#if $goals.length === 0}
-      <div class="empty-state">
-        <p>No goals created yet. Set your first financial goal to start tracking your progress!</p>
-      </div>
+      <EmptyState
+        icon="🎯"
+        title="No goals yet"
+        description="Set your first financial goal to start tracking your progress!"
+      />
     {:else}
       <div class="goal-grid">
         {#each $goals as goal}
           {@const progress = getProgressInfo(goal)}
-          <div class="goal-card" class:completed={goal.isCompleted}>
-            <div class="goal-header">
-              <h3>{goal.name}</h3>
-              {#if goal.isCompleted}
-                <span class="badge completed">✓ Completed</span>
-              {:else}
-                <span class="badge in-progress">In Progress</span>
-              {/if}
-            </div>
+          <Card elevated class={goal.isCompleted ? 'goal-card--completed' : ''}>
+            <div class="goal-content">
+              <div class="goal-top">
+                <h3 class="goal-name">{goal.name}</h3>
+                <Badge variant={goal.isCompleted ? 'success' : 'primary'}>
+                  {goal.isCompleted ? '✓ Completed' : 'In Progress'}
+                </Badge>
+              </div>
 
-            <div class="goal-details">
-              {#if goal.category}
-                <p><strong>Category:</strong> {goal.category}</p>
-              {/if}
-              <p><strong>Target:</strong> ${goal.targetAmount.toFixed(2)}</p>
-              <p><strong>Current:</strong> ${(goal.currentAmount || 0).toFixed(2)}</p>
-              <p><strong>Remaining:</strong> ${progress.amountRemaining.toFixed(2)}</p>
-              {#if goal.deadline}
-                <p><strong>Deadline:</strong> {new Date(goal.deadline).toLocaleDateString()}</p>
-              {/if}
-            </div>
+              <dl class="goal-details">
+                {#if goal.category}
+                  <div class="goal-detail-row">
+                    <dt>Category</dt>
+                    <dd>{goal.category}</dd>
+                  </div>
+                {/if}
+                <div class="goal-detail-row">
+                  <dt>Target</dt>
+                  <dd>${goal.targetAmount.toFixed(2)}</dd>
+                </div>
+                <div class="goal-detail-row">
+                  <dt>Current</dt>
+                  <dd>${(goal.currentAmount || 0).toFixed(2)}</dd>
+                </div>
+                <div class="goal-detail-row">
+                  <dt>Remaining</dt>
+                  <dd>${progress.amountRemaining.toFixed(2)}</dd>
+                </div>
+                {#if goal.deadline}
+                  <div class="goal-detail-row">
+                    <dt>Deadline</dt>
+                    <dd>{new Date(goal.deadline).toLocaleDateString()}</dd>
+                  </div>
+                {/if}
+              </dl>
 
-            <div class="goal-progress">
-              <div class="progress-bar">
+              <div class="goal-progress">
                 <div
-                  class="progress-fill"
-                  class:completed={goal.isCompleted}
-                  style="width: {Math.min(100, progress.percentComplete)}%"
-                ></div>
+                  class="progress-track"
+                  role="progressbar"
+                  aria-label="{goal.name} goal progress"
+                  aria-valuenow={Math.min(100, progress.percentComplete)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  <div
+                    class="progress-fill"
+                    class:progress-fill--complete={goal.isCompleted}
+                    style="width: {Math.min(100, progress.percentComplete)}%"
+                  ></div>
+                </div>
+                <p class="progress-label">{progress.percentComplete.toFixed(1)}% complete</p>
               </div>
-              <p class="progress-text">{progress.percentComplete.toFixed(1)}% complete</p>
-            </div>
 
-            {#if !goal.isCompleted}
               <div class="goal-actions">
-                <button class="btn-small" onclick={() => showProgressInput(goal.id)}>
-                  Add Progress
-                </button>
-                <button class="btn-small btn-danger" onclick={() => deleteGoal(goal.id)}>
+                {#if goal.isCompleted}
+                  <Button size="sm" variant="ghost" disabled>Goal Achieved! 🎉</Button>
+                {:else}
+                  <Button size="sm" variant="secondary" onclick={() => showProgressInput(goal.id)}>
+                    Add Progress
+                  </Button>
+                {/if}
+                <Button size="sm" variant="danger" onclick={() => deleteGoal(goal.id)}>
                   Delete
-                </button>
+                </Button>
               </div>
-            {:else}
-              <div class="goal-actions">
-                <button class="btn-small btn-success" disabled> Goal Achieved! 🎉 </button>
-                <button class="btn-small btn-danger" onclick={() => deleteGoal(goal.id)}>
-                  Delete
-                </button>
-              </div>
-            {/if}
-          </div>
+            </div>
+          </Card>
         {/each}
       </div>
     {/if}
-  </div>
+  </section>
 </div>
 
 <style>
-  .container {
-    max-width: 1200px;
+  .page {
+    max-width: 75rem;
     margin: 0 auto;
-    padding: 2rem;
+    padding: var(--space-8);
   }
 
-  .header {
+  .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-6);
   }
 
-  h1 {
-    font-size: 2rem;
+  .page-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
     margin: 0;
   }
 
-  .btn-primary {
-    background: #0066cc;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
+  .add-form-card {
+    margin-bottom: var(--space-6);
   }
 
-  .btn-primary:hover {
-    background: #0052a3;
+  .form-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
-  .btn-secondary {
-    background: #6c757d;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
+  .form-errors p {
+    margin: 0;
   }
 
-  .btn-secondary:hover {
-    background: #5a6268;
-  }
-
-  .btn-small {
-    background: #f0f0f0;
-    border: 1px solid #ddd;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.875rem;
-  }
-
-  .btn-small:hover {
-    background: #e0e0e0;
-  }
-
-  .btn-danger {
-    background: #dc3545;
-    color: white;
-    border-color: #dc3545;
-  }
-
-  .btn-danger:hover {
-    background: #c82333;
-  }
-
-  .btn-success {
-    background: #28a745;
-    color: white;
-    border-color: #28a745;
-  }
-
-  .btn-success:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .form-container {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  .form-container h2 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-  }
-
-  .form-group {
-    margin-bottom: 1.5rem;
-    flex: 1;
+  .goal-form,
+  .progress-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
   }
 
   .form-row {
-    display: flex;
-    gap: 1rem;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-
-  input[type='text'],
-  input[type='number'],
-  input[type='date'],
-  select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
   }
 
   .form-actions {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-3);
     justify-content: flex-end;
-    margin-top: 1.5rem;
+    padding-top: var(--space-2);
   }
 
-  .errors {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    padding: var(--space-4);
   }
 
-  .errors p {
-    margin: 0.25rem 0;
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgb(0 0 0 / 0.5);
   }
 
-  .goals-list h2 {
-    margin-bottom: 1.5rem;
+  .modal-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 26rem;
+  }
+
+  /* Goals grid */
+  .goals-section {
+    margin-top: var(--space-6);
+  }
+
+  .section-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
   .goal-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+    gap: var(--space-6);
   }
 
-  .goal-card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem;
-    transition: box-shadow 0.2s;
+  :global(.goal-card--completed) {
+    border-color: var(--color-success-500) !important;
   }
 
-  .goal-card:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  .goal-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 
-  .goal-card.completed {
-    background: #f8f9fa;
-    border-color: #28a745;
-  }
-
-  .goal-header {
+  .goal-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+    align-items: flex-start;
+    gap: var(--space-2);
   }
 
-  .goal-header h3 {
+  .goal-name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
     margin: 0;
-    font-size: 1.25rem;
-  }
-
-  .badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    text-transform: capitalize;
-  }
-
-  .badge.completed {
-    background: #28a745;
-    color: white;
-  }
-
-  .badge.in-progress {
-    background: #0066cc;
-    color: white;
   }
 
   .goal-details {
-    margin-bottom: 1rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
-  .goal-details p {
-    margin: 0.5rem 0;
-    font-size: 0.875rem;
+  .goal-detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+  }
+
+  .goal-detail-row dt {
+    color: var(--color-text-secondary);
+  }
+
+  .goal-detail-row dd {
+    margin: 0;
+    font-weight: var(--font-weight-medium);
   }
 
   .goal-progress {
-    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
-  .progress-bar {
-    background: #e9ecef;
-    border-radius: 4px;
-    height: 12px;
+  .progress-track {
+    background-color: var(--color-neutral-200);
+    border-radius: var(--radius-full);
+    height: 0.75rem;
     overflow: hidden;
-    margin-bottom: 0.5rem;
   }
 
   .progress-fill {
-    background: #0066cc;
+    background-color: var(--color-accent);
     height: 100%;
-    transition: width 0.3s;
+    border-radius: var(--radius-full);
+    transition: width var(--motion-duration-slow) var(--motion-easing-default);
   }
 
-  .progress-fill.completed {
-    background: #28a745;
+  .progress-fill--complete {
+    background-color: var(--color-success-500);
   }
 
-  .progress-text {
-    font-size: 0.875rem;
-    color: #666;
+  .progress-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
     margin: 0;
   }
 
   .goal-actions {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-  }
-
-  .empty-state {
-    background: #f9f9f9;
-    padding: 3rem;
-    text-align: center;
-    border-radius: 8px;
-    color: #666;
-  }
-
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
-  .modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  }
-
-  .modal-content h2 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
+    gap: var(--space-2);
   }
 </style>

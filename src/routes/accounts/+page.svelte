@@ -3,6 +3,7 @@
   import { accounts } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Account } from '$lib/praxis/schema';
+  import { Button, Input, Select, Card, Badge, Alert, EmptyState, dojoSlide } from '@plures/design-dojo';
 
   let showAddForm = false;
   let errors: string[] = [];
@@ -38,7 +39,6 @@
       updatedAt: new Date(),
     };
 
-    // Validate using Praxis logic
     const validation = FinancialLogic.validateAccount(account);
     if (!validation.valid) {
       errors = validation.errors;
@@ -56,47 +56,63 @@
       institution: '',
     };
   }
+
+  const accountTypeLabels: Record<string, string> = {
+    checking: 'Checking',
+    savings: 'Savings',
+    credit_card: 'Credit Card',
+    investment: 'Investment',
+    loan: 'Loan',
+    mortgage: 'Mortgage',
+    retirement: 'Retirement',
+  };
 </script>
 
 <svelte:head>
   <title>Accounts - Financial Advisor</title>
 </svelte:head>
 
-<div class="container">
-  <header>
-    <h1>Accounts</h1>
-    <button on:click={() => (showAddForm = !showAddForm)}>
+<div class="page">
+  <header class="page-header">
+    <h1 class="page-title">Accounts</h1>
+    <Button
+      variant={showAddForm ? 'secondary' : 'primary'}
+      onclick={() => (showAddForm = !showAddForm)}
+    >
       {showAddForm ? 'Cancel' : 'Add Account'}
-    </button>
+    </Button>
   </header>
 
   {#if showAddForm}
-    <div class="add-form">
-      <h2>Add New Account</h2>
+    <div transition:dojoSlide>
+      <Card class="add-form-card">
+        <h2 class="form-heading">Add New Account</h2>
 
-      {#if errors.length > 0}
-        <div class="error-box">
-          {#each errors as error}
-            <p class="error">{error}</p>
-          {/each}
-        </div>
-      {/if}
+        {#if errors.length > 0}
+          <Alert variant="danger" class="form-errors">
+            {#each errors as error}
+              <p>{error}</p>
+            {/each}
+          </Alert>
+        {/if}
 
-      <form on:submit|preventDefault={handleAddAccount}>
-        <div class="form-group">
-          <label for="name">Account Name *</label>
-          <input
+        <form
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleAddAccount();
+          }}
+          class="account-form"
+        >
+          <Input
+            label="Account Name *"
             id="name"
             type="text"
             bind:value={newAccount.name}
             placeholder="e.g., Main Checking"
             required
           />
-        </div>
 
-        <div class="form-group">
-          <label for="type">Account Type *</label>
-          <select id="type" bind:value={newAccount.type} required>
+          <Select label="Account Type *" id="type" bind:value={newAccount.type} required>
             <option value="checking">Checking</option>
             <option value="savings">Savings</option>
             <option value="credit_card">Credit Card</option>
@@ -104,12 +120,10 @@
             <option value="loan">Loan</option>
             <option value="mortgage">Mortgage</option>
             <option value="retirement">Retirement</option>
-          </select>
-        </div>
+          </Select>
 
-        <div class="form-group">
-          <label for="balance">Balance *</label>
-          <input
+          <Input
+            label="Balance *"
             id="balance"
             type="number"
             step="0.01"
@@ -117,192 +131,163 @@
             placeholder="0.00"
             required
           />
-        </div>
 
-        <div class="form-group">
-          <label for="currency">Currency</label>
-          <input id="currency" type="text" bind:value={newAccount.currency} placeholder="USD" />
-        </div>
+          <Input
+            label="Currency"
+            id="currency"
+            type="text"
+            bind:value={newAccount.currency}
+            placeholder="USD"
+          />
 
-        <div class="form-group">
-          <label for="institution">Institution</label>
-          <input
+          <Input
+            label="Institution"
             id="institution"
             type="text"
             bind:value={newAccount.institution}
             placeholder="e.g., Bank of America"
           />
-        </div>
 
-        <button type="submit" class="btn-primary">Add Account</button>
-      </form>
+          <div class="form-actions">
+            <Button type="submit" variant="primary">Add Account</Button>
+          </div>
+        </form>
+      </Card>
     </div>
   {/if}
 
-  <div class="accounts-list">
-    <h2>Your Accounts</h2>
+  <section class="accounts-section">
+    <h2 class="section-heading">Your Accounts</h2>
     {#if $accounts.length === 0}
-      <p class="empty-state">No accounts yet. Click "Add Account" to get started.</p>
+      <EmptyState icon="🏦" title="No accounts yet" description='Click "Add Account" to get started.' />
     {:else}
       <div class="accounts-grid">
         {#each $accounts as account (account.id)}
-          <div class="account-card">
-            <h3>{account.name}</h3>
-            <p class="type">{account.type}</p>
-            <p class="balance">
-              {account.currency || 'USD'}
-              {account.balance.toFixed(2)}
-            </p>
-            {#if account.institution}
-              <p class="institution">{account.institution}</p>
-            {/if}
-            <p class="status" class:active={account.isActive}>
-              {account.isActive ? 'Active' : 'Inactive'}
-            </p>
-          </div>
+          <Card elevated>
+            <div class="account-card-content">
+              <div class="account-card-top">
+                <h3 class="account-name">{account.name}</h3>
+                <Badge variant={account.isActive ? 'success' : 'neutral'}>
+                  {account.isActive ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
+              <p class="account-type">{accountTypeLabels[account.type] ?? account.type}</p>
+              <p class="account-balance">
+                {account.currency || 'USD'} {account.balance.toFixed(2)}
+              </p>
+              {#if account.institution}
+                <p class="account-institution">{account.institution}</p>
+              {/if}
+            </div>
+          </Card>
         {/each}
       </div>
     {/if}
-  </div>
+  </section>
 </div>
 
 <style>
-  .container {
-    max-width: 1200px;
+  .page {
+    max-width: 75rem;
     margin: 0 auto;
-    padding: 2rem;
+    padding: var(--space-8);
   }
 
-  header {
+  .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-6);
   }
 
-  h1 {
-    font-size: 2rem;
+  .page-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
     margin: 0;
   }
 
-  button {
-    padding: 0.75rem 1.5rem;
-    background: #0066cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
+  .add-form-card {
+    margin-bottom: var(--space-6);
   }
 
-  button:hover {
-    background: #0052a3;
+  .form-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
-  .add-form {
-    background: #f9f9f9;
-    padding: 2rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
+  .form-errors {
+    margin-bottom: var(--space-4);
   }
 
-  .add-form h2 {
-    margin-top: 0;
+  .form-errors p {
+    margin: 0;
   }
 
-  .form-group {
-    margin-bottom: 1rem;
+  .account-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--space-2);
   }
 
-  input,
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
+  .accounts-section {
+    margin-top: var(--space-6);
   }
 
-  .btn-primary {
-    background: #28a745;
-  }
-
-  .btn-primary:hover {
-    background: #218838;
+  .section-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-4) 0;
   }
 
   .accounts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+    gap: var(--space-6);
   }
 
-  .account-card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  .account-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
-  .account-card h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.25rem;
+  .account-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-2);
   }
 
-  .type {
-    color: #666;
-    font-size: 0.9rem;
+  .account-name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
+  }
+
+  .account-type {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
     text-transform: capitalize;
-    margin: 0.25rem 0;
   }
 
-  .balance {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #0066cc;
-    margin: 1rem 0;
+  .account-balance {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin: var(--space-2) 0 0 0;
   }
 
-  .institution {
-    color: #888;
-    font-size: 0.85rem;
-    margin: 0.5rem 0;
-  }
-
-  .status {
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
-  }
-
-  .status.active {
-    color: #28a745;
-  }
-
-  .empty-state {
-    text-align: center;
-    color: #666;
-    padding: 3rem;
-    background: #f9f9f9;
-    border-radius: 8px;
-  }
-
-  .error-box {
-    background: #fff5f5;
-    border: 1px solid #ffcccc;
-    border-radius: 4px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .error {
-    color: #dc3545;
-    margin: 0.25rem 0;
+  .account-institution {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin: 0;
   }
 </style>

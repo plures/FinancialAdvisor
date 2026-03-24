@@ -1,0 +1,25 @@
+{
+  "name": "@plures/eslint-plugin-design-dojo",
+  "version": "0.1.0",
+  "description": "ESLint plugin enforcing @plures/design-dojo component adoption",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src/**/*"
+  ],
+  "keywords": [
+    "eslint",
+    "eslint-plugin",
+    "design-system",
+    "design-dojo",
+    "svelte",
+    "plures"
+  ],
+  "peerDependencies": {
+    "eslint": ">=8.0.0"
+  },
+  "license": "MIT"
+}
