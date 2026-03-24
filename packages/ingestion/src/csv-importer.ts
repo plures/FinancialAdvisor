@@ -1,23 +1,28 @@
 /**
  * CSV File Importer for Financial Advisor
- * 
+ *
  * Implements flexible CSV import with template-based column mapping
  * for different bank CSV formats.
+ *
+ * Import flow:
+ *   File → Hash check (dedup) → Create ImportSession → Parse rows →
+ *   Store raw transactions → Update ImportSession → Report
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { parse } from 'csv-parse/sync';
+import { createImportSession, generateId } from '@financialadvisor/domain';
 import type {
   IFileImporter,
   ImportResult,
   CSVTemplate,
   ParsedCSVTransaction,
   PrivacyLevel,
-  AccountIntegrationError,
-  AccountIntegrationErrorCode,
 } from '@financialadvisor/ledger';
+import { ImportSessionStore } from './import-session-store.js';
+import { RawTransactionStore } from './raw-transaction.js';
 
 export interface CSVImportOptions {
   accountId?: string;
@@ -27,7 +32,12 @@ export interface CSVImportOptions {
 }
 
 export class CSVImporter implements IFileImporter {
-  private readonly maxFileSizeDefault = 50 * 1024 * 1024; // 50MB
+  private readonly maxFileSizeDefault = 50 * 1024 * 1024; // 50 MB
+
+  constructor(
+    private readonly sessionStore: ImportSessionStore = new ImportSessionStore(),
+    private readonly txStore: RawTransactionStore = new RawTransactionStore()
+  ) {}
 
   getSupportedExtensions(): string[] {
     return ['csv', 'txt'];
@@ -35,24 +45,20 @@ export class CSVImporter implements IFileImporter {
 
   async canImport(filePath: string): Promise<boolean> {
     try {
-      // Check if file exists
       if (!fs.existsSync(filePath)) {
         return false;
       }
 
-      // Check file extension
       const extension = filePath.toLowerCase().split('.').pop();
       if (!this.getSupportedExtensions().includes(extension || '')) {
         return false;
       }
 
-      // Try to read first few lines to verify it's text
       const buffer = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' });
       const firstLines = buffer.split('\n').slice(0, 5).join('\n');
-      
-      // Basic CSV detection - should have commas or semicolons
+
       return firstLines.includes(',') || firstLines.includes(';') || firstLines.includes('\t');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -62,9 +68,10 @@ export class CSVImporter implements IFileImporter {
     options: CSVImportOptions = {}
   ): Promise<ImportResult> {
     const startTime = Date.now();
+    const accountId = options.accountId ?? 'unknown';
     const result: ImportResult = {
       success: false,
-      sourceConfigId: options.accountId || 'unknown',
+      sourceConfigId: accountId,
       fileName: path.basename(filePath),
       transactionsImported: 0,
       transactionsSkipped: 0,
@@ -76,40 +83,94 @@ export class CSVImporter implements IFileImporter {
     };
 
     try {
-      // Validate file
+      // 1. Validate file
       const validation = await this.validate(filePath, options);
       if (!validation.valid) {
-        result.errors = validation.errors.map(err => ({ message: err }));
+        result.errors = validation.errors.map((err) => ({ message: err }));
         return result;
       }
 
-      // Calculate file hash
+      // 2. Compute file hash
       const fileHash = await this.calculateFileHash(filePath);
       result.fileHash = fileHash;
 
-      // Read file
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-      
-      // Parse CSV with template
-      const transactions = await this.parseCSV(fileContent, options.csvTemplate);
+      // 3. Idempotency check — skip if same file was already imported
+      if (options.skipDuplicates !== false) {
+        const existing = this.sessionStore.findByHash(fileHash);
+        if (existing) {
+          result.success = true;
+          result.importSessionId = existing.id;
+          result.transactionsSkipped = this.txStore.findBySession(existing.id).length;
+          return result;
+        }
+      }
 
-      // Process each transaction
-      for (const [index, transaction] of transactions.entries()) {
+      // 4. Parse CSV rows (errors are non-fatal; bad rows are tracked)
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { rows, rowErrors, totalRows } = await this.parseCSVWithErrors(
+        fileContent,
+        options.csvTemplate
+      );
+
+      // 5. Create ImportSession (status: 'processing')
+      const sessionId = generateId();
+      const session = createImportSession(
+        sessionId,
+        fileHash,
+        accountId,
+        new Date(),
+        totalRows,
+        rowErrors.length,
+        'processing'
+      );
+      this.sessionStore.save(session);
+      result.importSessionId = sessionId;
+
+      // 6. Persist raw transactions
+      for (const [index, row] of rows.entries()) {
         try {
-          // TODO: Save transaction to database (PluresDB integration)
-          // Implementation pending: packages/shared/src/database/transaction-repository.ts
-          // This will be implemented when PluresDB integration is complete
-          // For now, just count as imported
+          this.txStore.save({
+            id: generateId(),
+            importSessionId: sessionId,
+            sourceId: String(index + 1),
+            date: row.date,
+            description: row.description,
+            amount: row.amount,
+            metadata: {
+              ...(row.metadata as Record<string, string>),
+            },
+          });
           result.transactionsImported++;
-        } catch (error) {
+        } catch (err) {
           result.transactionsFailed++;
           result.errors.push({
             line: index + 1,
-            message: error instanceof Error ? error.message : 'Unknown error',
-            transaction,
+            message: err instanceof Error ? err.message : 'Unknown error',
+            transaction: row,
           });
         }
       }
+
+      // Collect per-row parse errors (non-fatal — import continues)
+      for (const re of rowErrors) {
+        result.transactionsFailed++;
+        result.errors.push({ line: re.row, message: re.message });
+      }
+
+      // 7. Finalise ImportSession with accurate counts
+      const finalErrorCount = result.transactionsFailed;
+      const finalStatus =
+        finalErrorCount === totalRows && totalRows > 0 ? 'failed' : 'complete';
+      const finalSession = createImportSession(
+        sessionId,
+        fileHash,
+        accountId,
+        session.timestamp,
+        totalRows,
+        finalErrorCount,
+        finalStatus
+      );
+      this.sessionStore.save(finalSession);
 
       result.success = result.transactionsImported > 0;
     } catch (error) {
@@ -130,28 +191,24 @@ export class CSVImporter implements IFileImporter {
     const errors: string[] = [];
 
     try {
-      // Check file exists
       if (!fs.existsSync(filePath)) {
         errors.push('File not found');
         return { valid: false, errors };
       }
 
-      // Check file size
       const stats = fs.statSync(filePath);
-      const maxSize = options.maxFileSize || this.maxFileSizeDefault;
+      const maxSize = options.maxFileSize ?? this.maxFileSizeDefault;
       if (stats.size > maxSize) {
         errors.push(`File too large (${stats.size} bytes, max ${maxSize} bytes)`);
         return { valid: false, errors };
       }
 
-      // Check if it's a text file
       const canImport = await this.canImport(filePath);
       if (!canImport) {
         errors.push('File is not a valid CSV file');
         return { valid: false, errors };
       }
 
-      // If template provided, validate it
       if (options.csvTemplate) {
         const templateErrors = this.validateTemplate(options.csvTemplate);
         if (templateErrors.length > 0) {
@@ -160,19 +217,19 @@ export class CSVImporter implements IFileImporter {
         }
       }
 
-      // Try to parse a few lines
       try {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         const lines = fileContent.split('\n').slice(0, 10);
         const delimiter = this.detectDelimiter(lines.join('\n'));
-        
         parse(lines.join('\n'), {
           delimiter,
           skip_empty_lines: true,
           relax_column_count: true,
         });
       } catch (error) {
-        errors.push(`CSV parsing error: ${error instanceof Error ? error.message : 'Unknown'}`);
+        errors.push(
+          `CSV parsing error: ${error instanceof Error ? error.message : 'Unknown'}`
+        );
         return { valid: false, errors };
       }
 
@@ -183,25 +240,28 @@ export class CSVImporter implements IFileImporter {
     }
   }
 
+  // ─── Private helpers ────────────────────────────────────────────────────────
+
   /**
-   * Parse CSV content into transactions
+   * Parse CSV content, returning both successful rows and per-row errors so
+   * that a single bad row does not abort the entire import.
    */
-  private async parseCSV(
+  private async parseCSVWithErrors(
     content: string,
     template?: CSVTemplate
-  ): Promise<ParsedCSVTransaction[]> {
-    const transactions: ParsedCSVTransaction[] = [];
+  ): Promise<{
+    rows: ParsedCSVTransaction[];
+    rowErrors: Array<{ row: number; message: string }>;
+    totalRows: number;
+  }> {
+    const rows: ParsedCSVTransaction[] = [];
+    const rowErrors: Array<{ row: number; message: string }> = [];
 
-    // Detect delimiter
-    const delimiter = template?.delimiter || this.detectDelimiter(content);
-    
-    // Parse CSV
-    // Use column-name mode only when the template uses string column identifiers;
-    // keep array mode (columns: false) when numeric indices are used so that
-    // getColumnValue(record, number) works correctly.
-    const useColumnHeaders = template?.headerRow !== undefined &&
-      typeof template.dateColumn === 'string';
-    const records = parse(content, {
+    const delimiter = template?.delimiter ?? this.detectDelimiter(content);
+    const useColumnHeaders =
+      template?.headerRow !== undefined && typeof template.dateColumn === 'string';
+
+    const records: unknown[] = parse(content, {
       delimiter,
       skip_empty_lines: true,
       relax_column_count: true,
@@ -209,45 +269,54 @@ export class CSVImporter implements IFileImporter {
       columns: useColumnHeaders,
     });
 
-    // If no template, use default mapping (first 3 columns: date, description, amount)
+    const totalRows = records.length;
+
     if (!template) {
-      for (const record of records) {
+      for (const [i, record] of records.entries()) {
         if (Array.isArray(record) && record.length >= 3) {
-          transactions.push({
-            date: record[0],
-            description: record[1],
-            amount: this.parseAmount(record[2]),
+          rows.push({
+            date: record[0] as string,
+            description: record[1] as string,
+            amount: this.parseAmount(record[2] as string),
+          });
+        } else {
+          const colCount = Array.isArray(record) ? (record as unknown[]).length : 0;
+          rowErrors.push({
+            row: i + 1,
+            message: `Row has ${colCount} column(s), expected at least 3`,
           });
         }
       }
-      return transactions;
+      return { rows, rowErrors, totalRows };
     }
 
-    // Use template mapping
-    for (const record of records) {
+    for (const [i, record] of records.entries()) {
       try {
         const transaction = this.mapRecordToTransaction(record, template);
         if (transaction) {
-          transactions.push(transaction);
+          rows.push(transaction);
+        } else {
+          rowErrors.push({
+            row: i + 1,
+            message: 'Row missing required fields (date/description/amount)',
+          });
         }
       } catch (error) {
-        // Skip malformed rows
-        console.warn('Failed to parse CSV row:', error);
+        rowErrors.push({
+          row: i + 1,
+          message: error instanceof Error ? error.message : 'Parse error',
+        });
       }
     }
 
-    return transactions;
+    return { rows, rowErrors, totalRows };
   }
 
-  /**
-   * Map CSV record to transaction using template
-   */
   private mapRecordToTransaction(
-    record: any,
+    record: unknown,
     template: CSVTemplate
   ): ParsedCSVTransaction | null {
     try {
-      // Get column values
       const date = this.getColumnValue(record, template.dateColumn);
       const description = this.getColumnValue(record, template.descriptionColumn);
       const amountStr = this.getColumnValue(record, template.amountColumn);
@@ -256,65 +325,37 @@ export class CSVImporter implements IFileImporter {
         return null;
       }
 
-      // Parse amount
-      const amount = this.parseAmount(amountStr);
-
-      // Parse date (TODO: handle different date formats)
-      const parsedDate = this.parseDate(date, template.dateFormat);
-
       return {
-        date: parsedDate,
+        date: this.parseDate(date, template.dateFormat),
         description: description.trim(),
-        amount,
+        amount: this.parseAmount(amountStr),
         metadata: {
           template: template.id,
           bank: template.bankName,
         },
       };
-    } catch (error) {
+    } catch {
       return null;
     }
   }
 
-  /**
-   * Get column value by name or index
-   */
-  private getColumnValue(record: any, column: string | number): string {
+  private getColumnValue(record: unknown, column: string | number): string {
     if (typeof column === 'number') {
-      return Array.isArray(record) ? record[column] : '';
+      return Array.isArray(record) ? (record[column] as string) : '';
     }
-    return record[column] || '';
+    return (record as Record<string, string>)[column] ?? '';
   }
 
-  /**
-   * Parse amount string to number
-   */
   private parseAmount(amountStr: string): number {
-    // Remove currency symbols, commas, and whitespace
     const cleaned = amountStr
       .replace(/[$€£¥,\s]/g, '')
-      .replace(/[()]/g, '-') // Parentheses often indicate negative
+      .replace(/[()]/g, '-')
       .trim();
-
     const num = parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
   }
 
-  /**
-   * Parse date string to ISO format
-   * 
-   * TODO: Implement comprehensive date parsing with different formats
-   * Priority: Medium
-   * Suggested library: date-fns or dayjs for better format handling
-   * 
-   * Current implementation handles ISO and basic US dates.
-   * For production, should support all formats in CSVTemplate.dateFormat
-   */
-  private parseDate(dateStr: string, format?: string): string {
-    // TODO: Use date-fns to parse with format string
-    // Example: parse(dateStr, format || 'MM/dd/yyyy', new Date())
-    
-    // For now, assume ISO or US format
+  private parseDate(dateStr: string, _format?: string): string {
     const date = new Date(dateStr);
     if (!isNaN(date.getTime())) {
       return date.toISOString().split('T')[0];
@@ -322,64 +363,38 @@ export class CSVImporter implements IFileImporter {
     return dateStr;
   }
 
-  /**
-   * Detect CSV delimiter
-   */
   private detectDelimiter(content: string): string {
     const firstLine = content.split('\n')[0];
     const delimiters = [',', ';', '\t', '|'];
-    
     let maxCount = 0;
-    let detectedDelimiter = ',';
-
-    for (const delimiter of delimiters) {
-      const count = firstLine.split(delimiter).length;
+    let detected = ',';
+    for (const d of delimiters) {
+      const count = firstLine.split(d).length;
       if (count > maxCount) {
         maxCount = count;
-        detectedDelimiter = delimiter;
+        detected = d;
       }
     }
-
-    return detectedDelimiter;
+    return detected;
   }
 
-  /**
-   * Validate CSV template
-   */
   private validateTemplate(template: CSVTemplate): string[] {
     const errors: string[] = [];
-
-    if (!template.id) {
-      errors.push('Template ID is required');
-    }
-
-    if (!template.name) {
-      errors.push('Template name is required');
-    }
-
-    if (template.dateColumn === undefined || template.dateColumn === null) {
+    if (!template.id) errors.push('Template ID is required');
+    if (!template.name) errors.push('Template name is required');
+    if (template.dateColumn === undefined || template.dateColumn === null)
       errors.push('Date column is required');
-    }
-
-    if (template.descriptionColumn === undefined || template.descriptionColumn === null) {
+    if (template.descriptionColumn === undefined || template.descriptionColumn === null)
       errors.push('Description column is required');
-    }
-
-    if (template.amountColumn === undefined || template.amountColumn === null) {
+    if (template.amountColumn === undefined || template.amountColumn === null)
       errors.push('Amount column is required');
-    }
-
     return errors;
   }
 
-  /**
-   * Calculate SHA-256 hash of file
-   */
   private async calculateFileHash(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const hash = crypto.createHash('sha256');
       const stream = fs.createReadStream(filePath);
-
       stream.on('data', (data) => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
@@ -388,11 +403,10 @@ export class CSVImporter implements IFileImporter {
 }
 
 /**
- * Create pre-configured CSV templates for common banks
+ * Pre-configured CSV templates for common banks.
  */
 export function createCommonBankTemplates(): CSVTemplate[] {
   return [
-    // Chase Bank
     {
       id: 'chase-checking',
       name: 'Chase Checking Account',
@@ -405,7 +419,6 @@ export function createCommonBankTemplates(): CSVTemplate[] {
       headerRow: 0,
       delimiter: ',',
     },
-    // Bank of America
     {
       id: 'bofa-checking',
       name: 'Bank of America Checking',
@@ -418,7 +431,6 @@ export function createCommonBankTemplates(): CSVTemplate[] {
       headerRow: 0,
       delimiter: ',',
     },
-    // Wells Fargo
     {
       id: 'wells-fargo-checking',
       name: 'Wells Fargo Checking',
@@ -431,7 +443,6 @@ export function createCommonBankTemplates(): CSVTemplate[] {
       headerRow: 0,
       delimiter: ',',
     },
-    // Generic template
     {
       id: 'generic-csv',
       name: 'Generic CSV (Date, Description, Amount)',
