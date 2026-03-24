@@ -10,8 +10,6 @@
   "references": [
     { "path": "../packages/domain" },
     { "path": "../packages/ledger" },
-    { "path": "../packages/ingestion" },
-    { "path": "../packages/resolution" },
-    { "path": "../packages/analytics" }
+    { "path": "../packages/ingestion" }
   ]
 }
