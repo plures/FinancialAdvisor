@@ -14,7 +14,7 @@
 
   let { label, hint, error, id, value = $bindable(), class: className = '', ...restProps }: Props = $props();
 
-  let inputId = id ?? `dojo-input-${++_idCounter}`;
+  const inputId = id ?? `dojo-input-${++_idCounter}`;
 </script>
 
 <div class="dojo-field {className}">

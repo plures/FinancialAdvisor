@@ -208,10 +208,6 @@
     opacity: 0.7;
   }
 
-  .card-done {
-    opacity: 0.7;
-  }
-
   .card-head {
     display: flex;
     align-items: center;
