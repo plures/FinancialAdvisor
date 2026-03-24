@@ -1,13 +1,14 @@
 /**
  * Resolution Confidence Expectation
  *
- * Ensures that transaction categorization meets minimum confidence
- * thresholds before downstream analytics and advice can rely on the data.
+ * Ensures that transaction categorization confidence meets minimum thresholds
+ * before downstream analytics and advice can rely on the data.
  *
  * Checks:
- *  - The fraction of uncategorized transactions does not exceed the threshold
- *  - No required transaction is left with an explicitly empty category
- *    when auto-categorization has already been applied
+ *  - Every confidence score is within the valid range [0, 1]
+ *  - The average confidence across all transactions meets the minimum threshold
+ *  - The fraction of transactions below the per-item confidence threshold
+ *    does not exceed the allowed maximum
  */
 
 import type { Transaction } from '@financialadvisor/domain';
