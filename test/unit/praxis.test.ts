@@ -459,15 +459,13 @@ describe('createPraxisEngine / lifecycle', () => {
   });
 
   it('getPraxisEngine throws before initialization', () => {
-    // Reset shared engine by reinitializing with no-op (state is module-scoped
-    // but the test order may vary; guard both cases).
-    try {
-      // If already initialized this won't throw — that's fine.
-      getPraxisEngine();
-    } catch (err) {
-      assert.ok(err instanceof Error);
-      assert.ok((err as Error).message.includes('not been initialized'));
-    }
+    assert.throws(
+      () => {
+        getPraxisEngine();
+      },
+      (err: unknown) =>
+        err instanceof Error && err.message.includes('not been initialized'),
+    );
   });
 
   it('initializePraxisEngine creates and returns the shared engine', () => {
