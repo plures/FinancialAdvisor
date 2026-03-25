@@ -10,6 +10,11 @@
  *   6. comparePayoffStrategies — snowball vs avalanche
  *   7. computeCashFlow     — inflows / outflows / running balance / buckets
  *   8. projectCashFlow     — forward projection from recurring items
+ *   9. computeSubscriptionDashboard — subscription costs / status / price alerts
+ *  10. computeNetWorth     — assets / liabilities / byAccountType
+ *  11. takeNetWorthSnapshot / netWorthChange / sortSnapshotsByPeriod
+ *  12. computeGoalProgress — percent complete / on-track / projected completion
+ *  13. computeGoalsProgress — batch goal evaluation
  */
 
 import { describe, it } from 'mocha';
@@ -36,6 +41,19 @@ import {
   computeCashFlow,
   projectCashFlow,
 } from '../../packages/analytics/dist/cash-flow.js';
+import {
+  computeSubscriptionDashboard,
+} from '../../packages/analytics/dist/subscription.js';
+import {
+  computeNetWorth,
+  takeNetWorthSnapshot,
+  netWorthChange,
+  sortSnapshotsByPeriod,
+} from '../../packages/analytics/dist/net-worth.js';
+import {
+  computeGoalProgress,
+  computeGoalsProgress,
+} from '../../packages/analytics/dist/goals.js';
 
 // ─── Domain imports ──────────────────────────────────────────────────────────
 import {
@@ -43,7 +61,7 @@ import {
   moneyFromDecimal,
 } from '../../packages/domain/dist/money.js';
 import { createDateRange } from '../../packages/domain/dist/temporal.js';
-import { TransactionType } from '../../packages/domain/dist/types.js';
+import { TransactionType, AccountType, GoalCategory, Priority } from '../../packages/domain/dist/types.js';
 
 // ─── Test helpers ────────────────────────────────────────────────────────────
 
@@ -887,5 +905,450 @@ describe('projectCashFlow', () => {
       }),
       /projectionMonths/,
     );
+  });
+});
+
+// ─── Test helpers (shared for new engines) ──────────────────────────────────
+
+function makeRecurringTxn(opts: {
+  id?: string;
+  amountCents: number;
+  date?: Date;
+  merchant?: string;
+  category?: string;
+}) {
+  const cents = opts.amountCents;
+  return {
+    id: opts.id ?? uid(),
+    importSessionId: 'sess-sub',
+    accountId: 'acc-sub',
+    amount: createMoney(cents, 'USD'),
+    description: opts.merchant ?? 'Recurring test',
+    date: opts.date ?? makeDate(2024, 1, 15),
+    category: opts.category,
+    tags: [],
+    type: TransactionType.EXPENSE,
+    isRecurring: true,
+    merchant: opts.merchant,
+  };
+}
+
+function makeAccount(opts: {
+  id?: string;
+  type: AccountType;
+  balance: number;
+  isActive?: boolean;
+}) {
+  return {
+    id: opts.id ?? uid(),
+    name: `Account-${opts.id ?? String(_id)}`,
+    type: opts.type,
+    balance: opts.balance,
+    currency: 'USD',
+    lastUpdated: new Date(),
+    isActive: opts.isActive ?? true,
+  };
+}
+
+function makeGoal(opts: {
+  id?: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: Date;
+  isCompleted?: boolean;
+}) {
+  return {
+    id: opts.id ?? uid(),
+    name: 'Test goal',
+    description: '',
+    targetAmount: opts.targetAmount,
+    currentAmount: opts.currentAmount,
+    targetDate: opts.targetDate,
+    category: GoalCategory.OTHER,
+    priority: Priority.MEDIUM,
+    isCompleted: opts.isCompleted ?? false,
+  };
+}
+
+// ─── computeSubscriptionDashboard ───────────────────────────────────────────
+
+describe('computeSubscriptionDashboard', () => {
+  const refDate = makeDate(2024, 3, 1);
+
+  it('returns empty dashboard for no transactions', () => {
+    const result = computeSubscriptionDashboard([], new Set(), refDate);
+    assert.strictEqual(result.items.length, 0);
+    assert.strictEqual(result.totalMonthlyCost.cents, 0);
+    assert.strictEqual(result.activeCount, 0);
+    assert.strictEqual(result.cancelledCount, 0);
+    assert.strictEqual(result.unusedCount, 0);
+  });
+
+  it('groups recurring transactions by label and computes monthly cost', () => {
+    const txns = [
+      makeRecurringTxn({ amountCents: -1500, date: makeDate(2024, 1, 1), merchant: 'Netflix' }),
+      makeRecurringTxn({ amountCents: -1500, date: makeDate(2024, 2, 1), merchant: 'Netflix' }),
+    ];
+    const result = computeSubscriptionDashboard(txns, new Set(), refDate);
+    assert.strictEqual(result.items.length, 1);
+    const item = result.items[0]!;
+    assert.strictEqual(item.label, 'netflix');
+    assert.strictEqual(item.monthlyCost.cents, 1500);
+    assert.strictEqual(item.annualCost.cents, 18000);
+    assert.strictEqual(item.status, 'active');
+    assert.strictEqual(item.priceAlert, undefined);
+  });
+
+  it('marks item as unused when last transaction is older than 90 days', () => {
+    const oldDate = new Date(refDate.getTime() - 91 * 24 * 60 * 60 * 1000);
+    const txns = [
+      makeRecurringTxn({ amountCents: -999, date: oldDate, merchant: 'OldService' }),
+    ];
+    const result = computeSubscriptionDashboard(txns, new Set(), refDate);
+    assert.strictEqual(result.items[0]!.status, 'unused');
+    assert.strictEqual(result.unusedCount, 1);
+    // Unused items should NOT count toward totalMonthlyCost
+    assert.strictEqual(result.totalMonthlyCost.cents, 0);
+  });
+
+  it('marks item as cancelled when label is in cancelledLabels', () => {
+    const txns = [
+      makeRecurringTxn({ amountCents: -800, date: makeDate(2024, 2, 15), merchant: 'Spotify' }),
+    ];
+    const result = computeSubscriptionDashboard(txns, new Set(['spotify']), refDate);
+    assert.strictEqual(result.items[0]!.status, 'cancelled');
+    assert.strictEqual(result.cancelledCount, 1);
+    assert.strictEqual(result.totalMonthlyCost.cents, 0);
+  });
+
+  it('totalMonthlyCost only sums active items', () => {
+    const txns = [
+      makeRecurringTxn({ amountCents: -1000, date: makeDate(2024, 2, 1), merchant: 'ActiveApp' }),
+      makeRecurringTxn({ amountCents: -500, date: makeDate(2024, 2, 1), merchant: 'CancelledApp' }),
+    ];
+    const result = computeSubscriptionDashboard(txns, new Set(['cancelledapp']), refDate);
+    assert.strictEqual(result.totalMonthlyCost.cents, 1000);
+    assert.strictEqual(result.totalAnnualCost.cents, 12000);
+  });
+
+  it('detects a price increase of ≥ 5 % and populates priceAlert', () => {
+    const txns = [
+      makeRecurringTxn({ amountCents: -1000, date: makeDate(2024, 1, 1), merchant: 'CloudStorage' }),
+      makeRecurringTxn({ amountCents: -1000, date: makeDate(2024, 2, 1), merchant: 'CloudStorage' }),
+      makeRecurringTxn({ amountCents: -1200, date: makeDate(2024, 3, 1), merchant: 'CloudStorage' }), // +20%
+    ];
+    const result = computeSubscriptionDashboard(txns, new Set(), refDate);
+    const item = result.items[0]!;
+    assert.ok(item.priceAlert !== undefined, 'expected a priceAlert');
+    assert.ok(item.priceAlert!.changePercent > 0, 'expected positive change');
+    assert.strictEqual(item.priceAlert!.previousAmount.cents, 1000);
+    assert.strictEqual(item.priceAlert!.currentAmount.cents, 1200);
+  });
+
+  it('does not trigger price alert for changes below 5 %', () => {
+    const txns = [
+      makeRecurringTxn({ amountCents: -1000, date: makeDate(2024, 1, 1), merchant: 'StableApp' }),
+      makeRecurringTxn({ amountCents: -1030, date: makeDate(2024, 2, 1), merchant: 'StableApp' }), // +3%
+    ];
+    const result = computeSubscriptionDashboard(txns, new Set(), refDate);
+    assert.strictEqual(result.items[0]!.priceAlert, undefined);
+  });
+
+  it('ignores non-recurring transactions', () => {
+    const txns = [
+      {
+        id: uid(),
+        importSessionId: 'sess-1',
+        accountId: 'acc-1',
+        amount: createMoney(-500, 'USD'),
+        description: 'One-off charge',
+        date: makeDate(2024, 2, 1),
+        category: 'Shopping',
+        tags: [],
+        type: TransactionType.EXPENSE,
+        isRecurring: false,
+        merchant: 'Amazon',
+      },
+    ];
+    const result = computeSubscriptionDashboard(txns, new Set(), refDate);
+    assert.strictEqual(result.items.length, 0);
+  });
+
+  it('tracks last transaction date correctly', () => {
+    const txns = [
+      makeRecurringTxn({ amountCents: -900, date: makeDate(2024, 1, 5), merchant: 'Gym' }),
+      makeRecurringTxn({ amountCents: -900, date: makeDate(2024, 2, 5), merchant: 'Gym' }),
+    ];
+    const result = computeSubscriptionDashboard(txns, new Set(), refDate);
+    const item = result.items[0]!;
+    assert.ok(item.lastTransactionDate !== undefined);
+    assert.strictEqual(item.lastTransactionDate!.getMonth() + 1, 2); // February
+  });
+});
+
+// ─── computeNetWorth ────────────────────────────────────────────────────────
+
+describe('computeNetWorth', () => {
+  it('returns zero net worth for no accounts', () => {
+    const result = computeNetWorth([]);
+    assert.strictEqual(result.assets.cents, 0);
+    assert.strictEqual(result.liabilities.cents, 0);
+    assert.strictEqual(result.netWorth.cents, 0);
+  });
+
+  it('sums checking and savings as assets', () => {
+    const accounts = [
+      makeAccount({ type: AccountType.CHECKING, balance: 1000 }),  // $1000
+      makeAccount({ type: AccountType.SAVINGS,  balance: 5000 }),  // $5000
+    ];
+    const result = computeNetWorth(accounts);
+    assert.strictEqual(result.assets.cents, 600000);   // 100000 + 500000
+    assert.strictEqual(result.liabilities.cents, 0);
+    assert.strictEqual(result.netWorth.cents, 600000);
+  });
+
+  it('treats credit-card balance as a liability', () => {
+    const accounts = [
+      makeAccount({ type: AccountType.SAVINGS, balance: 5000 }),       // $5000 asset
+      makeAccount({ type: AccountType.CREDIT,  balance: -1000 }),      // $1000 liability
+    ];
+    const result = computeNetWorth(accounts);
+    assert.strictEqual(result.liabilities.cents, 100000);  // abs($1000)
+    assert.strictEqual(result.assets.cents, 500000);
+    assert.strictEqual(result.netWorth.cents, 400000);     // $5000 - $1000 = $4000
+  });
+
+  it('handles loan and mortgage as liabilities', () => {
+    const accounts = [
+      makeAccount({ type: AccountType.LOAN,     balance: -20000 }),
+      makeAccount({ type: AccountType.MORTGAGE, balance: -300000 }),
+    ];
+    const result = computeNetWorth(accounts);
+    assert.strictEqual(result.assets.cents, 0);
+    assert.strictEqual(result.liabilities.cents, 32000000); // $320000 in cents
+    assert.strictEqual(result.netWorth.cents, -32000000);
+  });
+
+  it('produces per-type breakdown', () => {
+    const accounts = [
+      makeAccount({ type: AccountType.CHECKING,    balance: 1000 }),
+      makeAccount({ type: AccountType.INVESTMENT,  balance: 10000 }),
+      makeAccount({ type: AccountType.CREDIT,      balance: -2000 }),
+    ];
+    const result = computeNetWorth(accounts);
+    assert.strictEqual(result.byAccountType.get(AccountType.CHECKING)!.cents,   100000);
+    assert.strictEqual(result.byAccountType.get(AccountType.INVESTMENT)!.cents, 1000000);
+    assert.strictEqual(result.byAccountType.get(AccountType.CREDIT)!.cents,     200000);
+  });
+
+  it('excludes inactive accounts', () => {
+    const accounts = [
+      makeAccount({ type: AccountType.CHECKING, balance: 5000, isActive: true }),
+      makeAccount({ type: AccountType.SAVINGS,  balance: 1000, isActive: false }), // excluded
+    ];
+    const result = computeNetWorth(accounts);
+    assert.strictEqual(result.assets.cents, 500000); // only checking
+  });
+});
+
+// ─── takeNetWorthSnapshot / netWorthChange / sortSnapshotsByPeriod ──────────
+
+describe('takeNetWorthSnapshot', () => {
+  it('captures current net worth with a period label', () => {
+    const accounts = [makeAccount({ type: AccountType.SAVINGS, balance: 1000 })];
+    const snap = takeNetWorthSnapshot(accounts, '2025-01');
+    assert.strictEqual(snap.periodLabel, '2025-01');
+    assert.strictEqual(snap.result.assets.cents, 100000);
+    assert.ok(snap.computedAt instanceof Date);
+  });
+});
+
+describe('netWorthChange', () => {
+  it('computes the increase in net worth between two snapshots', () => {
+    const accounts1 = [makeAccount({ type: AccountType.SAVINGS, balance: 1000 })];
+    const accounts2 = [makeAccount({ type: AccountType.SAVINGS, balance: 1500 })];
+    const snap1 = takeNetWorthSnapshot(accounts1, '2025-01');
+    const snap2 = takeNetWorthSnapshot(accounts2, '2025-02');
+    const change = netWorthChange(snap1, snap2);
+    assert.strictEqual(change.cents, 50000); // $500 increase
+  });
+
+  it('computes a negative change when net worth decreases', () => {
+    const accounts1 = [makeAccount({ type: AccountType.SAVINGS, balance: 2000 })];
+    const accounts2 = [makeAccount({ type: AccountType.SAVINGS, balance: 1000 })];
+    const snap1 = takeNetWorthSnapshot(accounts1, '2025-01');
+    const snap2 = takeNetWorthSnapshot(accounts2, '2025-02');
+    const change = netWorthChange(snap1, snap2);
+    assert.strictEqual(change.cents, -100000); // -$1000
+  });
+});
+
+describe('sortSnapshotsByPeriod', () => {
+  it('returns snapshots in chronological order', () => {
+    const accounts = [makeAccount({ type: AccountType.SAVINGS, balance: 100 })];
+    const snaps = [
+      takeNetWorthSnapshot(accounts, '2025-03'),
+      takeNetWorthSnapshot(accounts, '2025-01'),
+      takeNetWorthSnapshot(accounts, '2025-02'),
+    ];
+    const sorted = sortSnapshotsByPeriod(snaps);
+    assert.deepStrictEqual(
+      sorted.map((s) => s.periodLabel),
+      ['2025-01', '2025-02', '2025-03'],
+    );
+  });
+});
+
+// ─── computeGoalProgress ────────────────────────────────────────────────────
+
+describe('computeGoalProgress', () => {
+  it('reports 0 % for a goal with no progress', () => {
+    const goal = makeGoal({
+      targetAmount: 10000,
+      currentAmount: 0,
+      targetDate: makeDate(2025, 12, 31),
+    });
+    const result = computeGoalProgress(goal, { referenceDate: makeDate(2025, 1, 1) });
+    assert.strictEqual(result.percentComplete, 0);
+    assert.strictEqual(result.amountRemaining, 10000);
+    assert.strictEqual(result.isCompleted, false);
+  });
+
+  it('reports 100 % when goal is fully met', () => {
+    const goal = makeGoal({
+      targetAmount: 5000,
+      currentAmount: 5000,
+      targetDate: makeDate(2025, 6, 30),
+    });
+    const result = computeGoalProgress(goal, { referenceDate: makeDate(2025, 3, 1) });
+    assert.strictEqual(result.percentComplete, 100);
+    assert.strictEqual(result.amountRemaining, 0);
+    assert.strictEqual(result.isCompleted, true);
+    assert.strictEqual(result.isOnTrack, true);
+  });
+
+  it('caps percentComplete at 100 even if currentAmount > targetAmount', () => {
+    const goal = makeGoal({
+      targetAmount: 1000,
+      currentAmount: 1500,
+      targetDate: makeDate(2025, 12, 31),
+    });
+    const result = computeGoalProgress(goal, { referenceDate: makeDate(2025, 6, 1) });
+    assert.strictEqual(result.percentComplete, 100);
+    assert.strictEqual(result.amountRemaining, 0);
+  });
+
+  it('computes partial progress correctly', () => {
+    const goal = makeGoal({
+      targetAmount: 1000,
+      currentAmount: 250,
+      targetDate: makeDate(2025, 12, 31),
+    });
+    const result = computeGoalProgress(goal, { referenceDate: makeDate(2025, 1, 1) });
+    assert.strictEqual(result.percentComplete, 25);
+    assert.strictEqual(result.amountRemaining, 750);
+  });
+
+  it('marks goal as not on track when past target date and incomplete', () => {
+    const goal = makeGoal({
+      targetAmount: 10000,
+      currentAmount: 5000,
+      targetDate: makeDate(2024, 1, 1), // already passed
+    });
+    const result = computeGoalProgress(goal, { referenceDate: makeDate(2025, 1, 1) });
+    assert.strictEqual(result.isOnTrack, false);
+    assert.ok(result.daysRemaining < 0);
+  });
+
+  it('uses startDate fraction for on-track check when provided', () => {
+    // Goal: save $1000 from Jan 1 to Dec 31 (365 days). At the halfway point (July 1)
+    // the user should have saved $500 to be on track.
+    const goal = makeGoal({
+      targetAmount: 1000,
+      currentAmount: 600, // ahead of schedule
+      targetDate: makeDate(2025, 12, 31),
+    });
+    const result = computeGoalProgress(goal, {
+      referenceDate: makeDate(2025, 7, 2),  // slightly past halfway
+      startDate:     makeDate(2025, 1, 1),
+    });
+    assert.strictEqual(result.isOnTrack, true);
+  });
+
+  it('marks goal behind schedule when startDate fraction shows insufficient progress', () => {
+    const goal = makeGoal({
+      targetAmount: 1000,
+      currentAmount: 100, // only 10 % done
+      targetDate: makeDate(2025, 12, 31),
+    });
+    const result = computeGoalProgress(goal, {
+      referenceDate: makeDate(2025, 7, 1),  // roughly halfway through year
+      startDate:     makeDate(2025, 1, 1),
+    });
+    assert.strictEqual(result.isOnTrack, false);
+  });
+
+  it('projects completion date given a monthly contribution', () => {
+    const goal = makeGoal({
+      targetAmount: 1200,
+      currentAmount: 0,
+      targetDate: makeDate(2026, 1, 1),
+    });
+    const result = computeGoalProgress(goal, {
+      referenceDate: makeDate(2025, 1, 1),
+      monthlyContribution: 100,
+    });
+    // At $100/month, need 12 months → Jan 2026
+    assert.ok(result.projectedCompletionDate !== undefined);
+    assert.strictEqual(result.projectedCompletionDate!.getFullYear(), 2026);
+    assert.strictEqual(result.projectedCompletionDate!.getMonth() + 1, 1); // January
+  });
+
+  it('sets projectedCompletionDate to referenceDate when goal is already complete', () => {
+    const goal = makeGoal({
+      targetAmount: 500,
+      currentAmount: 500,
+      targetDate: makeDate(2025, 12, 31),
+      isCompleted: true,
+    });
+    const refDate = makeDate(2025, 6, 1);
+    const result = computeGoalProgress(goal, { referenceDate: refDate });
+    assert.ok(result.projectedCompletionDate !== undefined);
+    assert.strictEqual(
+      result.projectedCompletionDate!.getTime(),
+      refDate.getTime(),
+    );
+  });
+
+  it('returns undefined projectedCompletionDate when no contribution rate given', () => {
+    const goal = makeGoal({
+      targetAmount: 5000,
+      currentAmount: 1000,
+      targetDate: makeDate(2026, 1, 1),
+    });
+    const result = computeGoalProgress(goal, { referenceDate: makeDate(2025, 1, 1) });
+    assert.strictEqual(result.projectedCompletionDate, undefined);
+  });
+});
+
+// ─── computeGoalsProgress ────────────────────────────────────────────────────
+
+describe('computeGoalsProgress', () => {
+  it('returns an empty array for no goals', () => {
+    const results = computeGoalsProgress([]);
+    assert.strictEqual(results.length, 0);
+  });
+
+  it('processes multiple goals with shared options', () => {
+    const refDate = makeDate(2025, 6, 1);
+    const goals = [
+      makeGoal({ targetAmount: 1000, currentAmount: 500, targetDate: makeDate(2025, 12, 31) }),
+      makeGoal({ targetAmount: 2000, currentAmount: 2000, targetDate: makeDate(2025, 12, 31) }),
+    ];
+    const results = computeGoalsProgress(goals, { referenceDate: refDate });
+    assert.strictEqual(results.length, 2);
+    assert.strictEqual(results[0]!.percentComplete, 50);
+    assert.strictEqual(results[1]!.percentComplete, 100);
+    assert.strictEqual(results[1]!.isCompleted, true);
   });
 });
