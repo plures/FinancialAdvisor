@@ -52,6 +52,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build packages (required for type resolution)
+        run: npm run build:packages
+
       - name: Sync SvelteKit
         run: npm run prepare
 
