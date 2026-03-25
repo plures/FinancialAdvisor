@@ -16,6 +16,7 @@ import {
   TransactionType,
 } from '@financialadvisor/domain';
 
+/** Total monthly outflow broken down into recurring and discretionary components. */
 export interface MonthlyBurnResult {
   /** Sum of all outflows in the period (absolute value). */
   readonly total: Money;

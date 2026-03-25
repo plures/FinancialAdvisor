@@ -7,6 +7,10 @@
 
 export type ImportSessionStatus = 'pending' | 'processing' | 'complete' | 'failed';
 
+/**
+ * Record of a single file-import operation.  Every transaction must be
+ * traceable to an `ImportSession` (via `importSessionId`).
+ */
 export interface ImportSession {
   readonly id: string;
   /** SHA-256 (or equivalent) hex digest of the imported file. */

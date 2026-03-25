@@ -13,6 +13,7 @@
 import { createJournalEntry, type JournalEntry } from './journal.js';
 import type { Currency } from '@financialadvisor/domain';
 
+/** A higher-level description of an internal movement of funds between two accounts. */
 export interface Transfer {
   readonly id: string;
   /** Account money is leaving (will be credited — decreasing an asset). */

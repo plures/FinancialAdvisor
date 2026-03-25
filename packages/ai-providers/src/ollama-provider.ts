@@ -6,6 +6,7 @@ import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
 import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
 
+/** AI provider implementation that sends queries to a locally-running Ollama server. */
 export class OllamaProvider extends BaseAIProvider {
   private client: AxiosInstance;
 

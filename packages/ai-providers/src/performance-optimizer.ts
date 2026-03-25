@@ -5,6 +5,7 @@
 
 import type { Transaction } from '@financialadvisor/domain';
 
+/** Configuration for batch-processing AI requests (batch size, delay, progress callbacks). */
 export interface BatchProcessingOptions {
   batchSize: number;
   delayBetweenBatches: number;
@@ -12,12 +13,14 @@ export interface BatchProcessingOptions {
   onError?: (error: Error, item: any) => void;
 }
 
+/** Rate-limit constraints applied to outbound AI provider requests. */
 export interface RateLimitConfig {
   requestsPerMinute: number;
   requestsPerHour: number;
   burstSize?: number;
 }
 
+/** Cache hit/miss statistics for the response cache. */
 export interface CacheStats {
   hits: number;
   misses: number;

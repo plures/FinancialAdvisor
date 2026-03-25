@@ -10,6 +10,10 @@ import {
   type Money,
 } from '@financialadvisor/domain';
 
+/**
+ * Liquidity runway expressed in months — best-case, expected, and worst-case scenarios.
+ * A result of `Infinity` indicates zero burn rate (no outflows).
+ */
 export interface RunwayResult {
   /**
    * Best-estimate runway in months, using the supplied burn rate as-is.

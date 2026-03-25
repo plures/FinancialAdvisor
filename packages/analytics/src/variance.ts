@@ -43,6 +43,7 @@ export interface CategoryVariance {
   readonly sourceTransactionIds: readonly string[];
 }
 
+/** Over-budget, under-budget, and net variance across all budgeted categories for a period. */
 export interface VarianceResult {
   /** Categories where actual spending exceeded the budget. */
   readonly overBudget: readonly CategoryVariance[];

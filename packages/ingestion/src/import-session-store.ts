@@ -11,6 +11,11 @@
 
 import { type ImportSession } from '@financialadvisor/domain';
 
+/**
+ * In-memory store for `ImportSession` records.
+ * Provides hash-based deduplication: a file with the same SHA-256 digest
+ * will not be imported twice.
+ */
 export class ImportSessionStore {
   private readonly sessions = new Map<string, ImportSession>();
   /** fileHash → session id */

@@ -19,6 +19,7 @@ import { computeBalance } from './balances.js';
 import type { JournalEntry } from './journal.js';
 import type { LedgerAccount } from './ledger-account.js';
 
+/** Pre-computed balance for an account at the end of a named period (e.g. `"2025-03"`). */
 export interface BalanceSnapshot {
   readonly accountId: string;
   /** Formatted period label: "YYYY-MM", "YYYY-QN", or "YYYY". */

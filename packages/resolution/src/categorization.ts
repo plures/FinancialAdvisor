@@ -5,6 +5,7 @@
 import type { Transaction } from '@financialadvisor/domain';
 import { TransactionType, moneyToDecimal } from '@financialadvisor/domain';
 
+/** Aggregated spending summary for a single transaction category. */
 export interface CategorySummary {
   category: string;
   totalAmount: number;
@@ -13,6 +14,7 @@ export interface CategorySummary {
   percentage: number;
 }
 
+/** A recurring spending pattern identified from transaction history. */
 export interface SpendingPattern {
   category: string;
   subcategory?: string;
@@ -23,6 +25,7 @@ export interface SpendingPattern {
   lastTransaction: Date;
 }
 
+/** Comprehensive insights derived from a set of transactions: income, expenses, patterns, and anomalies. */
 export interface TransactionInsights {
   totalIncome: number;
   totalExpenses: number;
@@ -34,6 +37,7 @@ export interface TransactionInsights {
   unusualTransactions: Transaction[];
 }
 
+/** Static helpers for categorizing transactions and extracting spending insights. */
 export class TransactionAnalyzer {
   // Common spending categories for auto-categorization
   private static readonly CATEGORY_KEYWORDS = {

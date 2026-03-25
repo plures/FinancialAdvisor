@@ -30,10 +30,12 @@ export interface ReconciliationItem {
   readonly description?: string;
 }
 
+/** Indicates whether an item is absent from the internal ledger or from the external source. */
 export type ReconciliationMismatchType =
   | 'missing_in_ledger'
   | 'missing_in_external';
 
+/** A single discrepancy between an external bank item and the internal journal. */
 export interface ReconciliationMismatch {
   readonly type: ReconciliationMismatchType;
   readonly externalItem?: ReconciliationItem;
@@ -41,6 +43,7 @@ export interface ReconciliationMismatch {
   readonly details: string;
 }
 
+/** Summary of a reconciliation run: number of matched items and any discrepancies found. */
 export interface ReconciliationResult {
   readonly accountId: string;
   readonly matched: number;

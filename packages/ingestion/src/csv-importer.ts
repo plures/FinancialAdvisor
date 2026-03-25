@@ -24,6 +24,7 @@ import type {
 import { ImportSessionStore } from './import-session-store.js';
 import { RawTransactionStore } from './raw-transaction.js';
 
+/** Options controlling how a CSV file is imported (account mapping, template, dedup behaviour). */
 export interface CSVImportOptions {
   accountId?: string;
   csvTemplate?: CSVTemplate;
@@ -31,6 +32,10 @@ export interface CSVImportOptions {
   maxFileSize?: number; // bytes
 }
 
+/**
+ * Imports bank CSV files (including custom column-mapping templates) into the
+ * raw-transaction store.  Deduplicates by file hash before parsing.
+ */
 export class CSVImporter implements IFileImporter {
   private readonly maxFileSizeDefault = 50 * 1024 * 1024; // 50 MB
 

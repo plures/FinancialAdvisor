@@ -9,6 +9,7 @@ export interface MerchantVector {
   terms: Map<string, number>; // term → raw term-frequency
 }
 
+/** A group of semantically-related merchants identified by clustering. */
 export interface MerchantCluster {
   id: string;
   canonicalName: string;
@@ -16,11 +17,13 @@ export interface MerchantCluster {
   category?: string;
 }
 
+/** A merchant found in the model that is semantically similar to a query merchant. */
 export interface SimilarMerchant {
   merchant: string;
   similarity: number;
 }
 
+/** Spending category assigned to a merchant with a confidence score and supporting reasons. */
 export interface MerchantClassification {
   category: string;
   confidence: number; // 0-1

@@ -6,8 +6,11 @@
  */
 
 export type ImportSource = 'ofx' | 'qfx' | 'csv' | 'obp_selfhosted' | 'plaid_optional' | 'manual';
+/** Current lifecycle state of a file-import operation. */
 export type ImportStatus = 'pending' | 'importing' | 'success' | 'error';
+/** Data residency classification used to indicate where financial data is processed or stored. */
 export type PrivacyLevel = 'local' | 'self-hosted' | 'third-party';
+/** Whether an import fetches the full history or only new transactions since the last import. */
 export type ImportType = 'full' | 'incremental';
 
 /**

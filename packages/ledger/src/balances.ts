@@ -21,6 +21,10 @@
 import type { JournalEntry } from './journal.js';
 import { isDebitNormal, type LedgerAccount } from './ledger-account.js';
 
+/**
+ * Computed balance for a ledger account, expressed in both raw debit-normal
+ * and sign-corrected forms.
+ */
 export interface AccountBalance {
   readonly accountId: string;
   readonly currency: string;

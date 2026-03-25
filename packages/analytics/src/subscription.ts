@@ -25,6 +25,7 @@ const UNUSED_THRESHOLD_DAYS = 90;
 /** Relative price change that triggers an alert (5 %). */
 const PRICE_CHANGE_THRESHOLD = 0.05;
 
+/** Alert raised when the most-recent subscription charge differs materially from the historical average. */
 export interface SubscriptionPriceAlert {
   /** Average amount of all but the most-recent transaction (historical baseline). */
   readonly previousAmount: Money;
@@ -34,6 +35,7 @@ export interface SubscriptionPriceAlert {
   readonly changePercent: number;
 }
 
+/** A single detected subscription with its cost, status, and optional price-change alert. */
 export interface SubscriptionItem {
   /** Normalised merchant/description label. */
   readonly label: string;
@@ -57,6 +59,7 @@ export interface SubscriptionItem {
   readonly sourceTransactionIds: readonly string[];
 }
 
+/** Aggregated subscription dashboard with total costs and per-item breakdown. */
 export interface SubscriptionDashboardResult {
   /** All detected subscription items. */
   readonly items: readonly SubscriptionItem[];

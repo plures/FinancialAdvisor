@@ -13,6 +13,7 @@ export interface UserCorrection {
   amountCents?: number;
 }
 
+/** The best learned category match for a given merchant or description, with confidence. */
 export interface CorrectionMatch {
   category: string;
   confidence: number; // 0-1
@@ -25,6 +26,7 @@ interface LearnedEntry {
   count: number;
 }
 
+/** Serialisable snapshot of the `CorrectionLearner`'s internal state for persistence. */
 export interface CorrectionLearnerState {
   corrections: UserCorrection[];
   merchantCorrections: [string, LearnedEntry][];
