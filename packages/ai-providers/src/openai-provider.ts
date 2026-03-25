@@ -6,6 +6,7 @@ import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
 import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
 
+/** AI provider implementation that sends queries to the OpenAI Chat Completions API. */
 export class OpenAIProvider extends BaseAIProvider {
   private client: AxiosInstance;
 

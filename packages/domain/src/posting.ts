@@ -9,6 +9,10 @@
 
 import type { Money } from './money.js';
 
+/**
+ * A single double-entry bookkeeping posting: one debit account, one credit
+ * account, and the same amount applied to both.
+ */
 export interface Posting {
   readonly debitAccountId: string;
   readonly creditAccountId: string;

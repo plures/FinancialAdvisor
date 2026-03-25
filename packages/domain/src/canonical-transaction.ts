@@ -8,6 +8,10 @@
 import type { Transaction } from './types.js';
 import type { MerchantEntity } from './merchant.js';
 
+/**
+ * A fully-resolved transaction enriched with merchant entity and category.
+ * The `confidence` field captures how certain the resolution engine is.
+ */
 export interface CanonicalTransaction extends Omit<Transaction, 'merchant' | 'category'> {
   readonly merchant: MerchantEntity;
   readonly category: string;

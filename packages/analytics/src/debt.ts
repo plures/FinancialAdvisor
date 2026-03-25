@@ -42,6 +42,7 @@ export interface PaymentScheduleEntry {
   readonly remainingBalance: Money;
 }
 
+/** Total payoff cost and month-by-month amortisation schedule for a single debt. */
 export interface DebtPayoffResult {
   /** Number of months until the debt is fully paid off. */
   readonly months: number;
@@ -55,6 +56,7 @@ export interface DebtPayoffResult {
   readonly schedule: readonly PaymentScheduleEntry[];
 }
 
+/** Side-by-side comparison of snowball vs avalanche payoff strategies across multiple debts. */
 export interface PayoffComparisonResult {
   /** Payoff plan using the snowball strategy (lowest balance first). */
   readonly snowball: DebtPayoffResult;

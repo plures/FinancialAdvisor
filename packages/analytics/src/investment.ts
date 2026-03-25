@@ -4,6 +4,7 @@
 
 import { Investment, Account } from '@financialadvisor/domain';
 
+/** Aggregate performance metrics for an entire investment portfolio. */
 export interface PortfolioAnalysis {
   totalValue: number;
   totalCost: number;
@@ -15,6 +16,7 @@ export interface PortfolioAnalysis {
   dividendYield: number;
 }
 
+/** Holdings value and count grouped by market sector. */
 export interface SectorAllocation {
   sector: string;
   value: number;
@@ -22,6 +24,7 @@ export interface SectorAllocation {
   investmentCount: number;
 }
 
+/** Performance analysis for a single investment holding. */
 export interface InvestmentAnalysis {
   investment: Investment;
   currentValue: number;
@@ -31,6 +34,7 @@ export interface InvestmentAnalysis {
   annualizedReturn: number;
 }
 
+/** Static helpers for portfolio and individual investment analysis. */
 export class InvestmentCalculator {
   /**
    * Analyze a complete investment portfolio

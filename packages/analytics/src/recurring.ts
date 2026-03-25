@@ -17,6 +17,7 @@ import {
   TransactionType,
 } from '@financialadvisor/domain';
 
+/** A single recurring financial commitment (subscription, bill, or debt payment). */
 export interface RecurringItem {
   /** Human-readable label (merchant name or description). */
   readonly label: string;
@@ -34,6 +35,7 @@ export interface RecurringItem {
   readonly sourceTransactionIds: readonly string[];
 }
 
+/** Total obligated monthly and annual spend, with a per-item breakdown. */
 export interface RecurringLoadResult {
   /** Total obligated spend per month across all recurring items. */
   readonly monthly: Money;

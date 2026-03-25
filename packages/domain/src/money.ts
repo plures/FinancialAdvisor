@@ -17,6 +17,10 @@ export type Currency =
   | 'INR'
   | (string & Record<never, never>);
 
+/**
+ * An amount of money in a specific currency, stored as integer cents to avoid
+ * floating-point arithmetic errors.  `cents` is always a safe integer.
+ */
 export interface Money {
   readonly cents: number;   // Always an integer — never a float
   readonly currency: Currency;

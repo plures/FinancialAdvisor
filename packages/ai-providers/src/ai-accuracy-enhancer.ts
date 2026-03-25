@@ -6,6 +6,7 @@
 import { AIResponse } from './base-provider.js';
 import type { FinancialContext, Account } from '@financialadvisor/domain';
 
+/** Multi-factor confidence score indicating the quality of an AI response. */
 export interface ConfidenceScore {
   overall: number;
   factors: {
@@ -16,6 +17,7 @@ export interface ConfidenceScore {
   };
 }
 
+/** Result of validating an AI response for quality, completeness, and consistency. */
 export interface ValidationResult {
   isValid: boolean;
   confidence: number;
@@ -23,6 +25,7 @@ export interface ValidationResult {
   suggestions: string[];
 }
 
+/** Spending category with similarity score used for transaction classification fallback. */
 export interface CategorySimilarity {
   category: string;
   similarity: number;

@@ -4,6 +4,7 @@
 
 import { Budget, Transaction, BudgetPeriod, moneyToDecimal } from '@financialadvisor/domain';
 
+/** Computed budget vs actual analysis for a single budget over its current period. */
 export interface BudgetAnalysis {
   budget: Budget;
   totalSpent: number;
@@ -15,6 +16,7 @@ export interface BudgetAnalysis {
   isOnTrack: boolean;
 }
 
+/** Static helpers for analysing budgets against actual transaction data. */
 export class BudgetCalculator {
   /**
    * Analyze a budget against actual transactions

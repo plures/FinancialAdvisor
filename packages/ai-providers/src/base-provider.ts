@@ -4,6 +4,7 @@
 
 import { AIProvider, AIProviderConfig, AIProviderType, AIQuery, FinancialContext, moneyToDecimal } from '@financialadvisor/domain';
 
+/** Response object returned by any AI provider after processing a query. */
 export interface AIResponse {
   content: string;
   usage?: {
@@ -15,6 +16,7 @@ export interface AIResponse {
   timestamp: Date;
 }
 
+/** Feature flags and constraints declared by a concrete AI provider. */
 export interface AIProviderCapabilities {
   supportsStreaming: boolean;
   supportsFunction: boolean;
@@ -22,6 +24,10 @@ export interface AIProviderCapabilities {
   supportedFormats: string[];
 }
 
+/**
+ * Abstract base class for all AI provider implementations.
+ * Provides shared utilities for formatting financial context and building prompts.
+ */
 export abstract class BaseAIProvider {
   protected config: AIProviderConfig;
   protected name: string;

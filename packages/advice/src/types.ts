@@ -124,6 +124,7 @@ export interface IncomeChangeScenarioInput {
   readonly currency?: string;
 }
 
+/** Union of all supported scenario parameter types for `runScenario`. */
 export type ScenarioInput =
   | CancelSubscriptionScenarioInput
   | ExtraDebtPaymentScenarioInput

@@ -11,6 +11,10 @@
 
 import { createMoney, type Currency, type Money } from '@financialadvisor/domain';
 
+/**
+ * An atomic double-entry bookkeeping record: one debit account, one credit
+ * account, and the same amount on both sides.
+ */
 export interface JournalEntry {
   readonly id: string;
   readonly date: Date;

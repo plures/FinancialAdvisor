@@ -25,6 +25,7 @@ const LIABILITY_TYPES = new Set<string>([
   AccountType.MORTGAGE,
 ]);
 
+/** Computed net worth: total assets, total liabilities, net, and per-account-type breakdown. */
 export interface NetWorthResult {
   /** Sum of all asset account balances. */
   readonly assets: Money;
@@ -36,6 +37,7 @@ export interface NetWorthResult {
   readonly byAccountType: ReadonlyMap<string, Money>;
 }
 
+/** A point-in-time net worth capture associated with a period label (e.g. `"2025-03"`). */
 export interface NetWorthSnapshot {
   /**
    * Period label for this snapshot.

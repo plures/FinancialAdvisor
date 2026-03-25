@@ -4,6 +4,7 @@
 
 import { Goal, GoalCategory, Priority, Transaction, TransactionType, moneyToDecimal } from '@financialadvisor/domain';
 
+/** Goal tracking and savings planning for a ledger account. */
 export interface GoalProgress {
   goal: Goal;
   progressPercentage: number;
@@ -15,6 +16,7 @@ export interface GoalProgress {
   monthsRemaining: number;
 }
 
+/** An actionable savings recommendation for a specific goal. */
 export interface SavingsRecommendation {
   goalId: string;
   recommendedAmount: number;
@@ -23,6 +25,7 @@ export interface SavingsRecommendation {
   impact: string;
 }
 
+/** Adequacy assessment for an emergency fund relative to monthly expenses and dependents. */
 export interface EmergencyFundAnalysis {
   currentAmount: number;
   recommendedAmount: number;
@@ -31,6 +34,7 @@ export interface EmergencyFundAnalysis {
   shortfall: number;
 }
 
+/** Static helpers for analysing goal progress and generating savings recommendations. */
 export class SavingsPlanner {
   /**
    * Analyze progress towards a specific goal

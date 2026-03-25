@@ -9,6 +9,7 @@
 
 import type { Goal } from '@financialadvisor/domain';
 
+/** Progress report for a single financial goal, including projected completion date. */
 export interface GoalProgressResult {
   /** The source goal. */
   readonly goal: Goal;
@@ -50,6 +51,7 @@ export interface GoalProgressResult {
 // Public API
 // ---------------------------------------------------------------------------
 
+/** Options for customising goal-progress computation (reference date, start date, monthly contribution). */
 export interface GoalProgressOptions {
   /**
    * The "today" reference.  Defaults to `new Date()`.

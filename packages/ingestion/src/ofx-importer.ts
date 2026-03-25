@@ -21,12 +21,17 @@ import type {
 import { ImportSessionStore } from './import-session-store.js';
 import { RawTransactionStore } from './raw-transaction.js';
 
+/** Options controlling how an OFX/QFX file is imported (account mapping, dedup behaviour). */
 export interface OFXImportOptions {
   accountId?: string;
   skipDuplicates?: boolean;
   maxFileSize?: number; // bytes
 }
 
+/**
+ * Imports OFX and QFX bank export files into the raw-transaction store.
+ * Deduplicates by file hash before parsing.
+ */
 export class OFXImporter implements IFileImporter {
   private readonly maxFileSizeDefault = 10 * 1024 * 1024; // 10 MB
 

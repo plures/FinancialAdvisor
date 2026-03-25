@@ -137,6 +137,7 @@ export interface PostingRecord {
 
 // ── recurring_series ──────────────────────────────────────────────────────────
 
+/** Lifecycle status for a detected recurring payment series. */
 export type RecurringSeriesStatus = 'active' | 'paused' | 'cancelled';
 
 /** A detected recurring payment pattern for a merchant/account pair. */
