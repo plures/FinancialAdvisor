@@ -18,6 +18,8 @@ packages/**/src/**/*.js.map
 packages/**/src/**/*.d.ts
 packages/**/src/**/*.d.ts.map
 !packages/**/src/**/*.svelte
+# eslint-plugin-design-dojo is a plain CommonJS package; its src/ is JS source, not compiled output
+!packages/eslint-plugin-design-dojo/src/**/*.js
 
 # TypeScript compiled outputs (except .d.ts in packages)
 src/**/*.js
