@@ -12,3 +12,5 @@ export * from './cash-flow.js';
 export * from './subscription.js';
 export * from './net-worth.js';
 export * from './goals.js';
+export * from './scenario.js';
+export * from './timeline.js';

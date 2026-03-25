@@ -15,6 +15,10 @@
  *  11. takeNetWorthSnapshot / netWorthChange / sortSnapshotsByPeriod
  *  12. computeGoalProgress — percent complete / on-track / projected completion
  *  13. computeGoalsProgress — batch goal evaluation
+ *  14. compareScenarioToBaseline — scenario vs baseline financial comparison
+ *  15. buildFinancialTimelineSnapshot / sortTimelineSnapshots
+ *  16. compareTimelineSnapshots — delta between two time-points
+ *  17. buildTrendSeries — SVG-ready trend data
  */
 
 import { describe, it } from 'mocha';
@@ -54,6 +58,15 @@ import {
   computeGoalProgress,
   computeGoalsProgress,
 } from '../../packages/analytics/dist/goals.js';
+import {
+  compareScenarioToBaseline,
+} from '../../packages/analytics/dist/scenario.js';
+import {
+  buildFinancialTimelineSnapshot,
+  sortTimelineSnapshots,
+  compareTimelineSnapshots,
+  buildTrendSeries,
+} from '../../packages/analytics/dist/timeline.js';
 
 // ─── Domain imports ──────────────────────────────────────────────────────────
 import {
@@ -1350,5 +1363,280 @@ describe('computeGoalsProgress', () => {
     assert.strictEqual(results[0]!.percentComplete, 50);
     assert.strictEqual(results[1]!.percentComplete, 100);
     assert.strictEqual(results[1]!.isCompleted, true);
+  });
+});
+
+// ─── compareScenarioToBaseline ───────────────────────────────────────────────
+
+describe('compareScenarioToBaseline', () => {
+  const baseline = {
+    liquidBalanceCents: 1_000_000, // $10,000
+    monthlyBurnCents:    400_000,  // $4,000/month
+    monthlyIncomeCents:  600_000,  // $6,000/month
+    netWorthCents:     5_000_000,  // $50,000
+    currency: 'USD',
+  };
+
+  it('baseline and projected are identical when no changes are supplied', () => {
+    const result = compareScenarioToBaseline(baseline, {});
+    assert.strictEqual(result.baseline.monthlyBurnCents, result.projected.monthlyBurnCents);
+    assert.strictEqual(result.baseline.monthlyIncomeCents, result.projected.monthlyIncomeCents);
+    assert.strictEqual(result.baseline.netWorthCents, result.projected.netWorthCents);
+    assert.strictEqual(result.delta.monthlyBurnDeltaCents, 0);
+    assert.strictEqual(result.delta.monthlyIncomeDeltaCents, 0);
+    assert.strictEqual(result.delta.netWorthDeltaCents, 0);
+  });
+
+  it('correctly reduces burn when monthlyBurnDeltaCents is positive', () => {
+    const result = compareScenarioToBaseline(baseline, { monthlyBurnDeltaCents: 50_000 });
+    assert.strictEqual(result.projected.monthlyBurnCents, 350_000);
+    assert.strictEqual(result.delta.monthlyBurnDeltaCents, -50_000);
+  });
+
+  it('correctly increases income when monthlyIncomeDeltaCents is positive', () => {
+    const result = compareScenarioToBaseline(baseline, { monthlyIncomeDeltaCents: 100_000 });
+    assert.strictEqual(result.projected.monthlyIncomeCents, 700_000);
+    assert.strictEqual(result.delta.monthlyIncomeDeltaCents, 100_000);
+  });
+
+  it('extends runway when monthly burn decreases', () => {
+    const result = compareScenarioToBaseline(baseline, { monthlyBurnDeltaCents: 200_000 });
+    // baseline runway = 1,000,000 / 400,000 = 2.5 months
+    // projected runway = 1,000,000 / 200,000 = 5 months
+    assert.ok(result.projected.runwayMonths > result.baseline.runwayMonths,
+      'Projected runway should be longer than baseline runway');
+    assert.ok(result.delta.runwayDeltaMonths > 0);
+  });
+
+  it('returns Infinity runway when projected burn drops to zero', () => {
+    const result = compareScenarioToBaseline(baseline, { monthlyBurnDeltaCents: 400_000 });
+    assert.strictEqual(result.projected.runwayMonths, Infinity);
+  });
+
+  it('adjusts net worth by netWorthDeltaCents', () => {
+    const result = compareScenarioToBaseline(baseline, { netWorthDeltaCents: 500_000 });
+    assert.strictEqual(result.projected.netWorthCents, 5_500_000);
+    assert.strictEqual(result.delta.netWorthDeltaCents, 500_000);
+  });
+
+  it('computes correct monthlyNetCents in baseline and projected', () => {
+    const result = compareScenarioToBaseline(baseline, {
+      monthlyBurnDeltaCents: 50_000,
+      monthlyIncomeDeltaCents: 20_000,
+    });
+    assert.strictEqual(result.baseline.monthlyNetCents, 600_000 - 400_000);
+    assert.strictEqual(result.projected.monthlyNetCents, 620_000 - 350_000);
+  });
+
+  it('carries the currency through to the result', () => {
+    const result = compareScenarioToBaseline({ ...baseline, currency: 'EUR' }, {});
+    assert.strictEqual(result.baseline.currency, 'EUR');
+    assert.strictEqual(result.projected.currency, 'EUR');
+  });
+});
+
+// ─── buildFinancialTimelineSnapshot / sortTimelineSnapshots ──────────────────
+
+describe('buildFinancialTimelineSnapshot', () => {
+  it('computes runwayMonths from liquidBalance and monthlyBurn', () => {
+    const snap = buildFinancialTimelineSnapshot({
+      periodLabel: '2025-01',
+      liquidBalanceCents: 600_000,
+      monthlyIncomeCents: 500_000,
+      monthlyBurnCents:   300_000,
+      netWorthCents:     1_000_000,
+    });
+    assert.strictEqual(snap.runwayMonths, 2); // 600,000 / 300,000
+  });
+
+  it('returns Infinity runway when monthlyBurnCents is zero', () => {
+    const snap = buildFinancialTimelineSnapshot({
+      periodLabel: '2025-02',
+      liquidBalanceCents: 500_000,
+      monthlyIncomeCents: 500_000,
+      monthlyBurnCents:   0,
+      netWorthCents:     500_000,
+    });
+    assert.strictEqual(snap.runwayMonths, Infinity);
+  });
+
+  it('defaults currency to USD', () => {
+    const snap = buildFinancialTimelineSnapshot({
+      periodLabel: '2025-03',
+      liquidBalanceCents: 100_000,
+      monthlyIncomeCents: 100_000,
+      monthlyBurnCents:   100_000,
+      netWorthCents:     100_000,
+    });
+    assert.strictEqual(snap.currency, 'USD');
+  });
+
+  it('stores the provided periodLabel', () => {
+    const snap = buildFinancialTimelineSnapshot({
+      periodLabel: '2025-06',
+      liquidBalanceCents: 0,
+      monthlyIncomeCents: 0,
+      monthlyBurnCents:   0,
+      netWorthCents:     0,
+    });
+    assert.strictEqual(snap.periodLabel, '2025-06');
+  });
+});
+
+describe('sortTimelineSnapshots', () => {
+  it('returns snapshots in chronological order', () => {
+    const snaps = ['2025-03', '2025-01', '2025-06', '2025-02'].map((label) =>
+      buildFinancialTimelineSnapshot({
+        periodLabel: label,
+        liquidBalanceCents: 0,
+        monthlyIncomeCents: 0,
+        monthlyBurnCents:   0,
+        netWorthCents:     0,
+      }),
+    );
+    const sorted = sortTimelineSnapshots(snaps);
+    assert.deepStrictEqual(
+      sorted.map((s) => s.periodLabel),
+      ['2025-01', '2025-02', '2025-03', '2025-06'],
+    );
+  });
+
+  it('does not mutate the input array', () => {
+    const snaps = ['2025-02', '2025-01'].map((label) =>
+      buildFinancialTimelineSnapshot({
+        periodLabel: label,
+        liquidBalanceCents: 0,
+        monthlyIncomeCents: 0,
+        monthlyBurnCents:   0,
+        netWorthCents:     0,
+      }),
+    );
+    sortTimelineSnapshots(snaps);
+    assert.strictEqual(snaps[0]!.periodLabel, '2025-02'); // original order unchanged
+  });
+});
+
+// ─── compareTimelineSnapshots ────────────────────────────────────────────────
+
+describe('compareTimelineSnapshots', () => {
+  function makeSnap(
+    periodLabel: string,
+    liquidBalanceCents: number,
+    monthlyIncomeCents: number,
+    monthlyBurnCents: number,
+    netWorthCents: number,
+  ) {
+    return buildFinancialTimelineSnapshot({
+      periodLabel,
+      liquidBalanceCents,
+      monthlyIncomeCents,
+      monthlyBurnCents,
+      netWorthCents,
+    });
+  }
+
+  it('identifies the earlier and later snapshot by periodLabel', () => {
+    const jan = makeSnap('2025-01', 500_000, 400_000, 300_000, 1_000_000);
+    const mar = makeSnap('2025-03', 600_000, 420_000, 280_000, 1_100_000);
+    const comparison = compareTimelineSnapshots(mar, jan); // order intentionally reversed
+    assert.strictEqual(comparison.earlier.periodLabel, '2025-01');
+    assert.strictEqual(comparison.later.periodLabel, '2025-03');
+  });
+
+  it('computes correct liquidBalance delta', () => {
+    const jan = makeSnap('2025-01', 500_000, 400_000, 300_000, 1_000_000);
+    const mar = makeSnap('2025-03', 620_000, 400_000, 300_000, 1_000_000);
+    const c = compareTimelineSnapshots(jan, mar);
+    assert.strictEqual(c.liquidBalanceDeltaCents, 120_000);
+  });
+
+  it('computes correct netWorth delta', () => {
+    const jan = makeSnap('2025-01', 500_000, 400_000, 300_000, 1_000_000);
+    const jun = makeSnap('2025-06', 500_000, 400_000, 300_000, 1_300_000);
+    const c = compareTimelineSnapshots(jan, jun);
+    assert.strictEqual(c.netWorthDeltaCents, 300_000);
+  });
+
+  it('computes positive runwayDeltaMonths when burn decreases', () => {
+    const jan = makeSnap('2025-01', 600_000, 400_000, 300_000, 0); // runway=2
+    const jun = makeSnap('2025-06', 600_000, 400_000, 150_000, 0); // runway=4
+    const c = compareTimelineSnapshots(jan, jun);
+    assert.ok(c.runwayDeltaMonths > 0);
+  });
+
+  it('computes negative monthlyBurnDelta when burn increases', () => {
+    const jan = makeSnap('2025-01', 600_000, 400_000, 200_000, 0);
+    const jun = makeSnap('2025-06', 600_000, 400_000, 350_000, 0);
+    const c = compareTimelineSnapshots(jan, jun);
+    assert.ok(c.monthlyBurnDeltaCents > 0, 'burn increased so delta should be positive');
+  });
+});
+
+// ─── buildTrendSeries ────────────────────────────────────────────────────────
+
+describe('buildTrendSeries', () => {
+  function makeSnaps(): ReturnType<typeof buildFinancialTimelineSnapshot>[] {
+    return [
+      buildFinancialTimelineSnapshot({ periodLabel: '2025-01', liquidBalanceCents: 500_000, monthlyIncomeCents: 400_000, monthlyBurnCents: 300_000, netWorthCents: 1_000_000 }),
+      buildFinancialTimelineSnapshot({ periodLabel: '2025-02', liquidBalanceCents: 600_000, monthlyIncomeCents: 400_000, monthlyBurnCents: 290_000, netWorthCents: 1_100_000 }),
+      buildFinancialTimelineSnapshot({ periodLabel: '2025-03', liquidBalanceCents: 700_000, monthlyIncomeCents: 420_000, monthlyBurnCents: 280_000, netWorthCents: 1_200_000 }),
+    ];
+  }
+
+  it('returns one point per snapshot', () => {
+    const series = buildTrendSeries(makeSnaps(), 'netWorth', 'Net Worth');
+    assert.strictEqual(series.points.length, 3);
+  });
+
+  it('sorts points chronologically', () => {
+    const shuffled = [makeSnaps()[2]!, makeSnaps()[0]!, makeSnaps()[1]!];
+    const series = buildTrendSeries(shuffled, 'netWorth', 'Net Worth');
+    assert.strictEqual(series.points[0]!.periodLabel, '2025-01');
+    assert.strictEqual(series.points[2]!.periodLabel, '2025-03');
+  });
+
+  it('sets correct valueCents for netWorth field', () => {
+    const series = buildTrendSeries(makeSnaps(), 'netWorth', 'Net Worth');
+    assert.strictEqual(series.points[0]!.valueCents, 1_000_000);
+    assert.strictEqual(series.points[2]!.valueCents, 1_200_000);
+  });
+
+  it('sets correct valueCents for liquidBalance field', () => {
+    const series = buildTrendSeries(makeSnaps(), 'liquidBalance', 'Liquid Balance');
+    assert.strictEqual(series.points[0]!.valueCents, 500_000);
+    assert.strictEqual(series.points[1]!.valueCents, 600_000);
+  });
+
+  it('produces a non-empty svgPolylinePoints string for 2+ snapshots', () => {
+    const series = buildTrendSeries(makeSnaps(), 'netWorth', 'Net Worth');
+    assert.ok(series.svgPolylinePoints.length > 0);
+    // Should contain comma-separated x,y pairs
+    assert.ok(series.svgPolylinePoints.includes(','));
+  });
+
+  it('produces empty svgPolylinePoints for a single snapshot', () => {
+    const series = buildTrendSeries([makeSnaps()[0]!], 'netWorth', 'Net Worth');
+    assert.strictEqual(series.svgPolylinePoints, '');
+  });
+
+  it('produces empty svgPolylinePoints for no snapshots', () => {
+    const series = buildTrendSeries([], 'netWorth', 'Net Worth');
+    assert.strictEqual(series.svgPolylinePoints, '');
+    assert.strictEqual(series.points.length, 0);
+  });
+
+  it('first x-coordinate is 0 and last is svgWidth', () => {
+    const series = buildTrendSeries(makeSnaps(), 'netWorth', 'Net Worth', 300, 150);
+    const coords = series.svgPolylinePoints.split(' ').map((pt) => {
+      const [x] = pt.split(',').map(Number);
+      return x;
+    });
+    assert.strictEqual(coords[0], 0);
+    assert.strictEqual(coords[coords.length - 1], 300);
+  });
+
+  it('keeps the series label', () => {
+    const series = buildTrendSeries(makeSnaps(), 'monthlyBurn', 'Monthly Burn');
+    assert.strictEqual(series.label, 'Monthly Burn');
   });
 });

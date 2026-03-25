@@ -5,10 +5,11 @@
  *   1. generateSubscriptionRecommendations — unused / no-usage-data / empty
  *   2. generateSpendingRecommendations     — over-budget / unbudgeted
  *   3. rankRecommendations                 — sort by savings + confidence
- *   4. runScenario / runScenarios          — cancel_subscription / extra_debt_payment / spending_reduction
- *   5. generatePlan                        — action ordering, totals, emergency-fund insertion
- *   6. summarizeFinancialState             — headline / overview / highlights / topAction
- *   7. summarizeRecommendation             — single-line output format
+ *   4. runScenario / runScenarios          — cancel_subscription / extra_debt_payment / spending_reduction / income_change
+ *   5. composeScenarios                    — combine multiple scenario results
+ *   6. generatePlan                        — action ordering, totals, emergency-fund insertion
+ *   7. summarizeFinancialState             — headline / overview / highlights / topAction
+ *   8. summarizeRecommendation             — single-line output format
  */
 
 import { describe, it } from 'mocha';
@@ -23,6 +24,7 @@ import {
 import {
   runScenario,
   runScenarios,
+  composeScenarios,
 } from '../../packages/advice/dist/scenarios.js';
 import {
   generatePlan,
@@ -590,5 +592,98 @@ describe('summarizeRecommendation', () => {
     const lowRec = { ...rec, confidence: 'low' as const };
     const text = summarizeRecommendation(lowRec);
     assert.ok(text.toLowerCase().includes('low confidence'));
+  });
+});
+
+// ─── runScenario — income_change ─────────────────────────────────────────────
+
+describe('runScenario — income_change', () => {
+  it('returns positive monthly delta for an income increase', () => {
+    const result = runScenario({
+      type: 'income_change',
+      monthlyDeltaCents: 50000, // $500/month raise
+    });
+    assert.strictEqual(result.monthlyDelta.cents, 50000);
+    assert.strictEqual(result.annualDelta.cents, 600000);
+  });
+
+  it('returns negative monthly delta for an income decrease', () => {
+    const result = runScenario({
+      type: 'income_change',
+      monthlyDeltaCents: -30000, // $300/month loss
+    });
+    assert.strictEqual(result.monthlyDelta.cents, -30000);
+    assert.strictEqual(result.annualDelta.cents, -360000);
+  });
+
+  it('description mentions increase when delta is positive', () => {
+    const result = runScenario({
+      type: 'income_change',
+      monthlyDeltaCents: 20000,
+    });
+    assert.ok(result.description.toLowerCase().includes('increase'));
+  });
+
+  it('description mentions decrease when delta is negative', () => {
+    const result = runScenario({
+      type: 'income_change',
+      monthlyDeltaCents: -20000,
+    });
+    assert.ok(result.description.toLowerCase().includes('decrease'));
+  });
+
+  it('respects an explicit currency', () => {
+    const result = runScenario({
+      type: 'income_change',
+      monthlyDeltaCents: 10000,
+      currency: 'EUR',
+    });
+    assert.strictEqual(result.monthlyDelta.currency, 'EUR');
+  });
+});
+
+// ─── composeScenarios ─────────────────────────────────────────────────────────
+
+describe('composeScenarios', () => {
+  it('returns zero deltas when no results are supplied', () => {
+    const composed = composeScenarios([]);
+    assert.strictEqual(composed.monthlyDelta.cents, 0);
+    assert.strictEqual(composed.annualDelta.cents, 0);
+  });
+
+  it('sums monthly and annual deltas across all results', () => {
+    const r1 = runScenario({ type: 'spending_reduction', category: 'Dining', reductionCents: 10000 });
+    const r2 = runScenario({ type: 'spending_reduction', category: 'Shopping', reductionCents: 5000 });
+    const composed = composeScenarios([r1, r2]);
+    assert.strictEqual(composed.monthlyDelta.cents, 15000);
+    assert.strictEqual(composed.annualDelta.cents, 180000);
+  });
+
+  it('aggregates interestSaved from debt scenarios', () => {
+    const debt = runScenario({
+      type: 'extra_debt_payment',
+      debtName: 'Card',
+      balanceCents: 500000,
+      annualInterestRate: 0.20,
+      minimumPaymentCents: 10000,
+      extraPaymentCents: 10000,
+    });
+    const spend = runScenario({ type: 'spending_reduction', category: 'Dining', reductionCents: 5000 });
+    const composed = composeScenarios([debt, spend], 'My plan');
+    assert.strictEqual(composed.name, 'My plan');
+    assert.ok(composed.interestSaved !== undefined && composed.interestSaved.cents > 0);
+  });
+
+  it('uses a custom name when provided', () => {
+    const r = runScenario({ type: 'spending_reduction', category: 'Dining', reductionCents: 5000 });
+    const composed = composeScenarios([r], 'Custom name');
+    assert.strictEqual(composed.name, 'Custom name');
+  });
+
+  it('combines income_change with spending_reduction', () => {
+    const income = runScenario({ type: 'income_change', monthlyDeltaCents: 20000 });
+    const spend = runScenario({ type: 'spending_reduction', category: 'Dining', reductionCents: 10000 });
+    const composed = composeScenarios([income, spend]);
+    assert.strictEqual(composed.monthlyDelta.cents, 30000);
   });
 });

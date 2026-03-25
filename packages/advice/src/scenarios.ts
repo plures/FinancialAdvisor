@@ -7,6 +7,7 @@
 
 import {
   createMoney,
+  addMoney,
   multiplyMoney,
   type Currency,
 } from '@financialadvisor/domain';
@@ -43,6 +44,9 @@ export function runScenario(
 
     case 'spending_reduction':
       return _spendingReductionScenario(input);
+
+    case 'income_change':
+      return _incomeChangeScenario(input);
   }
 }
 
@@ -56,6 +60,66 @@ export function runScenarios(
   recurringItems: readonly RecurringCommitmentSnapshot[] = [],
 ): ScenarioResult[] {
   return inputs.map((input) => runScenario(input, recurringItems));
+}
+
+/**
+ * Compose multiple scenario results into a single combined result.
+ *
+ * Monthly and annual deltas are summed across all scenarios.
+ * Scenarios are modelled as independent — effects are additive.
+ *
+ * @param results - Individual scenario results to combine.
+ * @param name    - Short name for the composed scenario.
+ */
+export function composeScenarios(
+  results: readonly ScenarioResult[],
+  name = 'Combined scenario',
+): ScenarioResult {
+  if (results.length === 0) {
+    const zero = createMoney(0, 'USD');
+    return {
+      name,
+      description: 'No scenarios to compose.',
+      monthlyDelta: zero,
+      annualDelta: zero,
+      timelineMonths: 0,
+    };
+  }
+
+  const currency: Currency = (results[0]!.monthlyDelta.currency as Currency) ?? 'USD';
+  let monthly = createMoney(0, currency);
+  let annual = createMoney(0, currency);
+  let totalInterestSavedCents = 0;
+  let maxTimelineMonths = 0;
+  let totalMonthsSaved = 0;
+
+  for (const r of results) {
+    monthly = addMoney(monthly, r.monthlyDelta);
+    annual = addMoney(annual, r.annualDelta);
+    if (r.interestSaved !== undefined) {
+      totalInterestSavedCents += r.interestSaved.cents;
+    }
+    if (r.timelineMonths !== undefined && r.timelineMonths > maxTimelineMonths) {
+      maxTimelineMonths = r.timelineMonths;
+    }
+    if (r.monthsSaved !== undefined) {
+      totalMonthsSaved += r.monthsSaved;
+    }
+  }
+
+  const descriptions = results.map((r) => r.description).join(' ').trimEnd();
+
+  return {
+    name,
+    description: descriptions,
+    monthlyDelta: monthly,
+    annualDelta: annual,
+    ...(totalInterestSavedCents > 0 && {
+      interestSaved: createMoney(totalInterestSavedCents, currency),
+    }),
+    ...(totalMonthsSaved > 0 && { monthsSaved: totalMonthsSaved }),
+    timelineMonths: maxTimelineMonths,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -154,6 +218,27 @@ function _spendingReductionScenario(
     description:
       `Cutting $${_fmt(input.reductionCents)}/month from ${input.category} ` +
       `would save $${_fmt(input.reductionCents * 12)}/year.`,
+    monthlyDelta,
+    annualDelta,
+    timelineMonths: 0,
+  };
+}
+
+function _incomeChangeScenario(
+  input: Extract<ScenarioInput, { type: 'income_change' }>,
+): ScenarioResult {
+  const currency: Currency = (input.currency as Currency) ?? 'USD';
+  const monthlyDelta = createMoney(input.monthlyDeltaCents, currency);
+  const annualDelta = multiplyMoney(monthlyDelta, 12);
+
+  const direction = input.monthlyDeltaCents >= 0 ? 'increase' : 'decrease';
+  const absCents = Math.abs(input.monthlyDeltaCents);
+
+  return {
+    name: `Income ${direction} of $${_fmt(absCents)}/month`,
+    description:
+      `A monthly income ${direction} of $${_fmt(absCents)} ` +
+      `would change annual income by $${_fmt(Math.abs(input.monthlyDeltaCents * 12))}.`,
     monthlyDelta,
     annualDelta,
     timelineMonths: 0,
