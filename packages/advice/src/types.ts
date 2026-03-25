@@ -113,10 +113,22 @@ export interface SpendingReductionScenarioInput {
   readonly currency?: string;
 }
 
+/** Input for an income-change scenario. */
+export interface IncomeChangeScenarioInput {
+  readonly type: 'income_change';
+  /**
+   * Monthly income change in cents.
+   * Positive = income increase, negative = income decrease.
+   */
+  readonly monthlyDeltaCents: number;
+  readonly currency?: string;
+}
+
 export type ScenarioInput =
   | CancelSubscriptionScenarioInput
   | ExtraDebtPaymentScenarioInput
-  | SpendingReductionScenarioInput;
+  | SpendingReductionScenarioInput
+  | IncomeChangeScenarioInput;
 
 // ---------------------------------------------------------------------------
 // Financial Plan
