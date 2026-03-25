@@ -10,7 +10,7 @@ import type { TransitionConfig } from 'svelte/transition';
 
 /** Standard fade transition using design-dojo motion tokens. */
 export function dojoFade(
-  node: Element,
+  _node: Element,
   { duration = 200, delay = 0 }: { duration?: number; delay?: number } = {}
 ): TransitionConfig {
   return {
@@ -52,7 +52,7 @@ export function dojoSlide(
 
 /** Scale-in transition for cards and modal dialogs. */
 export function dojoScale(
-  node: Element,
+  _node: Element,
   { duration = 200, delay = 0, start = 0.95 }: { duration?: number; delay?: number; start?: number } = {}
 ): TransitionConfig {
   return {
