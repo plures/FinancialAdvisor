@@ -15,12 +15,21 @@ import type {
   PrivacyLevel,
 } from './account-integration-types.js';
 
+/**
+ * Options controlling how an OFX/QFX file is imported.
+ */
 export interface OFXImportOptions {
   accountId?: string;
   skipDuplicates?: boolean;
   maxFileSize?: number; // bytes
 }
 
+/**
+ * Imports financial transactions from OFX and QFX files into the application.
+ *
+ * Supports both the legacy SGML and the newer XML-based OFX variants used by
+ * most banks and Quicken.
+ */
 export class OFXImporter implements IFileImporter {
   private readonly maxFileSizeDefault = 10 * 1024 * 1024; // 10MB
 

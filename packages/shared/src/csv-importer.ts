@@ -18,6 +18,9 @@ import type {
   AccountIntegrationErrorCode,
 } from './account-integration-types.js';
 
+/**
+ * Options controlling how a CSV file is imported.
+ */
 export interface CSVImportOptions {
   accountId?: string;
   csvTemplate?: CSVTemplate;
@@ -25,6 +28,10 @@ export interface CSVImportOptions {
   maxFileSize?: number; // bytes
 }
 
+/**
+ * Imports financial transactions from CSV (and TSV/TXT) files using configurable
+ * bank-specific column mapping templates.
+ */
 export class CSVImporter implements IFileImporter {
   private readonly maxFileSizeDefault = 50 * 1024 * 1024; // 50MB
 

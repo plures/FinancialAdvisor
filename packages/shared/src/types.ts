@@ -1,5 +1,8 @@
 // Core types for the FinancialAdvisor system
 
+/**
+ * Represents a financial account (bank, credit, investment, etc.) owned by the user.
+ */
 export interface Account {
   id: string;
   name: string;
@@ -11,6 +14,9 @@ export interface Account {
   isActive: boolean;
 }
 
+/**
+ * Enumeration of supported account types.
+ */
 export enum AccountType {
   CHECKING = 'checking',
   SAVINGS = 'savings',
@@ -21,6 +27,9 @@ export enum AccountType {
   RETIREMENT = 'retirement'
 }
 
+/**
+ * Represents a single financial transaction associated with an account.
+ */
 export interface Transaction {
   id: string;
   accountId: string;
@@ -36,12 +45,18 @@ export interface Transaction {
   isRecurring?: boolean;
 }
 
+/**
+ * Enumeration of transaction flow directions.
+ */
 export enum TransactionType {
   INCOME = 'income',
   EXPENSE = 'expense',
   TRANSFER = 'transfer'
 }
 
+/**
+ * Represents a spending budget for a specific category and time period.
+ */
 export interface Budget {
   id: string;
   name: string;
@@ -54,6 +69,9 @@ export interface Budget {
   remaining: number;
 }
 
+/**
+ * Enumeration of recurring budget period lengths.
+ */
 export enum BudgetPeriod {
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
@@ -61,6 +79,9 @@ export enum BudgetPeriod {
   YEARLY = 'yearly'
 }
 
+/**
+ * Represents a user-defined financial savings or payoff goal.
+ */
 export interface Goal {
   id: string;
   name: string;
@@ -73,6 +94,9 @@ export interface Goal {
   isCompleted: boolean;
 }
 
+/**
+ * Enumeration of predefined goal categories.
+ */
 export enum GoalCategory {
   EMERGENCY_FUND = 'emergency_fund',
   VACATION = 'vacation',
@@ -83,6 +107,9 @@ export enum GoalCategory {
   OTHER = 'other'
 }
 
+/**
+ * Enumeration of goal or task priority levels.
+ */
 export enum Priority {
   LOW = 'low',
   MEDIUM = 'medium',
@@ -90,6 +117,9 @@ export enum Priority {
   CRITICAL = 'critical'
 }
 
+/**
+ * Represents a single investment holding within an account.
+ */
 export interface Investment {
   id: string;
   symbol: string;
@@ -103,6 +133,9 @@ export interface Investment {
   dividendYield?: number;
 }
 
+/**
+ * A point-in-time summary of the user's overall financial position.
+ */
 export interface FinancialSnapshot {
   timestamp: Date;
   totalAssets: number;
@@ -114,12 +147,18 @@ export interface FinancialSnapshot {
 }
 
 // AI Integration types
+/**
+ * Describes a configured AI provider used for financial analysis and advice.
+ */
 export interface AIProvider {
   name: string;
   type: AIProviderType;
   config: AIProviderConfig;
 }
 
+/**
+ * Enumeration of supported AI provider backends.
+ */
 export enum AIProviderType {
   OPENAI = 'openai',
   ANTHROPIC = 'anthropic',
@@ -128,6 +167,9 @@ export enum AIProviderType {
   CUSTOM = 'custom'
 }
 
+/**
+ * Configuration options for an AI provider connection.
+ */
 export interface AIProviderConfig {
   apiKey?: string;
   baseUrl?: string;
@@ -136,12 +178,18 @@ export interface AIProviderConfig {
   temperature?: number;
 }
 
+/**
+ * Represents a query sent to an AI provider, optionally enriched with financial context.
+ */
 export interface AIQuery {
   prompt: string;
   context?: FinancialContext;
   type: QueryType;
 }
 
+/**
+ * Enumeration of AI query intent types.
+ */
 export enum QueryType {
   ANALYSIS = 'analysis',
   ADVICE = 'advice',
@@ -150,6 +198,9 @@ export enum QueryType {
   REPORT = 'report'
 }
 
+/**
+ * Financial data context supplied to an AI query for personalised responses.
+ */
 export interface FinancialContext {
   accounts: Account[];
   transactions: Transaction[];
@@ -163,6 +214,9 @@ export interface FinancialContext {
 }
 
 // Security and Storage types
+/**
+ * Stores an encrypted credential for an external service.
+ */
 export interface SecureCredential {
   id: string;
   service: string;
@@ -172,6 +226,9 @@ export interface SecureCredential {
   lastUpdated: Date;
 }
 
+/**
+ * Configuration for local data storage, encryption, and backup behaviour.
+ */
 export interface StorageConfig {
   dataPath: string;
   encryptionKey?: string;
@@ -180,6 +237,9 @@ export interface StorageConfig {
 }
 
 // Report types
+/**
+ * Represents a generated financial report with its content and metadata.
+ */
 export interface Report {
   id: string;
   title: string;
@@ -190,6 +250,9 @@ export interface Report {
   parameters: Record<string, any>;
 }
 
+/**
+ * Enumeration of available report types.
+ */
 export enum ReportType {
   MONTHLY_SUMMARY = 'monthly_summary',
   SPENDING_ANALYSIS = 'spending_analysis',
@@ -199,6 +262,9 @@ export enum ReportType {
   NET_WORTH_TREND = 'net_worth_trend'
 }
 
+/**
+ * Enumeration of output formats for generated reports.
+ */
 export enum ReportFormat {
   MARKDOWN = 'markdown',
   HTML = 'html',
@@ -207,6 +273,9 @@ export enum ReportFormat {
 }
 
 // Extension types
+/**
+ * Metadata manifest that describes a loadable extension or plugin.
+ */
 export interface ExtensionManifest {
   name: string;
   version: string;
@@ -217,6 +286,9 @@ export interface ExtensionManifest {
   dependencies: string[];
 }
 
+/**
+ * Runtime context injected into a plugin, providing access to core services.
+ */
 export interface PluginContext {
   storage: any; // MCP storage interface
   ai: any; // AI provider interface
@@ -224,23 +296,36 @@ export interface PluginContext {
 }
 
 // Utility types
+/** ISO 4217 currency code or a custom currency string. */
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'CAD' | 'JPY' | 'AUD' | string;
 
+/**
+ * An inclusive date interval defined by start and end dates.
+ */
 export interface DateRange {
   start: Date;
   end: Date;
 }
 
+/**
+ * Options for paginating through a list of results.
+ */
 export interface PaginationOptions {
   page: number;
   limit: number;
 }
 
+/**
+ * Options for sorting a list of results by a specified field.
+ */
 export interface SortOptions {
   field: string;
   direction: 'asc' | 'desc';
 }
 
+/**
+ * Arbitrary key/value map for filtering a list of results.
+ */
 export interface FilterOptions {
   [key: string]: any;
 }
