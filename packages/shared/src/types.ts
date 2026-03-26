@@ -199,7 +199,7 @@ export enum QueryType {
 }
 
 /**
- * Financial data context supplied to an AI query for personalised responses.
+ * Financial data context supplied to an AI query for personalized responses.
  */
 export interface FinancialContext {
   accounts: Account[];
