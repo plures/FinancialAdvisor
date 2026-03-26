@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Enforced `@typescript-eslint/no-explicit-any: 'error'` in the ESLint flat config (`eslint.config.js`)
+- Eliminated 6 explicit `any` violations: replaced `Record<string, any>` with `Record<string, unknown>` and `Promise<any[]>` with `Promise<ImportHistory[]>` across `packages/ledger` and `packages/shared`
+- Resolved outstanding `type-safety` praxis health dimension (0% → 100%)
+
 ## [0.15.1] - 2026-03-26
 
 ### Fixed

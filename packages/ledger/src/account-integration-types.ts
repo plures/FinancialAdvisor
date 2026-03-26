@@ -100,7 +100,7 @@ export interface ImportHistory {
   privacyLevel: PrivacyLevel;
   dataSharedWith?: string[]; // Empty for local, ['self-hosted OBP'] or ['Plaid'] if applicable
 
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -224,7 +224,7 @@ export class AccountIntegrationError extends Error {
   constructor(
     public code: AccountIntegrationErrorCode,
     message: string,
-    public details?: Record<string, any>
+    public details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'AccountIntegrationError';
