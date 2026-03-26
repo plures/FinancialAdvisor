@@ -1,0 +1,28 @@
+{
+  "all": false,
+  "check-coverage": true,
+  "lines": 80,
+  "functions": 80,
+  "branches": 80,
+  "statements": 80,
+  "include": [
+    "out/test/packages/*/dist/**/*.js",
+    "out/test/src/shared/financial-utils.js"
+  ],
+  "exclude": [
+    "**/*.d.js",
+    "**/*.test.js",
+    "**/node_modules/**",
+    "out/test/.praxis/**",
+    "out/test/packages/vscode-extension/**",
+    "out/test/packages/eslint-plugin-design-dojo/**",
+    "out/test/packages/design-dojo/**"
+  ],
+  "reporter": [
+    "text",
+    "text-summary",
+    "html",
+    "lcov"
+  ],
+  "report-dir": "./coverage"
+}
