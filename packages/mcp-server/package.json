@@ -28,12 +28,10 @@
     "@financialadvisor/domain": "file:../domain",
     "@financialadvisor/resolution": "file:../resolution",
     "@modelcontextprotocol/sdk": "^1.25.2",
-    "bcrypt": "^5.1.1",
     "express": "^4.22.1",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.0",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
