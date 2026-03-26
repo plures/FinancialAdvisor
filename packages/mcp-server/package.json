@@ -27,7 +27,7 @@
   "dependencies": {
     "@financialadvisor/domain": "file:../domain",
     "@financialadvisor/resolution": "file:../resolution",
-    "@modelcontextprotocol/sdk": "^1.25.2",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "express": "^4.22.1",
     "sqlite3": "^6.0.1"
   },

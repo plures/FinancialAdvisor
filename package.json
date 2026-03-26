@@ -105,7 +105,7 @@
     "@financialadvisor/domain": "file:packages/domain",
     "@financialadvisor/praxis": "file:.praxis",
     "@financialadvisor/shared": "file:packages/shared",
-    "@modelcontextprotocol/sdk": "^1.25.2",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@plures/design-dojo": "file:packages/design-dojo",
     "@plures/pluresdb": "github:plures/pluresdb",
     "@plures/praxis": "^1.2.0",
