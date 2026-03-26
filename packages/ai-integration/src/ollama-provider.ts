@@ -6,6 +6,7 @@ import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
 import { AIProviderConfig, AIQuery, FinancialContext } from '@financialadvisor/shared';
 
+/** AI provider implementation that connects to a locally-running Ollama LLM server. */
 export class OllamaProvider extends BaseAIProvider {
   private client: AxiosInstance;
 

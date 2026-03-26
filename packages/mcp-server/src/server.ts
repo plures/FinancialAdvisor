@@ -17,6 +17,7 @@ import { TransactionAnalyzer } from '@financialadvisor/resolution';
 import type { Account, Transaction } from '@financialadvisor/domain';
 import { TransactionType, generateId, moneyFromDecimal, moneyToDecimal } from '@financialadvisor/domain';
 
+/** MCP server that exposes financial advisor tools and resources via the Model Context Protocol. */
 export class FinancialAdvisorMCPServer {
   private server: Server;
   private storage: SecureStorage;

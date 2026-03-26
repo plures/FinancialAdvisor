@@ -9,6 +9,7 @@ import type { Account, Transaction, SecureCredential } from '@financialadvisor/d
 
 const { Database } = sqlite3;
 
+/** Configuration for the SQLite database used by SecureStorage. */
 export interface DatabaseConfig {
   dbPath: string;
   encryptionKey?: string;
@@ -16,6 +17,7 @@ export interface DatabaseConfig {
   backupPath?: string;
 }
 
+/** Encrypted SQLite-backed storage for accounts, transactions, and credentials. */
 export class SecureStorage {
   private db: sqlite3.Database;
   private config: DatabaseConfig;
