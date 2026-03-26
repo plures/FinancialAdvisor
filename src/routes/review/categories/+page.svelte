@@ -2,18 +2,39 @@
   import { onMount } from 'svelte';
   import { derived } from 'svelte/store';
   import { Badge, Button, Input, Select, Card, Toast, EmptyState } from '@plures/design-dojo';
-  import { categoryCorrectionStore, seedCategoryCorrections, type CategoryCorrectionItem } from '$lib/stores/review';
+  import {
+    categoryCorrectionStore,
+    seedCategoryCorrections,
+    type CategoryCorrectionItem,
+  } from '$lib/stores/review';
   import { dojoFade, dojoSlide } from '@plures/design-dojo';
 
   const categories = [
-    'Groceries', 'Food Delivery', 'Coffee', 'Restaurants',
-    'Transport', 'Gas', 'Entertainment', 'Subscriptions',
-    'Shopping', 'Health', 'Utilities', 'Housing',
-    'Income', 'Savings', 'Other',
+    'Groceries',
+    'Food Delivery',
+    'Coffee',
+    'Restaurants',
+    'Transport',
+    'Gas',
+    'Entertainment',
+    'Subscriptions',
+    'Shopping',
+    'Health',
+    'Utilities',
+    'Housing',
+    'Income',
+    'Savings',
+    'Other',
   ];
 
-  const pending = derived(categoryCorrectionStore, $s => $s.filter(i => i.status === 'pending').length);
-  const corrected = derived(categoryCorrectionStore, $s => $s.filter(i => i.status === 'reviewed').length);
+  const pending = derived(
+    categoryCorrectionStore,
+    $s => $s.filter(i => i.status === 'pending').length
+  );
+  const corrected = derived(
+    categoryCorrectionStore,
+    $s => $s.filter(i => i.status === 'reviewed').length
+  );
 
   let selected = $state<Set<string>>(new Set());
   let bulkCategory = $state('');
@@ -56,7 +77,9 @@
   function applyBulk() {
     if (!bulkCategory || selected.size === 0) return;
     categoryCorrectionStore.bulkCorrect([...selected], bulkCategory);
-    notify(`${selected.size} transaction${selected.size === 1 ? '' : 's'} recategorised as "${bulkCategory}".`);
+    notify(
+      `${selected.size} transaction${selected.size === 1 ? '' : 's'} recategorised as "${bulkCategory}".`
+    );
     selected = new Set();
     bulkCategory = '';
   }
@@ -83,7 +106,8 @@
   </header>
 
   <p class="page-description">
-    Fix incorrectly categorised transactions. Corrections are used to improve future auto-categorisation.
+    Fix incorrectly categorised transactions. Corrections are used to improve future
+    auto-categorisation.
   </p>
 
   {#if selected.size > 0}
@@ -103,7 +127,11 @@
   {/if}
 
   {#if $categoryCorrectionStore.length === 0}
-    <EmptyState icon="🏷️" title="No corrections needed" description="All transactions are correctly categorised." />
+    <EmptyState
+      icon="🏷️"
+      title="No corrections needed"
+      description="All transactions are correctly categorised."
+    />
   {:else}
     <Card padding="none" elevated>
       <div class="table-wrap" transition:dojoFade>
@@ -114,7 +142,9 @@
                 <Input
                   type="checkbox"
                   aria-label="Select all pending"
-                  checked={$categoryCorrectionStore.filter(i => i.status === 'pending').every(i => selected.has(i.transactionId))}
+                  checked={$categoryCorrectionStore
+                    .filter(i => i.status === 'pending')
+                    .every(i => selected.has(i.transactionId))}
                   onchange={() => toggleSelectAll($categoryCorrectionStore)}
                   class="checkbox-input"
                 />
@@ -131,7 +161,10 @@
           </thead>
           <tbody>
             {#each $categoryCorrectionStore as item (item.transactionId)}
-              <tr class:row-done={item.status !== 'pending'} class:row-selected={selected.has(item.transactionId)}>
+              <tr
+                class:row-done={item.status !== 'pending'}
+                class:row-selected={selected.has(item.transactionId)}
+              >
                 <td class="col-check">
                   {#if item.status === 'pending'}
                     <Input
@@ -161,9 +194,11 @@
                     <Select
                       aria-label="Choose category for {item.description}"
                       value={item.suggestedCategory ?? ''}
-                      onchange={(e) => {
+                      onchange={e => {
                         const val = (e.target as HTMLSelectElement).value;
-                        if (val) { correctItem(item, val); }
+                        if (val) {
+                          correctItem(item, val);
+                        }
                       }}
                       class="inline-select-field"
                     >
@@ -173,7 +208,9 @@
                       {/each}
                     </Select>
                   {:else}
-                    <span class="corrected-cat">{item.correctedCategory ?? item.currentCategory}</span>
+                    <span class="corrected-cat"
+                      >{item.correctedCategory ?? item.currentCategory}</span
+                    >
                   {/if}
                 </td>
                 <td>
@@ -201,11 +238,7 @@
 
 {#if showToast}
   <div class="toast-region" transition:dojoFade>
-    <Toast
-      message={toastMessage}
-      variant={toastVariant}
-      onclose={() => (showToast = false)}
-    />
+    <Toast message={toastMessage} variant={toastVariant} onclose={() => (showToast = false)} />
   </div>
 {/if}
 
@@ -308,13 +341,30 @@
     background-color: var(--color-primary-50);
   }
 
-  .row-done td { opacity: 0.65; }
+  .row-done td {
+    opacity: 0.65;
+  }
 
-  .col-check { width: 2.5rem; text-align: center; }
-  .col-amount { text-align: right; font-variant-numeric: tabular-nums; font-weight: var(--font-weight-medium); }
-  .col-desc { max-width: 16rem; overflow: hidden; text-overflow: ellipsis; }
-  .col-select { min-width: 10rem; }
-  .col-actions { width: 6rem; }
+  .col-check {
+    width: 2.5rem;
+    text-align: center;
+  }
+  .col-amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--font-weight-medium);
+  }
+  .col-desc {
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .col-select {
+    min-width: 10rem;
+  }
+  .col-actions {
+    width: 6rem;
+  }
 
   .no-suggestion {
     color: var(--color-text-secondary);

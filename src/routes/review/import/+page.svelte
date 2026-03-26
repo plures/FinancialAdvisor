@@ -133,7 +133,11 @@
             </thead>
             <tbody>
               {#each items as item (item.rowIndex + sessionId)}
-                <tr class:row-error={!!item.error} class:row-duplicate={item.isDuplicate} class:row-done={item.status !== 'pending'}>
+                <tr
+                  class:row-error={!!item.error}
+                  class:row-duplicate={item.isDuplicate}
+                  class:row-done={item.status !== 'pending'}
+                >
                   <td class="col-index">{item.rowIndex + 1}</td>
                   <td>{item.date}</td>
                   <td>
@@ -150,10 +154,16 @@
                     {#if item.status === 'pending'}
                       <div class="action-row">
                         {#if item.error || item.isDuplicate}
-                          <Button size="sm" variant="secondary" onclick={() => openFix(item)}>Fix</Button>
+                          <Button size="sm" variant="secondary" onclick={() => openFix(item)}
+                            >Fix</Button
+                          >
                         {/if}
-                        <Button size="sm" variant="primary" onclick={() => approveItem(item)}>OK</Button>
-                        <Button size="sm" variant="ghost" onclick={() => skipItem(item)}>Skip</Button>
+                        <Button size="sm" variant="primary" onclick={() => approveItem(item)}
+                          >OK</Button
+                        >
+                        <Button size="sm" variant="ghost" onclick={() => skipItem(item)}
+                          >Skip</Button
+                        >
                       </div>
                     {:else}
                       <span class="done-label">{item.status === 'reviewed' ? '✓' : '—'}</span>
@@ -176,19 +186,8 @@
   {/snippet}
   {#if fixTarget}
     <div class="fix-form">
-      <Input
-        label="Description"
-        id="fix-desc"
-        type="text"
-        bind:value={fixDescription}
-      />
-      <Input
-        label="Amount"
-        id="fix-amt"
-        type="number"
-        step="0.01"
-        bind:value={fixAmount}
-      />
+      <Input label="Description" id="fix-desc" type="text" bind:value={fixDescription} />
+      <Input label="Amount" id="fix-amt" type="number" step="0.01" bind:value={fixAmount} />
       {#if fixTarget.error}
         <p class="fix-error">⚠ Original error: {fixTarget.error}</p>
       {/if}
@@ -198,11 +197,7 @@
 
 {#if showToast}
   <div class="toast-region" transition:dojoFade>
-    <Toast
-      message={toastMessage}
-      variant={toastVariant}
-      onclose={() => (showToast = false)}
-    />
+    <Toast message={toastMessage} variant={toastVariant} onclose={() => (showToast = false)} />
   </div>
 {/if}
 
@@ -242,7 +237,9 @@
     color: var(--color-text-secondary);
   }
 
-  .status-sep { color: var(--color-border-strong); }
+  .status-sep {
+    color: var(--color-border-strong);
+  }
 
   .session-section {
     margin-bottom: var(--space-8);
@@ -301,15 +298,32 @@
     background-color: var(--color-bg-subtle);
   }
 
-  .row-error td { background-color: var(--color-danger-50); }
-  .row-duplicate td { background-color: var(--color-warning-50); }
-  .row-done td { opacity: 0.6; }
+  .row-error td {
+    background-color: var(--color-danger-50);
+  }
+  .row-duplicate td {
+    background-color: var(--color-warning-50);
+  }
+  .row-done td {
+    opacity: 0.6;
+  }
 
-  .col-index { color: var(--color-text-secondary); width: 2.5rem; }
-  .col-amount { text-align: right; font-variant-numeric: tabular-nums; font-weight: var(--font-weight-medium); }
-  .col-actions { width: 12rem; }
+  .col-index {
+    color: var(--color-text-secondary);
+    width: 2.5rem;
+  }
+  .col-amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--font-weight-medium);
+  }
+  .col-actions {
+    width: 12rem;
+  }
 
-  .description { display: block; }
+  .description {
+    display: block;
+  }
 
   .row-error-msg {
     margin: var(--space-1) 0 0;

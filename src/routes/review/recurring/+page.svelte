@@ -43,12 +43,13 @@
     other: '❓',
   };
 
-  const typeVariant: Record<RecurringItem['type'], 'primary' | 'success' | 'warning' | 'neutral'> = {
-    subscription: 'primary',
-    bill: 'warning',
-    income: 'success',
-    other: 'neutral',
-  };
+  const typeVariant: Record<RecurringItem['type'], 'primary' | 'success' | 'warning' | 'neutral'> =
+    {
+      subscription: 'primary',
+      bill: 'warning',
+      income: 'success',
+      other: 'neutral',
+    };
 
   const freqLabel: Record<string, string> = {
     monthly: 'Monthly',
@@ -75,11 +76,16 @@
   </header>
 
   <p class="page-description">
-    These series were automatically detected as recurring. Accept them to track subscriptions, bills and income. Use the toggle to mark each series as accepted.
+    These series were automatically detected as recurring. Accept them to track subscriptions, bills
+    and income. Use the toggle to mark each series as accepted.
   </p>
 
   {#if $recurringStore.length === 0}
-    <EmptyState icon="🔁" title="No recurring series detected" description="Import more transactions to detect recurring patterns." />
+    <EmptyState
+      icon="🔁"
+      title="No recurring series detected"
+      description="Import more transactions to detect recurring patterns."
+    />
   {:else}
     <div class="cards-grid">
       {#each $recurringStore as item (item.id)}
@@ -114,14 +120,14 @@
               </dl>
 
               <div class="type-selector" role="group" aria-label="Transaction type">
-                {#each (['subscription', 'bill', 'income', 'other'] as const) as t}
+                {#each ['subscription', 'bill', 'income', 'other'] as const as t}
                   <Button
                     class="type-btn{item.type === t ? ' type-btn--active' : ''}"
                     variant="ghost"
                     size="sm"
                     onclick={() => setType(item, t)}
-                    disabled={item.status !== 'pending'}
-                  >{typeIcon[t]} {t}</Button>
+                    disabled={item.status !== 'pending'}>{typeIcon[t]} {t}</Button
+                  >
                 {/each}
               </div>
             </div>
@@ -131,7 +137,7 @@
                 {#if item.status === 'pending'}
                   <Toggle
                     label="Accept as recurring"
-                    onchange={(checked) => {
+                    onchange={checked => {
                       if (checked) accept(item);
                     }}
                   />
@@ -152,11 +158,7 @@
 
 {#if showToast}
   <div class="toast-region" transition:dojoFade>
-    <Toast
-      message={toastMessage}
-      variant={toastVariant}
-      onclose={() => (showToast = false)}
-    />
+    <Toast message={toastMessage} variant={toastVariant} onclose={() => (showToast = false)} />
   </div>
 {/if}
 
@@ -238,7 +240,9 @@
     margin: 0;
   }
 
-  .detail-item { margin: 0; }
+  .detail-item {
+    margin: 0;
+  }
 
   .detail-item dt {
     font-size: var(--font-size-xs);

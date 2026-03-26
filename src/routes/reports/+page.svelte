@@ -41,7 +41,7 @@
     if (!ctx) return;
 
     const categoryTotals: Record<string, number> = {};
-    $transactions.forEach((transaction) => {
+    $transactions.forEach(transaction => {
       if (transaction.type === 'debit') {
         const category = transaction.category || 'Uncategorized';
         categoryTotals[category] = (categoryTotals[category] || 0) + transaction.amount;
@@ -61,8 +61,14 @@
           {
             data: amounts.length > 0 ? amounts : [1],
             backgroundColor: [
-              '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-              '#9966FF', '#FF9F40', '#E91E63', '#C9CBCF',
+              '#FF6384',
+              '#36A2EB',
+              '#FFCE56',
+              '#4BC0C0',
+              '#9966FF',
+              '#FF9F40',
+              '#E91E63',
+              '#C9CBCF',
             ],
           },
         ],
@@ -87,7 +93,7 @@
 
     let totalIncome = 0;
     let totalExpenses = 0;
-    $transactions.forEach((transaction) => {
+    $transactions.forEach(transaction => {
       if (transaction.type === 'credit') {
         totalIncome += transaction.amount;
       } else {
@@ -134,8 +140,8 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const accountNames = $accounts.map((a) => a.name);
-    const balances = $accounts.map((a) => a.balance);
+    const accountNames = $accounts.map(a => a.name);
+    const balances = $accounts.map(a => a.balance);
 
     accountBalancesChart?.destroy();
 
