@@ -61,6 +61,25 @@ export default [
     }
   },
   {
+    // The design-dojo package itself defines the primitive components, so the
+    // no-local-primitives rule must not apply to its own source files.
+    files: ['packages/design-dojo/src/**/*.svelte'],
+    rules: {
+      'design-dojo/no-local-primitives': 'off',
+      'design-dojo/prefer-design-dojo-imports': 'off',
+    }
+  },
+  {
+    // design-dojo motion helpers run in a browser context.
+    files: ['packages/design-dojo/src/**/*.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2020
+      }
+    }
+  },
+  {
     files: ['src/lib/pluresdb/store.ts'],
     languageOptions: {
       globals: {

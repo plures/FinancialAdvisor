@@ -79,10 +79,7 @@ export class ResolutionEngine {
     let fromKeywordMatch = false;
 
     // ── 1. User-correction lookup ────────────────────────────────────────────
-    const correction = this.learner.findCorrection(
-      transaction.merchant,
-      transaction.description,
-    );
+    const correction = this.learner.findCorrection(transaction.merchant, transaction.description);
     if (correction) {
       category = correction.category;
       confidence = correction.confidence;
@@ -101,9 +98,7 @@ export class ResolutionEngine {
 
         const similar = this.clusterer.findSimilar(transaction.merchant, 3, 0.2);
         if (similar.length > 0) {
-          reasons.push(
-            `Semantically similar to: ${similar.map(s => s.merchant).join(', ')}`,
-          );
+          reasons.push(`Semantically similar to: ${similar.map(s => s.merchant).join(', ')}`);
         }
       }
     }
@@ -115,9 +110,7 @@ export class ResolutionEngine {
         category = keywordCategory;
         fromKeywordMatch = true;
         confidence = 0.7;
-        reasons.push(
-          `Matched keyword in "${transaction.merchant ?? transaction.description}"`,
-        );
+        reasons.push(`Matched keyword in "${transaction.merchant ?? transaction.description}"`);
       }
     }
 
@@ -127,7 +120,7 @@ export class ResolutionEngine {
     if (historical.similarTransactionCount > 0) {
       reasons.push(
         `Similar to ${historical.similarTransactionCount} previous ${category} ` +
-          `transaction${historical.similarTransactionCount !== 1 ? 's' : ''}`,
+          `transaction${historical.similarTransactionCount !== 1 ? 's' : ''}`
       );
     }
 
@@ -137,7 +130,7 @@ export class ResolutionEngine {
       if (amt >= min * 0.5 && amt <= max * 2) {
         reasons.push(
           `Amount $${amt.toFixed(2)} matches typical ${category} range ` +
-            `($${min.toFixed(0)}–$${max.toFixed(0)}, avg $${avg.toFixed(0)})`,
+            `($${min.toFixed(0)}–$${max.toFixed(0)}, avg $${avg.toFixed(0)})`
         );
         confidence = Math.min(confidence + 0.1, 0.95);
       }
@@ -181,11 +174,7 @@ export class ResolutionEngine {
    * available.
    */
   resolveAll(transactions: Transaction[]): ResolutionResult[] {
-    const merchants = [
-      ...new Set(
-        transactions.filter(t => t.merchant).map(t => t.merchant!),
-      ),
-    ];
+    const merchants = [...new Set(transactions.filter(t => t.merchant).map(t => t.merchant!))];
     this.clusterer.addMerchants(merchants);
     return transactions.map(t => this.resolve(t));
   }
@@ -199,14 +188,13 @@ export class ResolutionEngine {
   applyCorrection(
     transaction: Transaction,
     correctedCategory: string,
-    originalCategory?: string,
+    originalCategory?: string
   ): void {
     const correction: UserCorrection = {
       transactionId: transaction.id,
       merchantName: transaction.merchant,
       descriptionPattern: transaction.description,
-      originalCategory:
-        originalCategory ?? TransactionAnalyzer.categorizeTransaction(transaction),
+      originalCategory: originalCategory ?? TransactionAnalyzer.categorizeTransaction(transaction),
       correctedCategory,
       correctedAt: new Date(),
       amountCents: transaction.amount.cents,
@@ -227,11 +215,7 @@ export class ResolutionEngine {
    */
   loadHistory(transactions: Transaction[]): void {
     this.transactionHistory = transactions;
-    const merchants = [
-      ...new Set(
-        transactions.filter(t => t.merchant).map(t => t.merchant!),
-      ),
-    ];
+    const merchants = [...new Set(transactions.filter(t => t.merchant).map(t => t.merchant!))];
     this.clusterer.addMerchants(merchants);
   }
 
@@ -246,7 +230,7 @@ export class ResolutionEngine {
 
   private buildHistoricalInsights(
     transaction: Transaction,
-    resolvedCategory: string,
+    resolvedCategory: string
   ): {
     similarTransactionCount: number;
     matchedMerchants?: string[];
@@ -264,7 +248,7 @@ export class ResolutionEngine {
       t =>
         t.type === TransactionType.EXPENSE &&
         (t.category === resolvedCategory ||
-          TransactionAnalyzer.categorizeTransaction(t) === resolvedCategory),
+          TransactionAnalyzer.categorizeTransaction(t) === resolvedCategory)
     );
 
     if (categoryTxns.length === 0) {
@@ -289,25 +273,31 @@ export class ResolutionEngine {
   }
 
   private detectTemporalPattern(transaction: Transaction): string | undefined {
-    if (!transaction.merchant) return undefined;
+    if (!transaction.merchant) {
+      return undefined;
+    }
 
     const merchantTxns = this.transactionHistory.filter(
-      t =>
-        t.type === TransactionType.EXPENSE &&
-        t.merchant === transaction.merchant,
+      t => t.type === TransactionType.EXPENSE && t.merchant === transaction.merchant
     );
 
-    if (merchantTxns.length < 2) return undefined;
+    if (merchantTxns.length < 2) {
+      return undefined;
+    }
 
     const dates = merchantTxns.map(t => t.date.getTime()).sort((a, b) => a - b);
     const avgGapDays =
-      (dates[dates.length - 1]! - dates[0]!) /
-      (dates.length - 1) /
-      (1000 * 60 * 60 * 24);
+      (dates[dates.length - 1]! - dates[0]!) / (dates.length - 1) / (1000 * 60 * 60 * 24);
 
-    if (avgGapDays <= 8) return 'Weekly transaction pattern detected';
-    if (avgGapDays <= 16) return 'Bi-weekly transaction pattern detected';
-    if (avgGapDays <= 35) return 'Monthly transaction pattern detected';
+    if (avgGapDays <= 8) {
+      return 'Weekly transaction pattern detected';
+    }
+    if (avgGapDays <= 16) {
+      return 'Bi-weekly transaction pattern detected';
+    }
+    if (avgGapDays <= 35) {
+      return 'Monthly transaction pattern detected';
+    }
     return undefined;
   }
 }

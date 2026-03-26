@@ -57,7 +57,7 @@ export class RawTransactionStore {
 
   findBySession(importSessionId: string): RawTransaction[] {
     const ids = this.bySession.get(importSessionId) ?? [];
-    return ids.map((id) => this.transactions.get(id)!).filter(Boolean);
+    return ids.map(id => this.transactions.get(id)!).filter(Boolean);
   }
 
   all(): RawTransaction[] {

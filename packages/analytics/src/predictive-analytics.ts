@@ -49,7 +49,10 @@ export class PredictiveAnalytics {
   /**
    * Analyze spending trends across categories
    */
-  static analyzeSpendingTrends(transactions: Transaction[], periodDays: number = 90): TrendAnalysis[] {
+  static analyzeSpendingTrends(
+    transactions: Transaction[],
+    periodDays: number = 90
+  ): TrendAnalysis[] {
     const categoryData = this.groupTransactionsByCategory(transactions);
     const trends: TrendAnalysis[] = [];
 
@@ -58,15 +61,21 @@ export class PredictiveAnalytics {
 
     for (const [category, txns] of Object.entries(categoryData)) {
       const recentTxns = txns.filter(t => new Date(t.date) >= cutoffDate);
-      if (recentTxns.length < 2) continue;
+      if (recentTxns.length < 2) {
+        continue;
+      }
 
       // Split into two halves for trend comparison
       const midpoint = Math.floor(recentTxns.length / 2);
       const firstHalf = recentTxns.slice(0, midpoint);
       const secondHalf = recentTxns.slice(midpoint);
 
-      const firstHalfAvg = this.calculateAverage(firstHalf.map(t => Math.abs(moneyToDecimal(t.amount))));
-      const secondHalfAvg = this.calculateAverage(secondHalf.map(t => Math.abs(moneyToDecimal(t.amount))));
+      const firstHalfAvg = this.calculateAverage(
+        firstHalf.map(t => Math.abs(moneyToDecimal(t.amount)))
+      );
+      const secondHalfAvg = this.calculateAverage(
+        secondHalf.map(t => Math.abs(moneyToDecimal(t.amount)))
+      );
 
       if (firstHalfAvg === 0) {
         // Cannot compute a meaningful percentage change from a zero baseline; skip this category
@@ -74,7 +83,7 @@ export class PredictiveAnalytics {
       }
 
       const percentageChange = ((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100;
-      
+
       let trend: 'increasing' | 'decreasing' | 'stable';
       if (Math.abs(percentageChange) < 5) {
         trend = 'stable';
@@ -85,14 +94,17 @@ export class PredictiveAnalytics {
       }
 
       // Confidence based on sample size and variance
-      const confidence = this.calculateConfidence(recentTxns.length, this.calculateStdDev(recentTxns.map(t => Math.abs(moneyToDecimal(t.amount)))));
+      const confidence = this.calculateConfidence(
+        recentTxns.length,
+        this.calculateStdDev(recentTxns.map(t => Math.abs(moneyToDecimal(t.amount))))
+      );
 
       trends.push({
         category,
         trend,
         percentageChange,
         confidence,
-        prediction: secondHalfAvg
+        prediction: secondHalfAvg,
       });
     }
 
@@ -102,10 +114,13 @@ export class PredictiveAnalytics {
   /**
    * Forecast future spending based on historical patterns
    */
-  static forecastSpending(transactions: Transaction[], monthsAhead: number = 3): SpendingForecast[] {
+  static forecastSpending(
+    transactions: Transaction[],
+    monthsAhead: number = 3
+  ): SpendingForecast[] {
     const forecasts: SpendingForecast[] = [];
     const monthlySpending = this.groupByMonth(transactions);
-    
+
     if (monthlySpending.length < 2) {
       return []; // Need at least 2 months of data
     }
@@ -117,15 +132,15 @@ export class PredictiveAnalytics {
 
     // Simple linear regression for trend
     const trend = this.calculateLinearTrend(recentMonths.map(m => m.total));
-    
+
     // Start from the last known month value
     const lastMonthValue = recentMonths[recentMonths.length - 1]?.total || baseline;
 
     for (let i = 1; i <= monthsAhead; i++) {
       // Project from last month's value using the trend
-      const prediction = lastMonthValue + (trend * i);
+      const prediction = lastMonthValue + trend * i;
       const variance = stdDev / Math.sqrt(recentMonths.length);
-      const confidence = Math.max(0.5, 1 - (variance / baseline));
+      const confidence = Math.max(0.5, 1 - variance / baseline);
 
       const futureMonth = new Date();
       futureMonth.setMonth(futureMonth.getMonth() + i);
@@ -135,7 +150,7 @@ export class PredictiveAnalytics {
         predictedSpending: Math.round(prediction * 100) / 100,
         confidence: Math.round(confidence * 100) / 100,
         baselineSpending: Math.round(baseline * 100) / 100,
-        variance: Math.round(variance * 100) / 100
+        variance: Math.round(variance * 100) / 100,
       });
     }
 
@@ -145,12 +160,17 @@ export class PredictiveAnalytics {
   /**
    * Detect anomalous transactions
    */
-  static detectAnomalies(transactions: Transaction[], sensitivityFactor: number = 2.5): AnomalyDetection[] {
+  static detectAnomalies(
+    transactions: Transaction[],
+    sensitivityFactor: number = 2.5
+  ): AnomalyDetection[] {
     const anomalies: AnomalyDetection[] = [];
     const categoryData = this.groupTransactionsByCategory(transactions);
 
     for (const [, txns] of Object.entries(categoryData)) {
-      if (txns.length < 5) continue; // Need enough data
+      if (txns.length < 5) {
+        continue;
+      } // Need enough data
 
       const amounts = txns.map(t => Math.abs(moneyToDecimal(t.amount)));
       const mean = this.calculateAverage(amounts);
@@ -162,15 +182,19 @@ export class PredictiveAnalytics {
 
         if (Math.abs(zScore) > sensitivityFactor) {
           let severity: 'low' | 'medium' | 'high';
-          if (Math.abs(zScore) > 4) severity = 'high';
-          else if (Math.abs(zScore) > 3) severity = 'medium';
-          else severity = 'low';
+          if (Math.abs(zScore) > 4) {
+            severity = 'high';
+          } else if (Math.abs(zScore) > 3) {
+            severity = 'medium';
+          } else {
+            severity = 'low';
+          }
 
           anomalies.push({
             transaction: txn,
             anomalyScore: Math.round(Math.abs(zScore) * 100) / 100,
             reason: `Amount (${amount.toFixed(2)}) is ${Math.abs(zScore).toFixed(1)}σ from category average (${mean.toFixed(2)})`,
-            severity
+            severity,
           });
         }
       }
@@ -198,7 +222,7 @@ export class PredictiveAnalytics {
     for (const [category, limit] of budgets.entries()) {
       const categoryTxns = categoryData[category] || [];
       const periodTxns = categoryTxns.filter(t => new Date(t.date) >= periodStart);
-      
+
       if (periodTxns.length === 0) {
         // No transactions in this period
         predictions.push({
@@ -207,7 +231,7 @@ export class PredictiveAnalytics {
           predictedEndOfPeriod: 0,
           budgetLimit: limit,
           variancePercentage: -100,
-          riskLevel: 'safe'
+          riskLevel: 'safe',
         });
         continue;
       }
@@ -216,12 +240,18 @@ export class PredictiveAnalytics {
       const txnDates = periodTxns.map(t => new Date(t.date).getTime());
       const earliestTxn = Math.min(...txnDates);
       const latestTxn = Math.max(...txnDates);
-      const daysElapsed = Math.max(1, Math.ceil((latestTxn - earliestTxn) / (1000 * 60 * 60 * 24)) + 1);
-      
-      const currentSpending = periodTxns.reduce((sum, t) => sum + Math.abs(moneyToDecimal(t.amount)), 0);
+      const daysElapsed = Math.max(
+        1,
+        Math.ceil((latestTxn - earliestTxn) / (1000 * 60 * 60 * 24)) + 1
+      );
+
+      const currentSpending = periodTxns.reduce(
+        (sum, t) => sum + Math.abs(moneyToDecimal(t.amount)),
+        0
+      );
       const dailyAverage = currentSpending / daysElapsed;
       const predictedEndOfPeriod = dailyAverage * daysInPeriod;
-      
+
       let variancePercentage: number;
       let riskLevel: 'safe' | 'warning' | 'danger';
 
@@ -232,9 +262,13 @@ export class PredictiveAnalytics {
       } else {
         variancePercentage = ((predictedEndOfPeriod - limit) / limit) * 100;
 
-        if (variancePercentage <= -10) riskLevel = 'safe';
-        else if (variancePercentage < 10) riskLevel = 'warning';
-        else riskLevel = 'danger';
+        if (variancePercentage <= -10) {
+          riskLevel = 'safe';
+        } else if (variancePercentage < 10) {
+          riskLevel = 'warning';
+        } else {
+          riskLevel = 'danger';
+        }
       }
 
       predictions.push({
@@ -243,7 +277,7 @@ export class PredictiveAnalytics {
         predictedEndOfPeriod: Math.round(predictedEndOfPeriod * 100) / 100,
         budgetLimit: limit,
         variancePercentage: Math.round(variancePercentage * 100) / 100,
-        riskLevel
+        riskLevel,
       });
     }
 
@@ -252,9 +286,11 @@ export class PredictiveAnalytics {
 
   // Helper methods
 
-  private static groupTransactionsByCategory(transactions: Transaction[]): Record<string, Transaction[]> {
+  private static groupTransactionsByCategory(
+    transactions: Transaction[]
+  ): Record<string, Transaction[]> {
     const groups: Record<string, Transaction[]> = {};
-    
+
     for (const txn of transactions) {
       const category = txn.category || 'Uncategorized';
       if (!groups[category]) {
@@ -266,7 +302,9 @@ export class PredictiveAnalytics {
     return groups;
   }
 
-  private static groupByMonth(transactions: Transaction[]): Array<{ month: string; total: number }> {
+  private static groupByMonth(
+    transactions: Transaction[]
+  ): Array<{ month: string; total: number }> {
     const monthlyData: Record<string, number> = {};
 
     for (const txn of transactions) {
@@ -283,12 +321,16 @@ export class PredictiveAnalytics {
   }
 
   private static calculateAverage(values: number[]): number {
-    if (values.length === 0) return 0;
+    if (values.length === 0) {
+      return 0;
+    }
     return values.reduce((sum, val) => sum + val, 0) / values.length;
   }
 
   private static calculateStdDev(values: number[]): number {
-    if (values.length < 2) return 0;
+    if (values.length < 2) {
+      return 0;
+    }
     const avg = this.calculateAverage(values);
     const squareDiffs = values.map(val => Math.pow(val - avg, 2));
     const variance = this.calculateAverage(squareDiffs);
@@ -296,7 +338,9 @@ export class PredictiveAnalytics {
   }
 
   private static calculateLinearTrend(values: number[]): number {
-    if (values.length < 2) return 0;
+    if (values.length < 2) {
+      return 0;
+    }
 
     const n = values.length;
     let sumX = 0;
@@ -306,7 +350,9 @@ export class PredictiveAnalytics {
 
     for (let i = 0; i < n; i++) {
       const value = values[i];
-      if (value === undefined) continue;
+      if (value === undefined) {
+        continue;
+      }
       sumX += i;
       sumY += value;
       sumXY += i * value;
@@ -320,7 +366,7 @@ export class PredictiveAnalytics {
   private static calculateConfidence(sampleSize: number, variance: number): number {
     // Higher sample size and lower variance = higher confidence
     const sizeScore = Math.min(sampleSize / 30, 1); // Cap at 30 samples
-    const varianceScore = Math.max(0, 1 - (variance / 1000)); // Normalize variance
+    const varianceScore = Math.max(0, 1 - variance / 1000); // Normalize variance
     return Math.round((sizeScore * 0.6 + varianceScore * 0.4) * 100) / 100;
   }
 }

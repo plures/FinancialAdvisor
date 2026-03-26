@@ -12,8 +12,7 @@ import { spawn, ChildProcess } from 'child_process';
 export class MCPServerManager {
   private process: ChildProcess | undefined;
 
-  constructor(_context: vscode.ExtensionContext) {
-  }
+  constructor(_context: vscode.ExtensionContext) {}
 
   async start(): Promise<void> {
     if (this.process) {
@@ -36,17 +35,17 @@ export class MCPServerManager {
         env: {
           ...process.env,
           FINANCIAL_ADVISOR_DATA_DIR: dataDir,
-          FINANCIAL_ADVISOR_ENCRYPTION_KEY: this.getEncryptionKey()
+          FINANCIAL_ADVISOR_ENCRYPTION_KEY: this.getEncryptionKey(),
         },
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
-      this.process.on('error', (error) => {
+      this.process.on('error', error => {
         console.error('MCP Server error:', error);
         vscode.window.showErrorMessage(`MCP Server error: ${error.message}`);
       });
 
-      this.process.on('exit', (code) => {
+      this.process.on('exit', code => {
         console.log(`MCP Server exited with code ${code}`);
         this.process = undefined;
       });
@@ -61,9 +60,9 @@ export class MCPServerManager {
   async stop(): Promise<void> {
     if (this.process) {
       this.process.kill('SIGTERM');
-      
+
       // Wait for graceful shutdown
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         if (this.process) {
           this.process.on('exit', () => resolve());
           setTimeout(() => {
@@ -76,7 +75,7 @@ export class MCPServerManager {
           resolve();
         }
       });
-      
+
       this.process = undefined;
     }
   }
@@ -93,16 +92,16 @@ export class MCPServerManager {
         method: 'tools/call',
         params: {
           name: toolName,
-          arguments: args
-        }
+          arguments: args,
+        },
       };
 
       const requestStr = JSON.stringify(request) + '\n';
-      
+
       let responseData = '';
       const onData = (data: Buffer) => {
         responseData += data.toString();
-        
+
         // Check if we have a complete JSON response
         try {
           const lines = responseData.split('\n').filter(line => line.trim());
@@ -110,7 +109,7 @@ export class MCPServerManager {
             const response = JSON.parse(line);
             if (response.id === request.id) {
               this.process?.stdout?.off('data', onData);
-              
+
               if (response.error) {
                 reject(new Error(response.error.message));
               } else {
@@ -125,7 +124,7 @@ export class MCPServerManager {
       };
 
       this.process?.stdout?.on('data', onData);
-      
+
       // Set timeout
       setTimeout(() => {
         this.process?.stdout?.off('data', onData);
@@ -146,22 +145,22 @@ export class MCPServerManager {
       const request = {
         jsonrpc: '2.0',
         id: Date.now(),
-        method: 'resources/list'
+        method: 'resources/list',
       };
 
       const requestStr = JSON.stringify(request) + '\n';
-      
+
       let responseData = '';
       const onData = (data: Buffer) => {
         responseData += data.toString();
-        
+
         try {
           const lines = responseData.split('\n').filter(line => line.trim());
           for (const line of lines) {
             const response = JSON.parse(line);
             if (response.id === request.id) {
               proc.stdout?.off('data', onData);
-              
+
               if (response.error) {
                 reject(new Error(response.error.message));
               } else {
@@ -176,7 +175,7 @@ export class MCPServerManager {
       };
 
       proc.stdout?.on('data', onData);
-      
+
       setTimeout(() => {
         proc.stdout?.off('data', onData);
         reject(new Error('MCP server request timeout'));
@@ -197,22 +196,22 @@ export class MCPServerManager {
         jsonrpc: '2.0',
         id: Date.now(),
         method: 'resources/read',
-        params: { uri }
+        params: { uri },
       };
 
       const requestStr = JSON.stringify(request) + '\n';
-      
+
       let responseData = '';
       const onData = (data: Buffer) => {
         responseData += data.toString();
-        
+
         try {
           const lines = responseData.split('\n').filter(line => line.trim());
           for (const line of lines) {
             const response = JSON.parse(line);
             if (response.id === request.id) {
               proc.stdout?.off('data', onData);
-              
+
               if (response.error) {
                 reject(new Error(response.error.message));
               } else {
@@ -227,7 +226,7 @@ export class MCPServerManager {
       };
 
       proc.stdout?.on('data', onData);
-      
+
       setTimeout(() => {
         proc.stdout?.off('data', onData);
         reject(new Error('MCP server request timeout'));
@@ -244,7 +243,7 @@ export class MCPServerManager {
   private getEncryptionKey(): string {
     const config = vscode.workspace.getConfiguration('financialAdvisor');
     const encryptionEnabled = config.get<boolean>('security.encryptionEnabled');
-    
+
     if (!encryptionEnabled) {
       return '';
     }
@@ -255,7 +254,7 @@ export class MCPServerManager {
     if (workspaceFolder) {
       return Buffer.from(workspaceFolder.uri.fsPath).toString('base64').substring(0, 32);
     }
-    
+
     return 'default-financial-advisor-key';
   }
 }

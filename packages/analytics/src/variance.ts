@@ -66,7 +66,7 @@ export interface VarianceResult {
 export function computeVariance(
   budgets: readonly BudgetEntry[],
   transactions: readonly Transaction[],
-  period: DateRange,
+  period: DateRange
 ): VarianceResult {
   if (budgets.length === 0) {
     return { overBudget: [], underBudget: [], net: createMoney(0, 'USD') };

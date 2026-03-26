@@ -68,7 +68,7 @@ export class PerformanceOptimizer {
     this.rateLimitConfig = rateLimitConfig || {
       requestsPerMinute: 60,
       requestsPerHour: 1000,
-      burstSize: 10
+      burstSize: 10,
     };
   }
 
@@ -85,9 +85,7 @@ export class PerformanceOptimizer {
 
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
-      const batchResults = await Promise.allSettled(
-        batch.map(item => processor(item))
-      );
+      const batchResults = await Promise.allSettled(batch.map(item => processor(item)));
 
       for (let j = 0; j < batchResults.length; j++) {
         const result = batchResults[j];
@@ -121,7 +119,7 @@ export class PerformanceOptimizer {
         execute: request as () => Promise<unknown>,
         resolve: resolve as (value: unknown) => void,
         reject,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       if (!this.isProcessingQueue) {
@@ -139,7 +137,7 @@ export class PerformanceOptimizer {
       hits: this.cacheHits,
       misses: this.cacheMisses,
       size: cacheSize,
-      hitRate: total > 0 ? this.cacheHits / total : 0
+      hitRate: total > 0 ? this.cacheHits / total : 0,
     };
   }
 
@@ -170,7 +168,7 @@ export class PerformanceOptimizer {
    */
   optimizeContext(context: AIOptimizableContext, maxSize: number = 4000): AIOptimizableContext {
     const serialized = JSON.stringify(context);
-    
+
     if (serialized.length <= maxSize) {
       return context;
     }
@@ -180,19 +178,20 @@ export class PerformanceOptimizer {
     if (optimized.transactions && optimized.transactions.length > 50) {
       // Keep most recent transactions
       optimized.transactions = optimized.transactions
-        .sort((a: Transaction, b: Transaction) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
+        .sort(
+          (a: Transaction, b: Transaction) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
         )
         .slice(0, 50);
     }
 
     // Reduce account details if needed
     if (optimized.accounts) {
-      optimized.accounts = optimized.accounts.map((acc) => ({
+      optimized.accounts = optimized.accounts.map(acc => ({
         id: acc.id,
         name: acc.name,
         type: acc.type,
-        balance: acc.balance
+        balance: acc.balance,
       }));
     }
 
@@ -225,10 +224,7 @@ export class PerformanceOptimizer {
   /**
    * Implement connection pooling for API clients
    */
-  createConnectionPool<T>(
-    factory: () => T,
-    poolSize: number = 5
-  ): ConnectionPool<T> {
+  createConnectionPool<T>(factory: () => T, poolSize: number = 5): ConnectionPool<T> {
     return new ConnectionPool(factory, poolSize);
   }
 
@@ -239,7 +235,7 @@ export class PerformanceOptimizer {
 
     while (this.requestQueue.length > 0) {
       const now = Date.now();
-      
+
       // Clean old timestamps
       this.requestTimestamps = this.requestTimestamps.filter(
         ts => now - ts < 60000 // Keep last minute
@@ -252,7 +248,9 @@ export class PerformanceOptimizer {
       }
 
       const request = this.requestQueue.shift();
-      if (!request) continue;
+      if (!request) {
+        continue;
+      }
 
       this.requestTimestamps.push(now);
 
@@ -371,7 +369,7 @@ export class ConnectionPool<T> {
     return {
       total: this.pool.length,
       inUse: this.inUse.size,
-      available: this.pool.length - this.inUse.size
+      available: this.pool.length - this.inUse.size,
     };
   }
 }

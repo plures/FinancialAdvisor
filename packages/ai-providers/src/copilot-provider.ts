@@ -4,7 +4,12 @@
  */
 
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
-import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
+import {
+  AIProviderConfig,
+  AIProviderType,
+  AIQuery,
+  FinancialContext,
+} from '@financialadvisor/domain';
 
 /**
  * Microsoft Copilot provider for financial advisor integration
@@ -13,7 +18,7 @@ import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@fi
 export class CopilotProvider extends BaseAIProvider {
   constructor(config: AIProviderConfig) {
     super(config, 'Microsoft Copilot');
-    
+
     // Default model for Copilot if not specified
     if (!this.config.model) {
       this.config.model = 'gpt-4';
@@ -30,7 +35,7 @@ export class CopilotProvider extends BaseAIProvider {
       supportsStreaming: false,
       supportsFunction: false,
       maxTokens: this.config.maxTokens || 8000,
-      supportedFormats: ['text', 'json', 'markdown']
+      supportedFormats: ['text', 'json', 'markdown'],
     };
   }
 
@@ -38,7 +43,7 @@ export class CopilotProvider extends BaseAIProvider {
     try {
       // In a real implementation, this would connect to Microsoft Copilot API
       // For now, we provide a structure that can be implemented with the proper SDK
-      
+
       const systemPrompt = `You are a professional AI financial advisor integrated with Microsoft Copilot.
 Your role is to provide intelligent, personalized financial guidance based on user data.
 Always prioritize:
@@ -48,9 +53,7 @@ Always prioritize:
 4. Clear, actionable advice
 5. Transparency about limitations and risks`;
 
-      const fullPrompt = context 
-        ? `${this.formatFinancialContext(context)}\n\n${prompt}`
-        : prompt;
+      const fullPrompt = context ? `${this.formatFinancialContext(context)}\n\n${prompt}` : prompt;
 
       // Estimate token count - Note: This is a rough approximation
       // For production use with billing, implement proper tokenization using tiktoken or similar
@@ -61,55 +64,57 @@ Always prioritize:
         usage: {
           promptTokens: Math.ceil(fullPrompt.length / 4), // Rough estimate: ~4 chars per token
           completionTokens: 0, // Will be set after response
-          totalTokens: Math.ceil(fullPrompt.length / 4)
-        }
+          totalTokens: Math.ceil(fullPrompt.length / 4),
+        },
       };
 
       return response;
     } catch (error) {
-      throw new Error(`Copilot API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Copilot API error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Process request through Copilot
-   * 
+   *
    * Implementation Options (for future completion):
-   * 
+   *
    * Option 1: Microsoft 365 Copilot API
    * - Requires Microsoft 365 Enterprise license
    * - OAuth 2.0 authentication with Azure AD
    * - Access via Microsoft Graph API
    * - Endpoint: https://graph.microsoft.com/v1.0/me/copilot
-   * 
+   *
    * Option 2: GitHub Copilot Extensions
    * - Use GitHub Copilot via MCP protocol
    * - Requires GitHub Copilot subscription
    * - MCP server integration already in project
    * - Endpoint: Via MCP server connection
-   * 
+   *
    * Option 3: Azure OpenAI with Copilot
    * - Use Azure OpenAI Service
    * - Requires Azure subscription
    * - Can use GPT-4 models with Copilot-like features
    * - Endpoint: https://<your-resource>.openai.azure.com/
-   * 
+   *
    * Current Status: Framework ready, requires API implementation
    */
   private async processWithCopilot(systemPrompt: string, userPrompt: string): Promise<string> {
     // TODO: Implement actual Microsoft Copilot API integration
     // See implementation guide: docs/COPILOT_INTEGRATION_GUIDE.md
-    
+
     /**
      * Suggested Implementation (Option 2 - GitHub Copilot via MCP):
-     * 
+     *
      * 1. Import MCP client from project
      *    import { MCPClient } from '@financialadvisor/mcp-server';
-     * 
+     *
      * 2. Connect to MCP server
      *    const mcpClient = new MCPClient(this.config.endpoint);
      *    await mcpClient.connect();
-     * 
+     *
      * 3. Send request via MCP
      *    const response = await mcpClient.request({
      *      method: 'tools/call',
@@ -122,19 +127,19 @@ Always prioritize:
      *        }
      *      }
      *    });
-     * 
+     *
      * 4. Return response content
      *    return response.content;
      */
-    
+
     // Development stub - returns error to guide users to configure alternative provider
     throw new Error(
       'Microsoft Copilot integration not yet implemented. ' +
-      'Please configure an alternative AI provider:\n' +
-      '- OpenAI (recommended): Set provider to "openai" and add OPENAI_API_KEY\n' +
-      '- Ollama (local, privacy-first): Set provider to "ollama" and install Ollama\n' +
-      '\n' +
-      'For Copilot implementation, see: docs/COPILOT_INTEGRATION_GUIDE.md'
+        'Please configure an alternative AI provider:\n' +
+        '- OpenAI (recommended): Set provider to "openai" and add OPENAI_API_KEY\n' +
+        '- Ollama (local, privacy-first): Set provider to "ollama" and install Ollama\n' +
+        '\n' +
+        'For Copilot implementation, see: docs/COPILOT_INTEGRATION_GUIDE.md'
     );
   }
 
@@ -181,7 +186,7 @@ Include:
 7. Next Steps
 
 Use professional formatting and clear data visualization.`;
-    
+
     const response = await this.query(prompt, context);
     return response.content;
   }

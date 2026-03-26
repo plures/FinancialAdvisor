@@ -22,7 +22,7 @@ export class ReviewDecisionStore {
   record(decision: ReviewDecisionRecord): void {
     if (this.records.has(decision.id)) {
       throw new Error(
-        `ReviewDecisionStore: decision "${decision.id}" already exists — review decisions are immutable.`,
+        `ReviewDecisionStore: decision "${decision.id}" already exists — review decisions are immutable.`
       );
     }
     this.records.set(decision.id, decision);
@@ -40,11 +40,11 @@ export class ReviewDecisionStore {
   findByEntity(entityType: string, entityId: string): ReviewDecisionRecord[] {
     const key = `${entityType}:${entityId}`;
     const ids = this.byEntity.get(key) ?? [];
-    return ids.map((id) => this.records.get(id)!).filter(Boolean);
+    return ids.map(id => this.records.get(id)!).filter(Boolean);
   }
 
   findByEntityType(entityType: string): ReviewDecisionRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.entityType === entityType);
+    return Array.from(this.records.values()).filter(r => r.entityType === entityType);
   }
 
   all(): ReviewDecisionRecord[] {

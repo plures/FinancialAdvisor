@@ -53,20 +53,19 @@ export class AIAccuracyEnhancer {
       responseLength: this.scoreResponseLength(response.content),
       specificity: this.scoreSpecificity(response.content),
       consistency: this.scoreConsistency(response.content, context),
-      dataSupport: this.scoreDataSupport(response.content, context)
+      dataSupport: this.scoreDataSupport(response.content, context),
     };
 
     // Adjusted weights to better reflect quality without context
-    const overall = (
+    const overall =
       factors.responseLength * 0.25 +
-      factors.specificity * 0.40 +
-      factors.consistency * 0.20 +
-      factors.dataSupport * 0.15
-    );
+      factors.specificity * 0.4 +
+      factors.consistency * 0.2 +
+      factors.dataSupport * 0.15;
 
     return {
       overall: Math.round(overall * 100) / 100,
-      factors
+      factors,
     };
   }
 
@@ -92,10 +91,10 @@ export class AIAccuracyEnhancer {
 
     // Check for hallucination indicators
     const uncertaintyPhrases = ['approximately', 'roughly', 'around', 'about', 'estimated'];
-    const uncertaintyCount = uncertaintyPhrases.filter(phrase => 
+    const uncertaintyCount = uncertaintyPhrases.filter(phrase =>
       response.content.toLowerCase().includes(phrase)
     ).length;
-    
+
     if (uncertaintyCount > 3) {
       issues.push('Response contains many uncertainty indicators');
       suggestions.push('Verify specific numbers with actual data');
@@ -107,13 +106,13 @@ export class AIAccuracyEnhancer {
       suggestions.push('Extract only the category name');
     }
 
-    const confidence = Math.max(0, 1 - (issues.length * 0.2));
+    const confidence = Math.max(0, 1 - issues.length * 0.2);
 
     return {
       isValid: issues.length === 0,
       confidence,
       issues,
-      suggestions
+      suggestions,
     };
   }
 
@@ -124,7 +123,7 @@ export class AIAccuracyEnhancer {
     const similarities: CategorySimilarity[] = [];
 
     for (const [category, examples] of this.categoryKnowledgeBase.entries()) {
-      const scores = examples.map(example => 
+      const scores = examples.map(example =>
         this.calculateTextSimilarity(description.toLowerCase(), example.toLowerCase())
       );
       const maxSimilarity = Math.max(...scores);
@@ -132,13 +131,11 @@ export class AIAccuracyEnhancer {
       similarities.push({
         category,
         similarity: maxSimilarity,
-        examples: examples.filter((_, idx) => scores[idx] === maxSimilarity)
+        examples: examples.filter((_, idx) => scores[idx] === maxSimilarity),
       });
     }
 
-    return similarities
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, topN);
+    return similarities.sort((a, b) => b.similarity - a.similarity).slice(0, topN);
   }
 
   /**
@@ -146,7 +143,9 @@ export class AIAccuracyEnhancer {
    */
   getCachedResponse(key: string): AIResponse | null {
     const cached = this.responseCache.get(key);
-    if (!cached) return null;
+    if (!cached) {
+      return null;
+    }
 
     const age = Date.now() - cached.timestamp.getTime();
     if (age > this.CACHE_TTL_MS) {
@@ -163,7 +162,7 @@ export class AIAccuracyEnhancer {
   cacheResponse(key: string, response: AIResponse): void {
     this.responseCache.set(key, {
       response,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     // Limit cache size
@@ -192,12 +191,14 @@ export class AIAccuracyEnhancer {
    * Generate cache key from query and context
    */
   generateCacheKey(query: string, context?: FinancialContext): string {
-    const contextStr = context ? JSON.stringify({
-      accountCount: context.accounts?.length || 0,
-      txnCount: context.transactions?.length || 0,
-      budgetCount: context.budgets?.length || 0
-    }) : '';
-    
+    const contextStr = context
+      ? JSON.stringify({
+          accountCount: context.accounts?.length || 0,
+          txnCount: context.transactions?.length || 0,
+          budgetCount: context.budgets?.length || 0,
+        })
+      : '';
+
     return `${query}_${contextStr}`;
   }
 
@@ -205,26 +206,34 @@ export class AIAccuracyEnhancer {
 
   private scoreResponseLength(content: string): number {
     const length = content.trim().length;
-    if (length < 50) return 0.3;
-    if (length < 100) return 0.6;
-    if (length < 500) return 1.0;
-    if (length < 2000) return 0.9;
+    if (length < 50) {
+      return 0.3;
+    }
+    if (length < 100) {
+      return 0.6;
+    }
+    if (length < 500) {
+      return 1.0;
+    }
+    if (length < 2000) {
+      return 0.9;
+    }
     return 0.7; // Very long responses might be verbose
   }
 
   private scoreSpecificity(content: string): number {
     const specificIndicators = [
       /\$\d+/g, // Dollar amounts
-      /\d+%/g, // Percentages  
+      /\d+%/g, // Percentages
       /\d{4}-\d{2}-\d{2}/g, // Dates
-      /\b(increase|decrease|save|spend|invest|budget|recommend|allocate)\b/gi // Financial verbs
+      /\b(increase|decrease|save|spend|invest|budget|recommend|allocate)\b/gi, // Financial verbs
     ];
 
     let score = 0.5; // Base score
     for (const pattern of specificIndicators) {
       const matches = content.match(pattern);
       if (matches) {
-        score += Math.min(0.20, matches.length * 0.04);
+        score += Math.min(0.2, matches.length * 0.04);
       }
     }
 
@@ -232,18 +241,24 @@ export class AIAccuracyEnhancer {
   }
 
   private scoreConsistency(content: string, context?: FinancialContext): number {
-    if (!context) return 0.5;
+    if (!context) {
+      return 0.5;
+    }
 
     let consistencyScore = 1.0;
 
     // Check if response mentions data that doesn't exist
-    if (content.toLowerCase().includes('investment') && (!context.accounts || 
-        context.accounts.every((a: Account) => a.type !== 'investment'))) {
+    if (
+      content.toLowerCase().includes('investment') &&
+      (!context.accounts || context.accounts.every((a: Account) => a.type !== 'investment'))
+    ) {
       consistencyScore -= 0.2;
     }
 
-    if (content.toLowerCase().includes('budget') && (!context.budgets || 
-        context.budgets.length === 0)) {
+    if (
+      content.toLowerCase().includes('budget') &&
+      (!context.budgets || context.budgets.length === 0)
+    ) {
       consistencyScore -= 0.2;
     }
 
@@ -251,13 +266,15 @@ export class AIAccuracyEnhancer {
   }
 
   private scoreDataSupport(content: string, context?: FinancialContext): number {
-    if (!context) return 0.3;
+    if (!context) {
+      return 0.3;
+    }
 
     let score = 0.5;
 
     // Bonus for referencing actual data
     if (context.accounts && context.accounts.length > 0) {
-      const accountMentions = context.accounts.filter((a: Account) => 
+      const accountMentions = context.accounts.filter((a: Account) =>
         content.toLowerCase().includes(a.name.toLowerCase())
       );
       score += accountMentions.length > 0 ? 0.2 : 0;
@@ -280,7 +297,9 @@ export class AIAccuracyEnhancer {
     const intersection = new Set([...words1].filter(w => words2.has(w)));
     const union = new Set([...words1, ...words2]);
 
-    if (union.size === 0) return 0;
+    if (union.size === 0) {
+      return 0;
+    }
     return intersection.size / union.size;
   }
 
@@ -288,53 +307,112 @@ export class AIAccuracyEnhancer {
     const knowledge = new Map<string, string[]>();
 
     knowledge.set('Food & Groceries', [
-      'grocery store', 'supermarket', 'whole foods', 'trader joes', 'safeway',
-      'walmart groceries', 'food shopping', 'farmers market'
+      'grocery store',
+      'supermarket',
+      'whole foods',
+      'trader joes',
+      'safeway',
+      'walmart groceries',
+      'food shopping',
+      'farmers market',
     ]);
 
     knowledge.set('Dining Out', [
-      'restaurant', 'cafe', 'coffee shop', 'starbucks', 'mcdonalds',
-      'pizza', 'takeout', 'delivery', 'doordash', 'uber eats'
+      'restaurant',
+      'cafe',
+      'coffee shop',
+      'starbucks',
+      'mcdonalds',
+      'pizza',
+      'takeout',
+      'delivery',
+      'doordash',
+      'uber eats',
     ]);
 
     knowledge.set('Transportation', [
-      'gas station', 'fuel', 'uber', 'lyft', 'taxi', 'bus fare',
-      'train ticket', 'parking', 'car payment', 'auto insurance'
+      'gas station',
+      'fuel',
+      'uber',
+      'lyft',
+      'taxi',
+      'bus fare',
+      'train ticket',
+      'parking',
+      'car payment',
+      'auto insurance',
     ]);
 
     knowledge.set('Housing', [
-      'rent', 'mortgage', 'property tax', 'home insurance',
-      'hoa fees', 'apartment', 'landlord'
+      'rent',
+      'mortgage',
+      'property tax',
+      'home insurance',
+      'hoa fees',
+      'apartment',
+      'landlord',
     ]);
 
     knowledge.set('Utilities', [
-      'electric bill', 'water bill', 'gas bill', 'internet',
-      'phone bill', 'cable', 'streaming service'
+      'electric bill',
+      'water bill',
+      'gas bill',
+      'internet',
+      'phone bill',
+      'cable',
+      'streaming service',
     ]);
 
     knowledge.set('Healthcare', [
-      'doctor', 'hospital', 'pharmacy', 'prescription', 'dentist',
-      'optometrist', 'medical', 'health insurance'
+      'doctor',
+      'hospital',
+      'pharmacy',
+      'prescription',
+      'dentist',
+      'optometrist',
+      'medical',
+      'health insurance',
     ]);
 
     knowledge.set('Shopping', [
-      'amazon', 'target', 'mall', 'clothing', 'electronics',
-      'online shopping', 'retail'
+      'amazon',
+      'target',
+      'mall',
+      'clothing',
+      'electronics',
+      'online shopping',
+      'retail',
     ]);
 
     knowledge.set('Entertainment', [
-      'movie', 'theater', 'concert', 'sports event', 'netflix',
-      'spotify', 'gaming', 'hobby'
+      'movie',
+      'theater',
+      'concert',
+      'sports event',
+      'netflix',
+      'spotify',
+      'gaming',
+      'hobby',
     ]);
 
     knowledge.set('Education', [
-      'tuition', 'school', 'books', 'course', 'training',
-      'student loan', 'college'
+      'tuition',
+      'school',
+      'books',
+      'course',
+      'training',
+      'student loan',
+      'college',
     ]);
 
     knowledge.set('Income', [
-      'paycheck', 'salary', 'wages', 'direct deposit', 'bonus',
-      'refund', 'reimbursement'
+      'paycheck',
+      'salary',
+      'wages',
+      'direct deposit',
+      'bonus',
+      'refund',
+      'reimbursement',
     ]);
 
     return knowledge;

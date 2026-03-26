@@ -49,7 +49,9 @@ export class MigrationRunner {
   async runMigrations(migrations: readonly Migration[]): Promise<void> {
     const sorted = [...migrations].sort((a, b) => a.version - b.version);
     for (const migration of sorted) {
-      if (this.applied.has(migration.version)) continue;
+      if (this.applied.has(migration.version)) {
+        continue;
+      }
       await migration.apply();
       this.applied.set(migration.version, {
         version: migration.version,

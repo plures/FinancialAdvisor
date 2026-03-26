@@ -17,7 +17,7 @@ export function dojoFade(
     duration,
     delay,
     easing: cubicOut,
-    css: (t) => `opacity: ${t}`,
+    css: t => `opacity: ${t}`,
   };
 }
 
@@ -37,7 +37,7 @@ export function dojoSlide(
     duration,
     delay,
     easing: cubicInOut,
-    css: (t) =>
+    css: t =>
       [
         `overflow: hidden`,
         `height: ${t * height}px`,
@@ -53,12 +53,16 @@ export function dojoSlide(
 /** Scale-in transition for cards and modal dialogs. */
 export function dojoScale(
   _node: Element,
-  { duration = 200, delay = 0, start = 0.95 }: { duration?: number; delay?: number; start?: number } = {}
+  {
+    duration = 200,
+    delay = 0,
+    start = 0.95,
+  }: { duration?: number; delay?: number; start?: number } = {}
 ): TransitionConfig {
   return {
     duration,
     delay,
     easing: cubicOut,
-    css: (t) => `transform: scale(${start + (1 - start) * t}); opacity: ${t}`,
+    css: t => `transform: scale(${start + (1 - start) * t}); opacity: ${t}`,
   };
 }

@@ -20,7 +20,7 @@ export class RawTransactionStore {
   insert(record: RawTransactionRecord): void {
     if (this.records.has(record.id)) {
       throw new Error(
-        `RawTransactionStore: record "${record.id}" already exists — raw transactions are immutable.`,
+        `RawTransactionStore: record "${record.id}" already exists — raw transactions are immutable.`
       );
     }
     this.records.set(record.id, record);
@@ -35,7 +35,7 @@ export class RawTransactionStore {
 
   findBySession(importSessionId: string): RawTransactionRecord[] {
     const ids = this.bySession.get(importSessionId) ?? [];
-    return ids.map((id) => this.records.get(id)!).filter(Boolean);
+    return ids.map(id => this.records.get(id)!).filter(Boolean);
   }
 
   all(): RawTransactionRecord[] {

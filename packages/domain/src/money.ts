@@ -22,7 +22,7 @@ export type Currency =
  * floating-point arithmetic errors.  `cents` is always a safe integer.
  */
 export interface Money {
-  readonly cents: number;   // Always an integer — never a float
+  readonly cents: number; // Always an integer — never a float
   readonly currency: Currency;
 }
 
@@ -32,9 +32,7 @@ export interface Money {
  */
 export function createMoney(cents: number, currency: Currency): Money {
   if (!Number.isInteger(cents) || !Number.isSafeInteger(cents)) {
-    throw new Error(
-      `Money.cents must be a safe integer, received: ${cents}`
-    );
+    throw new Error(`Money.cents must be a safe integer, received: ${cents}`);
   }
   return Object.freeze({ cents, currency });
 }
@@ -106,10 +104,7 @@ export function moneyToDecimal(money: Money): number {
 
 /** Sum an array of Money values.  All values must share the same currency. */
 export function sumMoney(values: readonly Money[], currency: Currency): Money {
-  return values.reduce<Money>(
-    (acc, m) => addMoney(acc, m),
-    createMoney(0, currency)
-  );
+  return values.reduce<Money>((acc, m) => addMoney(acc, m), createMoney(0, currency));
 }
 
 // ---------------------------------------------------------------------------
@@ -118,8 +113,6 @@ export function sumMoney(values: readonly Money[], currency: Currency): Money {
 
 function assertSameCurrency(a: Money, b: Money): void {
   if (a.currency !== b.currency) {
-    throw new Error(
-      `Currency mismatch: cannot operate on ${a.currency} and ${b.currency}`
-    );
+    throw new Error(`Currency mismatch: cannot operate on ${a.currency} and ${b.currency}`);
   }
 }

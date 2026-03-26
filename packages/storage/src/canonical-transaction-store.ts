@@ -35,11 +35,11 @@ export class CanonicalTransactionStore {
   }
 
   findByMerchant(merchantId: string): CanonicalTransactionRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.merchantId === merchantId);
+    return Array.from(this.records.values()).filter(r => r.merchantId === merchantId);
   }
 
   findUnreviewed(): CanonicalTransactionRecord[] {
-    return Array.from(this.records.values()).filter((r) => !r.reviewed);
+    return Array.from(this.records.values()).filter(r => !r.reviewed);
   }
 
   /**
@@ -48,7 +48,9 @@ export class CanonicalTransactionStore {
    */
   update(id: string, patch: CanonicalTransactionPatch): CanonicalTransactionRecord | undefined {
     const existing = this.records.get(id);
-    if (!existing) return undefined;
+    if (!existing) {
+      return undefined;
+    }
     const updated = Object.freeze({ ...existing, ...patch });
     this.records.set(id, updated);
     return updated;
@@ -56,7 +58,9 @@ export class CanonicalTransactionStore {
 
   delete(id: string): boolean {
     const record = this.records.get(id);
-    if (!record) return false;
+    if (!record) {
+      return false;
+    }
     this.byRawTx.delete(record.rawTransactionId);
     this.records.delete(id);
     return true;

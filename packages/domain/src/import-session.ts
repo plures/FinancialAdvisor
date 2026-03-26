@@ -35,14 +35,22 @@ export function createImportSession(
   errorCount: number = 0,
   status: ImportSessionStatus = 'pending'
 ): ImportSession {
-  if (!id.trim()) throw new Error('ImportSession.id must not be empty');
-  if (!fileHash.trim()) throw new Error('ImportSession.fileHash must not be empty');
-  if (!accountId.trim()) throw new Error('ImportSession.accountId must not be empty');
+  if (!id.trim()) {
+    throw new Error('ImportSession.id must not be empty');
+  }
+  if (!fileHash.trim()) {
+    throw new Error('ImportSession.fileHash must not be empty');
+  }
+  if (!accountId.trim()) {
+    throw new Error('ImportSession.accountId must not be empty');
+  }
   if (!Number.isInteger(rowCount) || rowCount < 0) {
     throw new Error(`ImportSession.rowCount must be a non-negative integer, received: ${rowCount}`);
   }
   if (!Number.isInteger(errorCount) || errorCount < 0) {
-    throw new Error(`ImportSession.errorCount must be a non-negative integer, received: ${errorCount}`);
+    throw new Error(
+      `ImportSession.errorCount must be a non-negative integer, received: ${errorCount}`
+    );
   }
   if (errorCount > rowCount) {
     throw new Error(

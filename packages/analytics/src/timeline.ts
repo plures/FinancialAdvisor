@@ -165,7 +165,7 @@ export function buildFinancialTimelineSnapshot(params: {
  * `"YYYY-MM"` and `"YYYY"` labels.
  */
 export function sortTimelineSnapshots(
-  snapshots: readonly FinancialTimelineSnapshot[],
+  snapshots: readonly FinancialTimelineSnapshot[]
 ): FinancialTimelineSnapshot[] {
   return [...snapshots].sort((a, b) => a.periodLabel.localeCompare(b.periodLabel));
 }
@@ -181,7 +181,7 @@ export function sortTimelineSnapshots(
  */
 export function compareTimelineSnapshots(
   snapshotA: FinancialTimelineSnapshot,
-  snapshotB: FinancialTimelineSnapshot,
+  snapshotB: FinancialTimelineSnapshot
 ): SnapshotComparison {
   const [earlier, later] =
     snapshotA.periodLabel.localeCompare(snapshotB.periodLabel) <= 0
@@ -224,10 +224,10 @@ export function buildTrendSeries(
   field: TimelineField,
   label: string,
   svgWidth = 400,
-  svgHeight = 200,
+  svgHeight = 200
 ): TrendSeries {
   const sorted = sortTimelineSnapshots(snapshots);
-  const points: TrendPoint[] = sorted.map((s) => ({
+  const points: TrendPoint[] = sorted.map(s => ({
     periodLabel: s.periodLabel,
     valueCents: _extractField(s, field),
   }));
@@ -242,10 +242,7 @@ export function buildTrendSeries(
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function _extractField(
-  snapshot: FinancialTimelineSnapshot,
-  field: TimelineField,
-): number {
+function _extractField(snapshot: FinancialTimelineSnapshot, field: TimelineField): number {
   switch (field) {
     case 'liquidBalance':
       return snapshot.liquidBalanceCents;
@@ -278,12 +275,14 @@ function _extractField(
 function _toSvgPolylinePoints(
   points: readonly TrendPoint[],
   svgWidth: number,
-  svgHeight: number,
+  svgHeight: number
 ): string {
   const n = points.length;
-  if (n < 2) return '';
+  if (n < 2) {
+    return '';
+  }
 
-  const values = points.map((p) => p.valueCents);
+  const values = points.map(p => p.valueCents);
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
   const range = maxVal - minVal;
@@ -292,9 +291,7 @@ function _toSvgPolylinePoints(
     .map((p, i) => {
       const x = n === 1 ? svgWidth / 2 : (i / (n - 1)) * svgWidth;
       const y =
-        range === 0
-          ? svgHeight / 2
-          : svgHeight - ((p.valueCents - minVal) / range) * svgHeight;
+        range === 0 ? svgHeight / 2 : svgHeight - ((p.valueCents - minVal) / range) * svgHeight;
       return `${_round(x)},${_round(y)}`;
     })
     .join(' ');

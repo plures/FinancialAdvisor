@@ -24,7 +24,7 @@ export enum AccountType {
   INVESTMENT = 'investment',
   LOAN = 'loan',
   MORTGAGE = 'mortgage',
-  RETIREMENT = 'retirement'
+  RETIREMENT = 'retirement',
 }
 
 /**
@@ -51,7 +51,7 @@ export interface Transaction {
 export enum TransactionType {
   INCOME = 'income',
   EXPENSE = 'expense',
-  TRANSFER = 'transfer'
+  TRANSFER = 'transfer',
 }
 
 /**
@@ -76,7 +76,7 @@ export enum BudgetPeriod {
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   QUARTERLY = 'quarterly',
-  YEARLY = 'yearly'
+  YEARLY = 'yearly',
 }
 
 /**
@@ -104,7 +104,7 @@ export enum GoalCategory {
   DEBT_PAYOFF = 'debt_payoff',
   RETIREMENT = 'retirement',
   EDUCATION = 'education',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 /**
@@ -114,7 +114,7 @@ export enum Priority {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 /**
@@ -164,7 +164,7 @@ export enum AIProviderType {
   ANTHROPIC = 'anthropic',
   OLLAMA = 'ollama',
   COPILOT = 'copilot',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 /**
@@ -195,7 +195,7 @@ export enum QueryType {
   ADVICE = 'advice',
   CATEGORIZATION = 'categorization',
   PREDICTION = 'prediction',
-  REPORT = 'report'
+  REPORT = 'report',
 }
 
 /**
@@ -259,7 +259,7 @@ export enum ReportType {
   INVESTMENT_PERFORMANCE = 'investment_performance',
   BUDGET_REVIEW = 'budget_review',
   GOAL_PROGRESS = 'goal_progress',
-  NET_WORTH_TREND = 'net_worth_trend'
+  NET_WORTH_TREND = 'net_worth_trend',
 }
 
 /**
@@ -269,7 +269,7 @@ export enum ReportFormat {
   MARKDOWN = 'markdown',
   HTML = 'html',
   PDF = 'pdf',
-  JSON = 'json'
+  JSON = 'json',
 }
 
 // Extension types

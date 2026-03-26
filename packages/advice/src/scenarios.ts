@@ -5,19 +5,10 @@
  * Uses analytics functions under the hood for debt scenarios.
  */
 
-import {
-  createMoney,
-  addMoney,
-  multiplyMoney,
-  type Currency,
-} from '@financialadvisor/domain';
+import { createMoney, addMoney, multiplyMoney, type Currency } from '@financialadvisor/domain';
 import { computeDebtPayoff } from '@financialadvisor/analytics';
 
-import type {
-  ScenarioResult,
-  ScenarioInput,
-  RecurringCommitmentSnapshot,
-} from './types.js';
+import type { ScenarioResult, ScenarioInput, RecurringCommitmentSnapshot } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -33,7 +24,7 @@ import type {
  */
 export function runScenario(
   input: ScenarioInput,
-  recurringItems: readonly RecurringCommitmentSnapshot[] = [],
+  recurringItems: readonly RecurringCommitmentSnapshot[] = []
 ): ScenarioResult {
   switch (input.type) {
     case 'cancel_subscription':
@@ -57,9 +48,9 @@ export function runScenario(
  */
 export function runScenarios(
   inputs: readonly ScenarioInput[],
-  recurringItems: readonly RecurringCommitmentSnapshot[] = [],
+  recurringItems: readonly RecurringCommitmentSnapshot[] = []
 ): ScenarioResult[] {
-  return inputs.map((input) => runScenario(input, recurringItems));
+  return inputs.map(input => runScenario(input, recurringItems));
 }
 
 /**
@@ -73,7 +64,7 @@ export function runScenarios(
  */
 export function composeScenarios(
   results: readonly ScenarioResult[],
-  name = 'Combined scenario',
+  name = 'Combined scenario'
 ): ScenarioResult {
   if (results.length === 0) {
     const zero = createMoney(0, 'USD');
@@ -107,7 +98,10 @@ export function composeScenarios(
     }
   }
 
-  const descriptions = results.map((r) => r.description).join(' ').trimEnd();
+  const descriptions = results
+    .map(r => r.description)
+    .join(' ')
+    .trimEnd();
 
   return {
     name,
@@ -128,28 +122,22 @@ export function composeScenarios(
 
 function _cancelSubscriptionScenario(
   itemLabels: readonly string[],
-  recurringItems: readonly RecurringCommitmentSnapshot[],
+  recurringItems: readonly RecurringCommitmentSnapshot[]
 ): ScenarioResult {
-  const labelsLower = itemLabels.map((l) => l.toLowerCase().trim());
+  const labelsLower = itemLabels.map(l => l.toLowerCase().trim());
 
-  const matched = recurringItems.filter((item) =>
-    labelsLower.includes(item.label.toLowerCase().trim()),
+  const matched = recurringItems.filter(item =>
+    labelsLower.includes(item.label.toLowerCase().trim())
   );
 
   const currency: Currency = 'USD'; // default; recurring items don't carry currency yet
 
-  const totalMonthlyCents = matched.reduce(
-    (s, i) => s + i.monthlyAmountCents,
-    0,
-  );
+  const totalMonthlyCents = matched.reduce((s, i) => s + i.monthlyAmountCents, 0);
 
   const monthlyDelta = createMoney(totalMonthlyCents, currency);
   const annualDelta = multiplyMoney(monthlyDelta, 12);
 
-  const names =
-    matched.length > 0
-      ? matched.map((i) => i.label).join(', ')
-      : itemLabels.join(', ');
+  const names = matched.length > 0 ? matched.map(i => i.label).join(', ') : itemLabels.join(', ');
 
   return {
     name: `Cancel: ${itemLabels.join(', ')}`,
@@ -165,7 +153,7 @@ function _cancelSubscriptionScenario(
 }
 
 function _extraDebtPaymentScenario(
-  input: Extract<ScenarioInput, { type: 'extra_debt_payment' }>,
+  input: Extract<ScenarioInput, { type: 'extra_debt_payment' }>
 ): ScenarioResult {
   const currency: Currency = (input.currency as Currency) ?? 'USD';
 
@@ -178,17 +166,14 @@ function _extraDebtPaymentScenario(
   };
 
   const basePayment = createMoney(input.minimumPaymentCents, currency);
-  const extraPayment = createMoney(
-    input.minimumPaymentCents + input.extraPaymentCents,
-    currency,
-  );
+  const extraPayment = createMoney(input.minimumPaymentCents + input.extraPaymentCents, currency);
 
   const baseline = computeDebtPayoff(baseDebt, basePayment);
   const scenario = computeDebtPayoff(baseDebt, extraPayment);
 
   const interestSavedCents = Math.max(
     0,
-    baseline.totalInterest.cents - scenario.totalInterest.cents,
+    baseline.totalInterest.cents - scenario.totalInterest.cents
   );
   const monthsSaved = Math.max(0, baseline.months - scenario.months);
 
@@ -207,7 +192,7 @@ function _extraDebtPaymentScenario(
 }
 
 function _spendingReductionScenario(
-  input: Extract<ScenarioInput, { type: 'spending_reduction' }>,
+  input: Extract<ScenarioInput, { type: 'spending_reduction' }>
 ): ScenarioResult {
   const currency: Currency = (input.currency as Currency) ?? 'USD';
   const monthlyDelta = createMoney(input.reductionCents, currency);
@@ -225,7 +210,7 @@ function _spendingReductionScenario(
 }
 
 function _incomeChangeScenario(
-  input: Extract<ScenarioInput, { type: 'income_change' }>,
+  input: Extract<ScenarioInput, { type: 'income_change' }>
 ): ScenarioResult {
   const currency: Currency = (input.currency as Currency) ?? 'USD';
   const monthlyDelta = createMoney(input.monthlyDeltaCents, currency);

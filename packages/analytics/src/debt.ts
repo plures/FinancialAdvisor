@@ -7,12 +7,7 @@
  * Deterministic — no AI, no randomness.
  */
 
-import {
-  createMoney,
-  addMoney,
-  type Money,
-  type Currency,
-} from '@financialadvisor/domain';
+import { createMoney, addMoney, type Money, type Currency } from '@financialadvisor/domain';
 
 /** Safety cap — prevents infinite loops when a payment barely exceeds monthly interest. */
 const MAX_PAYOFF_MONTHS = 600;
@@ -78,13 +73,10 @@ export interface PayoffComparisonResult {
  * @param debt           - The debt to pay off.
  * @param monthlyPayment - Fixed monthly payment (must be ≥ minimumPayment).
  */
-export function computeDebtPayoff(
-  debt: DebtAccount,
-  monthlyPayment: Money,
-): DebtPayoffResult {
+export function computeDebtPayoff(debt: DebtAccount, monthlyPayment: Money): DebtPayoffResult {
   if (debt.balance.currency !== monthlyPayment.currency) {
     throw new Error(
-      `Currency mismatch: debt balance is ${debt.balance.currency} but payment is ${monthlyPayment.currency}`,
+      `Currency mismatch: debt balance is ${debt.balance.currency} but payment is ${monthlyPayment.currency}`
     );
   }
   if (monthlyPayment.cents <= 0) {
@@ -139,7 +131,7 @@ export function computeDebtPayoff(
  */
 export function comparePayoffStrategies(
   debts: readonly DebtAccount[],
-  monthlyBudget: Money,
+  monthlyBudget: Money
 ): PayoffComparisonResult {
   if (debts.length === 0) {
     const zero = createMoney(0, monthlyBudget.currency);
@@ -161,19 +153,16 @@ export function comparePayoffStrategies(
   const snowball = _runMultiDebtPayoff(
     debts,
     monthlyBudget,
-    (a, b) => a.balance.cents - b.balance.cents, // lowest balance first
+    (a, b) => a.balance.cents - b.balance.cents // lowest balance first
   );
 
   const avalanche = _runMultiDebtPayoff(
     debts,
     monthlyBudget,
-    (a, b) => b.annualInterestRate - a.annualInterestRate, // highest rate first
+    (a, b) => b.annualInterestRate - a.annualInterestRate // highest rate first
   );
 
-  const interestSaved = Math.max(
-    0,
-    snowball.totalInterest.cents - avalanche.totalInterest.cents,
-  );
+  const interestSaved = Math.max(0, snowball.totalInterest.cents - avalanche.totalInterest.cents);
 
   return {
     snowball,
@@ -198,12 +187,12 @@ interface MutableDebt {
 function _runMultiDebtPayoff(
   debts: readonly DebtAccount[],
   monthlyBudget: Money,
-  sortFn: (a: DebtAccount, b: DebtAccount) => number,
+  sortFn: (a: DebtAccount, b: DebtAccount) => number
 ): DebtPayoffResult {
   const currency: Currency = monthlyBudget.currency;
   const sorted = [...debts].sort(sortFn);
 
-  const mutable: MutableDebt[] = sorted.map((d) => ({
+  const mutable: MutableDebt[] = sorted.map(d => ({
     id: d.id,
     name: d.name,
     balance: d.balance.cents,
@@ -215,13 +204,15 @@ function _runMultiDebtPayoff(
   let totalInterestCents = 0;
   let totalPaidCents = 0;
 
-  while (mutable.some((d) => d.balance > 0) && month < MAX_PAYOFF_MONTHS) {
+  while (mutable.some(d => d.balance > 0) && month < MAX_PAYOFF_MONTHS) {
     month += 1;
     let remainingBudget = monthlyBudget.cents;
 
     // Apply minimums first
     for (const d of mutable) {
-      if (d.balance <= 0) continue;
+      if (d.balance <= 0) {
+        continue;
+      }
       const interestCents = Math.round(d.balance * d.monthlyRate);
       const minPay = Math.min(d.minimumCents, d.balance + interestCents);
       const principal = minPay - interestCents;
@@ -233,7 +224,9 @@ function _runMultiDebtPayoff(
 
     // Apply extra to the focus debt (first non-zero in sorted order)
     for (const d of mutable) {
-      if (d.balance <= 0 || remainingBudget <= 0) continue;
+      if (d.balance <= 0 || remainingBudget <= 0) {
+        continue;
+      }
       const extraPrincipal = Math.min(remainingBudget, d.balance);
       d.balance = Math.max(0, d.balance - extraPrincipal);
       totalPaidCents += extraPrincipal;

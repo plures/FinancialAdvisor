@@ -40,39 +40,111 @@ export class SemanticMerchantClusterer {
 
   // Representative terms for each spending category (acts as category centroid)
   private static readonly CATEGORY_CENTROIDS: Record<string, string[]> = {
-    'Groceries': [
-      'grocery', 'supermarket', 'market', 'food', 'fresh', 'organic',
-      'produce', 'mart', 'foods', 'whole', 'safeway', 'kroger', 'trader',
+    Groceries: [
+      'grocery',
+      'supermarket',
+      'market',
+      'food',
+      'fresh',
+      'organic',
+      'produce',
+      'mart',
+      'foods',
+      'whole',
+      'safeway',
+      'kroger',
+      'trader',
     ],
     'Food & Dining': [
-      'restaurant', 'cafe', 'diner', 'grill', 'kitchen', 'pizza', 'burger',
-      'taco', 'sushi', 'thai', 'chinese', 'italian', 'mexican', 'bistro',
-      'eatery', 'bar', 'pub',
+      'restaurant',
+      'cafe',
+      'diner',
+      'grill',
+      'kitchen',
+      'pizza',
+      'burger',
+      'taco',
+      'sushi',
+      'thai',
+      'chinese',
+      'italian',
+      'mexican',
+      'bistro',
+      'eatery',
+      'bar',
+      'pub',
     ],
-    'Transportation': [
-      'gas', 'fuel', 'uber', 'lyft', 'taxi', 'transit', 'metro', 'parking',
-      'toll', 'airline', 'flight', 'station', 'shuttle', 'transport',
+    Transportation: [
+      'gas',
+      'fuel',
+      'uber',
+      'lyft',
+      'taxi',
+      'transit',
+      'metro',
+      'parking',
+      'toll',
+      'airline',
+      'flight',
+      'station',
+      'shuttle',
+      'transport',
     ],
-    'Shopping': [
-      'amazon', 'target', 'costco', 'walmart', 'store', 'shop', 'retail',
-      'mall', 'online', 'boutique', 'outlet', 'market',
+    Shopping: [
+      'amazon',
+      'target',
+      'costco',
+      'walmart',
+      'store',
+      'shop',
+      'retail',
+      'mall',
+      'online',
+      'boutique',
+      'outlet',
+      'market',
     ],
-    'Entertainment': [
-      'movie', 'theater', 'streaming', 'spotify', 'netflix', 'gaming',
-      'concert', 'music', 'entertainment', 'hulu', 'disney',
+    Entertainment: [
+      'movie',
+      'theater',
+      'streaming',
+      'spotify',
+      'netflix',
+      'gaming',
+      'concert',
+      'music',
+      'entertainment',
+      'hulu',
+      'disney',
     ],
-    'Utilities': [
-      'electric', 'water', 'internet', 'phone', 'cable', 'utility', 'telecom',
-      'wireless', 'broadband', 'energy', 'power',
+    Utilities: [
+      'electric',
+      'water',
+      'internet',
+      'phone',
+      'cable',
+      'utility',
+      'telecom',
+      'wireless',
+      'broadband',
+      'energy',
+      'power',
     ],
-    'Healthcare': [
-      'medical', 'doctor', 'hospital', 'clinic', 'dental', 'pharmacy',
-      'health', 'care', 'cvs', 'walgreens', 'optometry', 'vision',
+    Healthcare: [
+      'medical',
+      'doctor',
+      'hospital',
+      'clinic',
+      'dental',
+      'pharmacy',
+      'health',
+      'care',
+      'cvs',
+      'walgreens',
+      'optometry',
+      'vision',
     ],
-    'Banking': [
-      'bank', 'fee', 'atm', 'finance', 'credit', 'loan', 'transfer',
-      'interest', 'charge',
-    ],
+    Banking: ['bank', 'fee', 'atm', 'finance', 'credit', 'loan', 'transfer', 'interest', 'charge'],
   };
 
   // ── Public API ──────────────────────────────────────────────────────────────
@@ -107,7 +179,9 @@ export class SemanticMerchantClusterer {
     const results: SimilarMerchant[] = [];
 
     for (const [merchant, vector] of this.vectors) {
-      if (merchant === query) continue;
+      if (merchant === query) {
+        continue;
+      }
       const cosineSim = this.cosineSimilarity(queryTerms, vector.terms);
       const ngramSim = this.ngramSimilarity(queryNormalized, vector.normalized) * 0.8;
       const combined = Math.max(cosineSim, ngramSim);
@@ -117,9 +191,7 @@ export class SemanticMerchantClusterer {
       }
     }
 
-    return results
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, topK);
+    return results.sort((a, b) => b.similarity - a.similarity).slice(0, topK);
   }
 
   /**
@@ -134,11 +206,9 @@ export class SemanticMerchantClusterer {
     let bestScore = 0;
 
     for (const [category, centroidTerms] of Object.entries(
-      SemanticMerchantClusterer.CATEGORY_CENTROIDS,
+      SemanticMerchantClusterer.CATEGORY_CENTROIDS
     )) {
-      const centroidVector = new Map<string, number>(
-        centroidTerms.map(t => [t, 1]),
-      );
+      const centroidVector = new Map<string, number>(centroidTerms.map(t => [t, 1]));
       const cosine = this.cosineSimilarity(terms, centroidVector);
       // Direct substring match with any centroid term is also a strong signal
       const substringBonus = centroidTerms.some(t => normalized.includes(t)) ? 0.3 : 0;
@@ -150,7 +220,9 @@ export class SemanticMerchantClusterer {
       }
     }
 
-    if (!bestCategory || bestScore < 0.05) return null;
+    if (!bestCategory || bestScore < 0.05) {
+      return null;
+    }
 
     const centroidTerms = SemanticMerchantClusterer.CATEGORY_CENTROIDS[bestCategory] ?? [];
     const matchedTerms = Array.from(terms.keys()).filter(t => centroidTerms.includes(t));
@@ -177,13 +249,12 @@ export class SemanticMerchantClusterer {
     const clusters: MerchantCluster[] = [];
 
     for (const merchant of merchantList) {
-      if (assigned.has(merchant)) continue;
+      if (assigned.has(merchant)) {
+        continue;
+      }
 
       const similar = this.findSimilar(merchant, 20, similarityThreshold);
-      const members = [
-        merchant,
-        ...similar.map(s => s.merchant).filter(m => !assigned.has(m)),
-      ];
+      const members = [merchant, ...similar.map(s => s.merchant).filter(m => !assigned.has(m))];
       members.forEach(m => assigned.add(m));
 
       clusters.push({
@@ -211,7 +282,9 @@ export class SemanticMerchantClusterer {
     const termFreq = new Map<string, number>();
 
     for (const word of normalized.split(' ')) {
-      if (word.length <= 1 || stopWords.has(word)) continue;
+      if (word.length <= 1 || stopWords.has(word)) {
+        continue;
+      }
       termFreq.set(word, (termFreq.get(word) ?? 0) + 1);
     }
 
@@ -241,10 +314,7 @@ export class SemanticMerchantClusterer {
     }
   }
 
-  private cosineSimilarity(
-    vecA: Map<string, number>,
-    vecB: Map<string, number>,
-  ): number {
+  private cosineSimilarity(vecA: Map<string, number>, vecB: Map<string, number>): number {
     let dot = 0;
     let normA = 0;
     let normB = 0;
@@ -265,18 +335,24 @@ export class SemanticMerchantClusterer {
       normB += tfidfB * tfidfB;
     }
 
-    if (normA === 0 || normB === 0) return 0;
+    if (normA === 0 || normB === 0) {
+      return 0;
+    }
     return dot / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
   private ngramSimilarity(a: string, b: string): number {
     const gramsA = this.getNgrams(a.replace(/\s/g, ''), 3);
     const gramsB = this.getNgrams(b.replace(/\s/g, ''), 3);
-    if (gramsA.size === 0 || gramsB.size === 0) return 0;
+    if (gramsA.size === 0 || gramsB.size === 0) {
+      return 0;
+    }
 
     let intersection = 0;
     for (const gram of gramsA) {
-      if (gramsB.has(gram)) intersection++;
+      if (gramsB.has(gram)) {
+        intersection++;
+      }
     }
     return intersection / (gramsA.size + gramsB.size - intersection);
   }

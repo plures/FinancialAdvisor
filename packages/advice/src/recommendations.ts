@@ -5,12 +5,7 @@
  * Every recommendation is traceable to source transaction IDs.
  */
 
-import {
-  createMoney,
-  multiplyMoney,
-  type Money,
-  type Currency,
-} from '@financialadvisor/domain';
+import { createMoney, multiplyMoney, type Money, type Currency } from '@financialadvisor/domain';
 
 import type {
   Recommendation,
@@ -49,11 +44,9 @@ export function generateSubscriptionRecommendations(
   items: readonly RecurringCommitmentSnapshot[],
   unusedThresholdDays: number = 90,
   minMonthlyAmountCents: number = 100,
-  currency: Currency = 'USD',
+  currency: Currency = 'USD'
 ): Recommendation[] {
-  const candidates = items.filter(
-    (item) => item.monthlyAmountCents >= minMonthlyAmountCents,
-  );
+  const candidates = items.filter(item => item.monthlyAmountCents >= minMonthlyAmountCents);
 
   if (candidates.length === 0) {
     return [];
@@ -81,7 +74,7 @@ export function generateSubscriptionRecommendations(
     const monthly = createMoney(totalCents, currency);
     const annual = multiplyMoney(monthly, 12);
 
-    const lineItems: RecommendationLineItem[] = unused.map((item) => ({
+    const lineItems: RecommendationLineItem[] = unused.map(item => ({
       label: item.label,
       monthlyAmount: createMoney(item.monthlyAmountCents, currency),
       daysSinceLastUsage: item.daysSinceLastTransaction,
@@ -100,7 +93,7 @@ export function generateSubscriptionRecommendations(
       monthlySavings: monthly,
       annualSavings: annual,
       confidence: 'high',
-      sourceTransactionIds: unused.flatMap((i) => [...i.sourceTransactionIds]),
+      sourceTransactionIds: unused.flatMap(i => [...i.sourceTransactionIds]),
       lineItems,
     });
   }
@@ -111,7 +104,7 @@ export function generateSubscriptionRecommendations(
     const monthly = createMoney(totalCents, currency);
     const annual = multiplyMoney(monthly, 12);
 
-    const lineItems: RecommendationLineItem[] = noUsageData.map((item) => ({
+    const lineItems: RecommendationLineItem[] = noUsageData.map(item => ({
       label: item.label,
       monthlyAmount: createMoney(item.monthlyAmountCents, currency),
     }));
@@ -127,7 +120,7 @@ export function generateSubscriptionRecommendations(
       monthlySavings: monthly,
       annualSavings: annual,
       confidence: 'medium',
-      sourceTransactionIds: noUsageData.flatMap((i) => [...i.sourceTransactionIds]),
+      sourceTransactionIds: noUsageData.flatMap(i => [...i.sourceTransactionIds]),
       lineItems,
     });
   }
@@ -149,14 +142,13 @@ export function generateSubscriptionRecommendations(
 export function generateSpendingRecommendations(
   categorySpend: readonly CategorySpendSnapshot[],
   topNUnbudgeted: number = 3,
-  currency: Currency = 'USD',
+  currency: Currency = 'USD'
 ): Recommendation[] {
   const recs: Recommendation[] = [];
 
   // Over-budget categories (high confidence)
   const overBudget = categorySpend.filter(
-    (c) =>
-      c.budgetedCents !== undefined && c.actualCents > c.budgetedCents,
+    c => c.budgetedCents !== undefined && c.actualCents > c.budgetedCents
   );
 
   for (const cat of overBudget) {
@@ -181,7 +173,7 @@ export function generateSpendingRecommendations(
 
   // Top unbudgeted high-spend categories (low confidence)
   const unbudgeted = categorySpend
-    .filter((c) => c.budgetedCents === undefined && c.actualCents > 0)
+    .filter(c => c.budgetedCents === undefined && c.actualCents > 0)
     .sort((a, b) => b.actualCents - a.actualCents)
     .slice(0, topNUnbudgeted);
 
@@ -212,17 +204,14 @@ export function generateSpendingRecommendations(
  * Rank a list of recommendations by estimated monthly savings, descending.
  * Ties are broken by confidence (high > medium > low).
  */
-export function rankRecommendations(
-  recommendations: readonly Recommendation[],
-): Recommendation[] {
+export function rankRecommendations(recommendations: readonly Recommendation[]): Recommendation[] {
   const confidenceOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
   return [...recommendations].sort((a, b) => {
     const bySavings = b.monthlySavings.cents - a.monthlySavings.cents;
-    if (bySavings !== 0) return bySavings;
-    return (
-      (confidenceOrder[a.confidence] ?? 2) -
-      (confidenceOrder[b.confidence] ?? 2)
-    );
+    if (bySavings !== 0) {
+      return bySavings;
+    }
+    return (confidenceOrder[a.confidence] ?? 2) - (confidenceOrder[b.confidence] ?? 2);
   });
 }
 

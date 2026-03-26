@@ -76,7 +76,7 @@ export class SecureStorage {
         is_active INTEGER NOT NULL DEFAULT 1,
         encrypted_data TEXT
       )`,
-      
+
       `CREATE TABLE IF NOT EXISTS transactions (
         id TEXT PRIMARY KEY,
         import_session_id TEXT NOT NULL DEFAULT 'manual',
@@ -95,7 +95,7 @@ export class SecureStorage {
         encrypted_data TEXT,
         FOREIGN KEY (account_id) REFERENCES accounts(id)
       )`,
-      
+
       `CREATE TABLE IF NOT EXISTS budgets (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -108,7 +108,7 @@ export class SecureStorage {
         remaining REAL NOT NULL,
         encrypted_data TEXT
       )`,
-      
+
       `CREATE TABLE IF NOT EXISTS goals (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -121,7 +121,7 @@ export class SecureStorage {
         is_completed INTEGER NOT NULL DEFAULT 0,
         encrypted_data TEXT
       )`,
-      
+
       `CREATE TABLE IF NOT EXISTS investments (
         id TEXT PRIMARY KEY,
         symbol TEXT NOT NULL,
@@ -136,7 +136,7 @@ export class SecureStorage {
         encrypted_data TEXT,
         FOREIGN KEY (account_id) REFERENCES accounts(id)
       )`,
-      
+
       `CREATE TABLE IF NOT EXISTS credentials (
         id TEXT PRIMARY KEY,
         service TEXT NOT NULL,
@@ -145,20 +145,20 @@ export class SecureStorage {
         notes TEXT,
         last_updated INTEGER NOT NULL
       )`,
-      
+
       `CREATE TABLE IF NOT EXISTS metadata (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
         updated_at INTEGER NOT NULL
-      )`
+      )`,
     ];
 
     return new Promise((resolve, reject) => {
       let completed = 0;
       const total = tables.length;
-      
+
       tables.forEach((sql, index) => {
-        this.db.run(sql, (err) => {
+        this.db.run(sql, err => {
           if (err) {
             reject(new Error(`Failed to create table ${index}: ${err.message}`));
             return;
@@ -176,8 +176,10 @@ export class SecureStorage {
    * Encrypt sensitive data
    */
   private encrypt(data: string): string {
-    if (!this.encryptionKey) return data;
-    
+    if (!this.encryptionKey) {
+      return data;
+    }
+
     try {
       const iv = crypto.randomBytes(16);
       const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
@@ -196,11 +198,11 @@ export class SecureStorage {
    */
   // private decrypt(encryptedData: string): string {
   //   if (!this.encryptionKey) return encryptedData;
-    
+
   //   try {
   //     const parts = encryptedData.split(':');
   //     if (parts.length !== 2) return encryptedData;
-      
+
   //     const iv = Buffer.from(parts[0]!, 'hex');
   //     const encryptedText = parts[1]!;
   //     const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
@@ -220,27 +222,36 @@ export class SecureStorage {
     const sql = `INSERT OR REPLACE INTO accounts 
       (id, name, type, balance, currency, institution, last_updated, is_active, encrypted_data)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    
-    const encryptedData = this.encrypt(JSON.stringify({
-      institution: account.institution,
-      // Add other sensitive fields here
-    }));
+
+    const encryptedData = this.encrypt(
+      JSON.stringify({
+        institution: account.institution,
+        // Add other sensitive fields here
+      })
+    );
 
     return new Promise((resolve, reject) => {
-      this.db.run(sql, [
-        account.id,
-        account.name,
-        account.type,
-        account.balance,
-        account.currency,
-        account.institution,
-        account.lastUpdated.getTime(),
-        account.isActive ? 1 : 0,
-        encryptedData
-      ], (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
+      this.db.run(
+        sql,
+        [
+          account.id,
+          account.name,
+          account.type,
+          account.balance,
+          account.currency,
+          account.institution,
+          account.lastUpdated.getTime(),
+          account.isActive ? 1 : 0,
+          encryptedData,
+        ],
+        err => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        }
+      );
     });
   }
 
@@ -249,14 +260,14 @@ export class SecureStorage {
    */
   async getAccounts(): Promise<Account[]> {
     const sql = 'SELECT * FROM accounts WHERE is_active = 1';
-    
+
     return new Promise((resolve, reject) => {
       this.db.all(sql, (err, rows: AccountRow[]) => {
         if (err) {
           reject(err);
           return;
         }
-        
+
         const accounts = rows.map(row => ({
           id: row.id,
           name: row.name,
@@ -265,9 +276,9 @@ export class SecureStorage {
           currency: row.currency,
           institution: row.institution ?? undefined,
           lastUpdated: new Date(row.last_updated),
-          isActive: row.is_active === 1
+          isActive: row.is_active === 1,
         }));
-        
+
         resolve(accounts);
       });
     });
@@ -278,19 +289,19 @@ export class SecureStorage {
    */
   async getAccountByName(name: string): Promise<Account | null> {
     const sql = 'SELECT * FROM accounts WHERE name = ? AND is_active = 1';
-    
+
     return new Promise((resolve, reject) => {
       this.db.get(sql, [name], (err, row: AccountRow | undefined) => {
         if (err) {
           reject(err);
           return;
         }
-        
+
         if (!row) {
           resolve(null);
           return;
         }
-        
+
         const account: Account = {
           id: row.id,
           name: row.name,
@@ -299,9 +310,9 @@ export class SecureStorage {
           currency: row.currency,
           institution: row.institution ?? undefined,
           lastUpdated: new Date(row.last_updated),
-          isActive: row.is_active === 1
+          isActive: row.is_active === 1,
         };
-        
+
         resolve(account);
       });
     });
@@ -314,33 +325,42 @@ export class SecureStorage {
     const sql = `INSERT OR REPLACE INTO transactions 
       (id, import_session_id, account_id, amount_cents, amount_currency, description, date, category, subcategory, tags, type, merchant, location, is_recurring, encrypted_data)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    
-    const encryptedData = this.encrypt(JSON.stringify({
-      merchant: transaction.merchant,
-      location: transaction.location,
-    }));
+
+    const encryptedData = this.encrypt(
+      JSON.stringify({
+        merchant: transaction.merchant,
+        location: transaction.location,
+      })
+    );
 
     return new Promise((resolve, reject) => {
-      this.db.run(sql, [
-        transaction.id,
-        transaction.importSessionId,
-        transaction.accountId,
-        transaction.amount.cents,
-        transaction.amount.currency,
-        transaction.description,
-        transaction.date.getTime(),
-        transaction.category,
-        transaction.subcategory,
-        JSON.stringify(transaction.tags),
-        transaction.type,
-        transaction.merchant,
-        transaction.location,
-        transaction.isRecurring ? 1 : 0,
-        encryptedData
-      ], (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
+      this.db.run(
+        sql,
+        [
+          transaction.id,
+          transaction.importSessionId,
+          transaction.accountId,
+          transaction.amount.cents,
+          transaction.amount.currency,
+          transaction.description,
+          transaction.date.getTime(),
+          transaction.category,
+          transaction.subcategory,
+          JSON.stringify(transaction.tags),
+          transaction.type,
+          transaction.merchant,
+          transaction.location,
+          transaction.isRecurring ? 1 : 0,
+          encryptedData,
+        ],
+        err => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        }
+      );
     });
   }
 
@@ -356,49 +376,49 @@ export class SecureStorage {
   }): Promise<Transaction[]> {
     let sql = 'SELECT * FROM transactions WHERE 1=1';
     const params: (string | number)[] = [];
-    
+
     if (filters?.accountId) {
       sql += ' AND account_id = ?';
       params.push(filters.accountId);
     }
-    
+
     if (filters?.startDate) {
       sql += ' AND date >= ?';
       params.push(filters.startDate.getTime());
     }
-    
+
     if (filters?.endDate) {
       sql += ' AND date <= ?';
       params.push(filters.endDate.getTime());
     }
-    
+
     if (filters?.category) {
       sql += ' AND category = ?';
       params.push(filters.category);
     }
-    
+
     sql += ' ORDER BY date DESC';
-    
+
     if (filters?.limit) {
       sql += ' LIMIT ?';
       params.push(filters.limit);
     }
-    
+
     return new Promise((resolve, reject) => {
       this.db.all(sql, params, (err, rows: Record<string, unknown>[]) => {
         if (err) {
           reject(err);
           return;
         }
-        
+
         const transactions: Transaction[] = rows.map(row => {
           // Support both new schema (amount_cents) and legacy schema (amount as REAL)
-          const cents = typeof row['amount_cents'] === 'number'
-            ? row['amount_cents'] as number
-            : Math.round((row['amount'] as number) * 100);
-          const currency = typeof row['amount_currency'] === 'string'
-            ? row['amount_currency'] as string
-            : 'USD';
+          const cents =
+            typeof row['amount_cents'] === 'number'
+              ? (row['amount_cents'] as number)
+              : Math.round((row['amount'] as number) * 100);
+          const currency =
+            typeof row['amount_currency'] === 'string' ? (row['amount_currency'] as string) : 'USD';
           return {
             id: row['id'] as string,
             importSessionId: (row['import_session_id'] as string | undefined) ?? 'manual',
@@ -412,10 +432,10 @@ export class SecureStorage {
             type: row['type'] as Transaction['type'],
             merchant: row['merchant'] as string | undefined,
             location: row['location'] as string | undefined,
-            isRecurring: row['is_recurring'] === 1
+            isRecurring: row['is_recurring'] === 1,
           };
         });
-        
+
         resolve(transactions);
       });
     });
@@ -426,23 +446,30 @@ export class SecureStorage {
    */
   async saveCredential(credential: SecureCredential): Promise<void> {
     const hashedPassword = this.encrypt(credential.encryptedPassword);
-    
+
     const sql = `INSERT OR REPLACE INTO credentials 
       (id, service, username, encrypted_password, notes, last_updated)
       VALUES (?, ?, ?, ?, ?, ?)`;
 
     return new Promise((resolve, reject) => {
-      this.db.run(sql, [
-        credential.id,
-        credential.service,
-        credential.username,
-        hashedPassword,
-        credential.notes,
-        credential.lastUpdated.getTime()
-      ], (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
+      this.db.run(
+        sql,
+        [
+          credential.id,
+          credential.service,
+          credential.username,
+          hashedPassword,
+          credential.notes,
+          credential.lastUpdated.getTime(),
+        ],
+        err => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        }
+      );
     });
   }
 
@@ -451,26 +478,26 @@ export class SecureStorage {
    */
   async getCredential(id: string): Promise<SecureCredential | null> {
     const sql = 'SELECT * FROM credentials WHERE id = ?';
-    
+
     return new Promise((resolve, reject) => {
       this.db.get(sql, [id], (err, row: CredentialRow | undefined) => {
         if (err) {
           reject(err);
           return;
         }
-        
+
         if (!row) {
           resolve(null);
           return;
         }
-        
+
         resolve({
           id: row.id,
           service: row.service,
           username: row.username,
           encryptedPassword: row.encrypted_password,
           notes: row.notes ?? undefined,
-          lastUpdated: new Date(row.last_updated)
+          lastUpdated: new Date(row.last_updated),
         });
       });
     });
@@ -483,18 +510,18 @@ export class SecureStorage {
     if (!this.config.backupEnabled || !this.config.backupPath) {
       throw new Error('Backup not configured');
     }
-    
+
     const fs = require('fs').promises;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFile = path.join(this.config.backupPath, `financial-data-${timestamp}.db`);
-    
+
     try {
       // Ensure backup directory exists
       await fs.mkdir(this.config.backupPath, { recursive: true });
-      
+
       // Copy the database file
       await fs.copyFile(this.config.dbPath, backupFile);
-      
+
       return backupFile;
     } catch (error) {
       throw new Error(`Failed to create backup: ${error}`);
@@ -506,9 +533,12 @@ export class SecureStorage {
    */
   async close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db.close((err) => {
-        if (err) reject(err);
-        else resolve();
+      this.db.close(err => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
       });
     });
   }

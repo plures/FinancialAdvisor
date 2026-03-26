@@ -13,7 +13,7 @@ export type PeriodUnit = 'day' | 'week' | 'month' | 'quarter' | 'year';
  */
 export interface Period {
   readonly unit: PeriodUnit;
-  readonly value: number;  // Must be a positive integer
+  readonly value: number; // Must be a positive integer
 }
 
 /**

@@ -1,6 +1,6 @@
 /**
  * Local-First Account Integration Service
- * 
+ *
  * This service manages file-based account imports and synchronization
  * following the local-first, privacy-by-design principles.
  */
@@ -15,7 +15,7 @@ import type {
 
 /**
  * Account integration service for local-first file imports
- * 
+ *
  * Primary method: File-based import (OFX/QFX/CSV)
  * Secondary: Self-hosted Open Bank Project
  * Optional: Plaid (with explicit user consent and privacy warnings)
@@ -31,7 +31,7 @@ export class AccountIntegrationService {
 
   /**
    * Register a file importer (OFX, QFX, CSV)
-   * 
+   *
    * @param extensions - File extensions this importer handles
    * @param importer - Importer implementation
    */
@@ -43,7 +43,7 @@ export class AccountIntegrationService {
 
   /**
    * Register a CSV template for a specific bank
-   * 
+   *
    * @param template - CSV template configuration
    */
   registerCSVTemplate(template: CSVTemplate): void {
@@ -52,7 +52,7 @@ export class AccountIntegrationService {
 
   /**
    * Get CSV template by ID
-   * 
+   *
    * @param templateId - Template ID
    * @returns CSV template or undefined
    */
@@ -62,7 +62,7 @@ export class AccountIntegrationService {
 
   /**
    * List all registered CSV templates
-   * 
+   *
    * @returns Array of CSV templates
    */
   listCSVTemplates(): CSVTemplate[] {
@@ -71,11 +71,11 @@ export class AccountIntegrationService {
 
   /**
    * Import transactions from a file
-   * 
+   *
    * @param filePath - Path to file to import
    * @param options - Import options
    * @returns Import result
-   * 
+   *
    * @example
    * ```typescript
    * const result = await service.importFile('/path/to/transactions.ofx', {
@@ -86,11 +86,11 @@ export class AccountIntegrationService {
    */
   /**
    * Import transactions from a file
-   * 
+   *
    * @param filePath - Path to file to import
    * @param options - Import options
    * @returns Import result
-   * 
+   *
    * @example
    * ```typescript
    * const result = await service.importFile('/path/to/transactions.ofx', {
@@ -109,13 +109,13 @@ export class AccountIntegrationService {
   ): Promise<ImportResult> {
     // 1. Detect file type from extension
     const extension = filePath.toLowerCase().split('.').pop() || '';
-    
+
     // 2. Find appropriate importer
     const importer = this.importers.get(extension);
     if (!importer) {
       throw new Error(`No importer found for file type: ${extension}`);
     }
-    
+
     // 3. For CSV, load template if provided
     let csvTemplate: CSVTemplate | undefined;
     if (extension === 'csv' && options?.csvTemplateId) {
@@ -124,29 +124,29 @@ export class AccountIntegrationService {
         throw new Error(`CSV template not found: ${options.csvTemplateId}`);
       }
     }
-    
+
     // 4. Call importer.import()
     const result = await importer.import(filePath, {
       accountId: options?.accountId,
       csvTemplate,
     });
-    
+
     // 5. Save import history
     // TODO: Implement import history storage
     // Priority: High - Required for duplicate detection
     // Implementation: packages/shared/src/database/import-history-repository.ts
     // Will track: fileHash, timestamp, transaction count, errors
-    
+
     // 6. Return result
     return result;
   }
 
   /**
    * Watch a directory for new files to auto-import
-   * 
+   *
    * @param directory - Directory to watch
    * @param options - Watch options
-   * 
+   *
    * @example
    * ```typescript
    * await service.watchDirectory('~/Downloads/BankStatements', {
@@ -167,14 +167,14 @@ export class AccountIntegrationService {
     // TODO: Implement directory watcher
     // Priority: High - Phase 5 objective
     // Suggested library: chokidar for cross-platform file watching
-    // 
+    //
     // Implementation plan:
     // 1. Use chokidar to watch directory
     // 2. On file add event, check if it's a financial file (OFX/QFX/CSV)
     // 3. If auto-import enabled, call importFile()
     // 4. If archive enabled, move file to archive folder
     // 5. Track watched directories in memory or database
-    // 
+    //
     // Example:
     // const watcher = chokidar.watch(directory, {
     //   ignored: /(^|[\/\\])\../,
@@ -194,7 +194,7 @@ export class AccountIntegrationService {
 
   /**
    * Stop watching a directory
-   * 
+   *
    * @param directory - Directory to stop watching
    */
   async unwatchDirectory(directory: string): Promise<void> {
@@ -204,7 +204,7 @@ export class AccountIntegrationService {
 
   /**
    * Get import history for a source
-   * 
+   *
    * @param sourceConfigId - Source configuration ID
    * @param options - Query options
    * @returns Array of import history records
@@ -224,7 +224,7 @@ export class AccountIntegrationService {
 
   /**
    * Check if user has consented to third-party data sharing (for Plaid)
-   * 
+   *
    * @param sourceConfigId - Source configuration ID
    * @returns Whether consent was given
    */
@@ -240,11 +240,11 @@ export class AccountIntegrationService {
 
   /**
    * Request user consent for third-party data sharing
-   * 
+   *
    * @param sourceConfigId - Source configuration ID
    * @param privacyLevel - Privacy level of the source
    * @returns Whether user consented
-   * 
+   *
    * @example
    * ```typescript
    * const consented = await service.requestPrivacyConsent('plaid-config-1', 'third-party');
@@ -273,65 +273,65 @@ import { OFXImporter } from './ofx-importer.js';
 
 /**
  * Create and configure account integration service
- * 
+ *
  * @returns Configured service instance
  */
 export function createAccountIntegrationService(): AccountIntegrationService {
   const service = new AccountIntegrationService();
-  
+
   // Register default importers
   const csvImporter = new CSVImporter();
   const ofxImporter = new OFXImporter();
-  
+
   // Register CSV importer for .csv and .txt files
   service.registerImporter(['csv', 'txt'], csvImporter);
-  
+
   // Register OFX importer for .ofx and .qfx files
   service.registerImporter(['ofx', 'qfx'], ofxImporter);
-  
+
   // Load pre-configured CSV templates for common banks
   const commonTemplates = createCommonBankTemplates();
   for (const template of commonTemplates) {
     service.registerCSVTemplate(template);
   }
-  
+
   return service;
 }
 
 /**
  * Implementation notes:
- * 
+ *
  * To fully implement this service:
- * 
+ *
  * 1. Add file importers:
  *    - OFXImporter (use ofx-parser library or build our own)
  *    - QFXImporter (compatible with OFX)
  *    - CSVImporter (flexible CSV parsing)
- * 
+ *
  * 2. Implement directory watcher:
  *    - Use chokidar for file watching
  *    - Support auto-import on file add
  *    - Handle file archival
- * 
+ *
  * 3. Add CSV templates:
  *    - Pre-configure for top 50 US banks
  *    - Allow user to create custom templates
  *    - Community template sharing
- * 
+ *
  * 4. Implement privacy consent:
  *    - Clear warning dialogs
  *    - Record consent decisions
  *    - Easy opt-out
- * 
+ *
  * 5. Add transaction deduplication:
  *    - Match by transaction ID if available
  *    - Match by date + amount + description
  *    - Handle pending vs. posted
- * 
+ *
  * 6. Integrate with PluresDB:
  *    - Encrypted transaction storage
  *    - Import history tracking
  *    - Vector embeddings for AI
- * 
+ *
  * See docs/LOCAL_FIRST_INTEGRATION_PLAN.md for complete implementation guide.
  */

@@ -32,12 +32,14 @@ export class ImportSessionStore {
   }
 
   findByAccount(accountId: string): ImportSessionRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.accountId === accountId);
+    return Array.from(this.records.values()).filter(r => r.accountId === accountId);
   }
 
   delete(id: string): boolean {
     const record = this.records.get(id);
-    if (!record) return false;
+    if (!record) {
+      return false;
+    }
     this.hashIndex.delete(record.fileHash);
     this.records.delete(id);
     return true;

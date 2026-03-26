@@ -15,7 +15,13 @@ import type { DatabaseConfig } from './storage.js';
 import { SecureStorage } from './storage.js';
 import { TransactionAnalyzer } from '@financialadvisor/resolution';
 import type { Account, Transaction } from '@financialadvisor/domain';
-import { AccountType, TransactionType, generateId, moneyFromDecimal, moneyToDecimal } from '@financialadvisor/domain';
+import {
+  AccountType,
+  TransactionType,
+  generateId,
+  moneyFromDecimal,
+  moneyToDecimal,
+} from '@financialadvisor/domain';
 
 /** MCP server that exposes financial advisor tools and resources via the Model Context Protocol. */
 export class FinancialAdvisorMCPServer {
@@ -83,11 +89,11 @@ export class FinancialAdvisorMCPServer {
       };
     });
 
-    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    this.server.setRequestHandler(ReadResourceRequestSchema, async request => {
       const uri = request.params.uri;
-      
+
       switch (uri) {
-        case 'financial://accounts':
+        case 'financial://accounts': {
           const accounts = await this.storage.getAccounts();
           return {
             contents: [
@@ -98,8 +104,9 @@ export class FinancialAdvisorMCPServer {
               },
             ],
           };
-          
-        case 'financial://transactions':
+        }
+
+        case 'financial://transactions': {
           const transactions = await this.storage.getTransactions({ limit: 100 });
           return {
             contents: [
@@ -110,7 +117,8 @@ export class FinancialAdvisorMCPServer {
               },
             ],
           };
-          
+        }
+
         default:
           throw new Error(`Unknown resource: ${uri}`);
       }
@@ -187,7 +195,11 @@ export class FinancialAdvisorMCPServer {
             inputSchema: {
               type: 'object',
               properties: {
-                limit: { type: 'number', description: 'Number of transactions to categorize', default: 50 },
+                limit: {
+                  type: 'number',
+                  description: 'Number of transactions to categorize',
+                  default: 50,
+                },
               },
             },
           },
@@ -195,45 +207,51 @@ export class FinancialAdvisorMCPServer {
       };
     });
 
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    this.server.setRequestHandler(CallToolRequestSchema, async request => {
       const { name, arguments: args } = request.params;
-      
+
       switch (name) {
         case 'add_account':
-          return await this.addAccount(args as {
-            name: string;
-            type: string;
-            balance: number;
-            currency?: string;
-            institution?: string;
-          });
-          
+          return await this.addAccount(
+            args as {
+              name: string;
+              type: string;
+              balance: number;
+              currency?: string;
+              institution?: string;
+            }
+          );
+
         case 'add_transaction':
-          return await this.addTransaction(args as {
-            accountId: string;
-            amount: number;
-            description: string;
-            category?: string;
-            merchant?: string;
-            date?: string;
-          });
-          
+          return await this.addTransaction(
+            args as {
+              accountId: string;
+              amount: number;
+              description: string;
+              category?: string;
+              merchant?: string;
+              date?: string;
+            }
+          );
+
         case 'analyze_spending':
-          return await this.analyzeSpending(args as {
-            startDate?: string;
-            endDate?: string;
-            accountId?: string;
-          });
-          
+          return await this.analyzeSpending(
+            args as {
+              startDate?: string;
+              endDate?: string;
+              accountId?: string;
+            }
+          );
+
         case 'analyze_portfolio':
           return await this.analyzePortfolio(args as { accountId?: string });
-          
+
         case 'analyze_budgets':
           return await this.analyzeBudgets();
-          
+
         case 'categorize_transactions':
           return await this.categorizeTransactions(args as { limit?: number });
-          
+
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
@@ -289,7 +307,7 @@ export class FinancialAdvisorMCPServer {
     }
 
     await this.storage.saveAccount(account);
-    
+
     return {
       content: [
         {
@@ -334,7 +352,7 @@ export class FinancialAdvisorMCPServer {
     }
 
     await this.storage.saveTransaction(transaction);
-    
+
     return {
       content: [
         {
@@ -351,10 +369,16 @@ export class FinancialAdvisorMCPServer {
     accountId?: string;
   }) {
     const filters: { startDate?: Date; endDate?: Date; accountId?: string; limit?: number } = {};
-    
-    if (args.startDate) filters.startDate = new Date(args.startDate);
-    if (args.endDate) filters.endDate = new Date(args.endDate);
-    if (args.accountId) filters.accountId = args.accountId;
+
+    if (args.startDate) {
+      filters.startDate = new Date(args.startDate);
+    }
+    if (args.endDate) {
+      filters.endDate = new Date(args.endDate);
+    }
+    if (args.accountId) {
+      filters.accountId = args.accountId;
+    }
 
     const transactions = await this.storage.getTransactions(filters);
     const insights = TransactionAnalyzer.analyzeTransactions(transactions, {
@@ -372,19 +396,30 @@ export class FinancialAdvisorMCPServer {
 - **Savings Rate**: ${insights.savingsRate.toFixed(1)}%
 
 ## Top Spending Categories
-${insights.topCategories.map((cat: { category: string; totalAmount: number; percentage: number }) => 
-  `- **${cat.category}**: $${cat.totalAmount.toFixed(2)} (${cat.percentage.toFixed(1)}%)`
-).join('\n')}
+${insights.topCategories
+  .map(
+    (cat: { category: string; totalAmount: number; percentage: number }) =>
+      `- **${cat.category}**: $${cat.totalAmount.toFixed(2)} (${cat.percentage.toFixed(1)}%)`
+  )
+  .join('\n')}
 
 ## Largest Expenses
-${insights.largestExpenses.slice(0, 5).map((t: Transaction) => 
-  `- $${Math.abs(moneyToDecimal(t.amount)).toFixed(2)} - ${t.description} (${t.category ?? 'Uncategorized'})`
-).join('\n')}
+${insights.largestExpenses
+  .slice(0, 5)
+  .map(
+    (t: Transaction) =>
+      `- $${Math.abs(moneyToDecimal(t.amount)).toFixed(2)} - ${t.description} (${t.category ?? 'Uncategorized'})`
+  )
+  .join('\n')}
 
 ## Recurring Patterns
-${insights.recurringPatterns.slice(0, 5).map((p: { merchant?: string; averageAmount: number; frequency: number }) => 
-  `- **${p.merchant}**: $${p.averageAmount.toFixed(2)} avg, ${p.frequency.toFixed(1)}x/month`
-).join('\n')}
+${insights.recurringPatterns
+  .slice(0, 5)
+  .map(
+    (p: { merchant?: string; averageAmount: number; frequency: number }) =>
+      `- **${p.merchant}**: $${p.averageAmount.toFixed(2)} avg, ${p.frequency.toFixed(1)}x/month`
+  )
+  .join('\n')}
     `;
 
     return {
@@ -447,7 +482,7 @@ Currently no budget data available. Add budgets to get budget analysis.
   private async categorizeTransactions(args: { limit?: number }) {
     const limit = args.limit || 50;
     const transactions = await this.storage.getTransactions({ limit });
-    
+
     let categorized = 0;
     for (const transaction of transactions) {
       if (!transaction.category || transaction.category === 'Other') {

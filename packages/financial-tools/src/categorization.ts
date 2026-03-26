@@ -41,17 +41,35 @@ export interface TransactionInsights {
 export class TransactionAnalyzer {
   // Common spending categories for auto-categorization
   private static readonly CATEGORY_KEYWORDS = {
-    'Food & Dining': ['restaurant', 'cafe', 'pizza', 'burger', 'taco', 'starbucks', 'mcdonalds', 'subway', 'chipotle'],
-    'Groceries': ['grocery', 'supermarket', 'whole foods', 'trader joes', 'safeway', 'kroger', 'walmart'],
-    'Transportation': ['gas', 'fuel', 'uber', 'lyft', 'taxi', 'metro', 'parking', 'toll'],
-    'Shopping': ['amazon', 'target', 'costco', 'mall', 'store', 'retail'],
-    'Entertainment': ['movie', 'theater', 'spotify', 'netflix', 'hulu', 'gaming', 'concert'],
-    'Utilities': ['electric', 'water', 'internet', 'phone', 'cable', 'utility'],
-    'Healthcare': ['medical', 'doctor', 'pharmacy', 'hospital', 'dental', 'cvs', 'walgreens'],
-    'Education': ['school', 'university', 'tuition', 'books', 'education'],
-    'Insurance': ['insurance', 'premium', 'policy'],
-    'Banking': ['fee', 'atm', 'bank', 'transfer'],
-    'Income': ['salary', 'payroll', 'dividend', 'interest', 'refund']
+    'Food & Dining': [
+      'restaurant',
+      'cafe',
+      'pizza',
+      'burger',
+      'taco',
+      'starbucks',
+      'mcdonalds',
+      'subway',
+      'chipotle',
+    ],
+    Groceries: [
+      'grocery',
+      'supermarket',
+      'whole foods',
+      'trader joes',
+      'safeway',
+      'kroger',
+      'walmart',
+    ],
+    Transportation: ['gas', 'fuel', 'uber', 'lyft', 'taxi', 'metro', 'parking', 'toll'],
+    Shopping: ['amazon', 'target', 'costco', 'mall', 'store', 'retail'],
+    Entertainment: ['movie', 'theater', 'spotify', 'netflix', 'hulu', 'gaming', 'concert'],
+    Utilities: ['electric', 'water', 'internet', 'phone', 'cable', 'utility'],
+    Healthcare: ['medical', 'doctor', 'pharmacy', 'hospital', 'dental', 'cvs', 'walgreens'],
+    Education: ['school', 'university', 'tuition', 'books', 'education'],
+    Insurance: ['insurance', 'premium', 'policy'],
+    Banking: ['fee', 'atm', 'bank', 'transfer'],
+    Income: ['salary', 'payroll', 'dividend', 'interest', 'refund'],
   };
 
   /**
@@ -62,10 +80,10 @@ export class TransactionAnalyzer {
     timeframe?: { start: Date; end: Date }
   ): TransactionInsights {
     let filteredTransactions = transactions;
-    
+
     if (timeframe) {
-      filteredTransactions = transactions.filter(t => 
-        t.date >= timeframe.start && t.date <= timeframe.end
+      filteredTransactions = transactions.filter(
+        t => t.date >= timeframe.start && t.date <= timeframe.end
       );
     }
 
@@ -73,9 +91,11 @@ export class TransactionAnalyzer {
       .filter(t => t.type === TransactionType.INCOME)
       .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0);
 
-    const expenses = Math.abs(filteredTransactions
-      .filter(t => t.type === TransactionType.EXPENSE)
-      .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0));
+    const expenses = Math.abs(
+      filteredTransactions
+        .filter(t => t.type === TransactionType.EXPENSE)
+        .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0)
+    );
 
     const netIncome = income - expenses;
     const savingsRate = income > 0 ? (netIncome / income) * 100 : 0;
@@ -110,12 +130,13 @@ export class TransactionAnalyzer {
     const searchText = `${description} ${merchant}`;
 
     // Check for income indicators
-    if (transaction.amount.cents > 0 && (
-      searchText.includes('salary') || 
-      searchText.includes('payroll') || 
-      searchText.includes('dividend') ||
-      searchText.includes('interest')
-    )) {
+    if (
+      transaction.amount.cents > 0 &&
+      (searchText.includes('salary') ||
+        searchText.includes('payroll') ||
+        searchText.includes('dividend') ||
+        searchText.includes('interest'))
+    ) {
       return 'Income';
     }
 
@@ -134,9 +155,11 @@ export class TransactionAnalyzer {
    */
   static getCategorySummaries(transactions: Transaction[]): CategorySummary[] {
     const categoryMap = new Map<string, Transaction[]>();
-    const totalAmount = Math.abs(transactions
-      .filter(t => t.type === TransactionType.EXPENSE)
-      .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0));
+    const totalAmount = Math.abs(
+      transactions
+        .filter(t => t.type === TransactionType.EXPENSE)
+        .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0)
+    );
 
     transactions.forEach(transaction => {
       const category = transaction.category || this.categorizeTransaction(transaction);
@@ -148,14 +171,19 @@ export class TransactionAnalyzer {
 
     return Array.from(categoryMap.entries())
       .map(([category, categoryTransactions]) => {
-        const expenseTransactions = categoryTransactions.filter(t => t.type === TransactionType.EXPENSE);
-        const categoryTotal = Math.abs(expenseTransactions.reduce((sum, t) => sum + moneyToDecimal(t.amount), 0));
-        
+        const expenseTransactions = categoryTransactions.filter(
+          t => t.type === TransactionType.EXPENSE
+        );
+        const categoryTotal = Math.abs(
+          expenseTransactions.reduce((sum, t) => sum + moneyToDecimal(t.amount), 0)
+        );
+
         return {
           category,
           totalAmount: categoryTotal,
           transactionCount: expenseTransactions.length,
-          averageAmount: expenseTransactions.length > 0 ? categoryTotal / expenseTransactions.length : 0,
+          averageAmount:
+            expenseTransactions.length > 0 ? categoryTotal / expenseTransactions.length : 0,
           percentage: totalAmount > 0 ? (categoryTotal / totalAmount) * 100 : 0,
         };
       })
@@ -168,7 +196,7 @@ export class TransactionAnalyzer {
    */
   static findRecurringPatterns(transactions: Transaction[]): SpendingPattern[] {
     const patterns = new Map<string, Transaction[]>();
-    
+
     // Group by merchant and similar amounts
     transactions
       .filter(t => t.type === TransactionType.EXPENSE && t.merchant)
@@ -184,14 +212,19 @@ export class TransactionAnalyzer {
       .filter(([, transactions]) => transactions.length >= 3) // At least 3 similar transactions
       .map(([, transactions]) => {
         const sortedTransactions = transactions.sort((a, b) => b.date.getTime() - a.date.getTime());
-        const totalAmount = transactions.reduce((sum, t) => sum + Math.abs(moneyToDecimal(t.amount)), 0);
+        const totalAmount = transactions.reduce(
+          (sum, t) => sum + Math.abs(moneyToDecimal(t.amount)),
+          0
+        );
         const averageAmount = totalAmount / transactions.length;
-        
+
         // Calculate frequency (transactions per month)
         const firstDate = sortedTransactions[transactions.length - 1]!.date;
         const lastDate = sortedTransactions[0]!.date;
-        const monthsDiff = (lastDate.getFullYear() - firstDate.getFullYear()) * 12 + 
-                          (lastDate.getMonth() - firstDate.getMonth()) + 1;
+        const monthsDiff =
+          (lastDate.getFullYear() - firstDate.getFullYear()) * 12 +
+          (lastDate.getMonth() - firstDate.getMonth()) +
+          1;
         const frequency = transactions.length / monthsDiff;
 
         return {
@@ -212,14 +245,17 @@ export class TransactionAnalyzer {
    */
   static findUnusualTransactions(transactions: Transaction[]): Transaction[] {
     const expenseTransactions = transactions.filter(t => t.type === TransactionType.EXPENSE);
-    if (expenseTransactions.length === 0) return [];
+    if (expenseTransactions.length === 0) {
+      return [];
+    }
 
     const amounts = expenseTransactions.map(t => Math.abs(moneyToDecimal(t.amount)));
     const mean = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
-    const variance = amounts.reduce((sum, amount) => sum + Math.pow(amount - mean, 2), 0) / amounts.length;
+    const variance =
+      amounts.reduce((sum, amount) => sum + Math.pow(amount - mean, 2), 0) / amounts.length;
     const standardDeviation = Math.sqrt(variance);
-    
-    const threshold = mean + (2 * standardDeviation); // 2 standard deviations above mean
+
+    const threshold = mean + 2 * standardDeviation; // 2 standard deviations above mean
 
     return expenseTransactions
       .filter(t => Math.abs(moneyToDecimal(t.amount)) > threshold)

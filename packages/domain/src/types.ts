@@ -25,7 +25,7 @@ export enum AccountType {
   INVESTMENT = 'investment',
   LOAN = 'loan',
   MORTGAGE = 'mortgage',
-  RETIREMENT = 'retirement'
+  RETIREMENT = 'retirement',
 }
 
 /** A single financial transaction imported from a bank or entered manually. */
@@ -51,7 +51,7 @@ export interface Transaction {
 export enum TransactionType {
   INCOME = 'income',
   EXPENSE = 'expense',
-  TRANSFER = 'transfer'
+  TRANSFER = 'transfer',
 }
 
 /** A spending limit for a category within a time period. */
@@ -72,7 +72,7 @@ export enum BudgetPeriod {
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   QUARTERLY = 'quarterly',
-  YEARLY = 'yearly'
+  YEARLY = 'yearly',
 }
 
 /** A financial goal the user wants to achieve (e.g. save for a vacation or pay off debt). */
@@ -96,7 +96,7 @@ export enum GoalCategory {
   DEBT_PAYOFF = 'debt_payoff',
   RETIREMENT = 'retirement',
   EDUCATION = 'education',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 /** Relative importance level used to order goals and recommendations. */
@@ -104,7 +104,7 @@ export enum Priority {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 /** A single investment holding (stock, ETF, etc.) within an account. */
@@ -146,7 +146,7 @@ export enum AIProviderType {
   ANTHROPIC = 'anthropic',
   OLLAMA = 'ollama',
   COPILOT = 'copilot',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 /** Connection and model settings for an AI provider. */
@@ -171,7 +171,7 @@ export enum QueryType {
   ADVICE = 'advice',
   CATEGORIZATION = 'categorization',
   PREDICTION = 'prediction',
-  REPORT = 'report'
+  REPORT = 'report',
 }
 
 /** Financial data snapshot passed to an AI provider as context for analysis. */
@@ -225,7 +225,7 @@ export enum ReportType {
   INVESTMENT_PERFORMANCE = 'investment_performance',
   BUDGET_REVIEW = 'budget_review',
   GOAL_PROGRESS = 'goal_progress',
-  NET_WORTH_TREND = 'net_worth_trend'
+  NET_WORTH_TREND = 'net_worth_trend',
 }
 
 /** Output format for a generated report. */
@@ -233,7 +233,7 @@ export enum ReportFormat {
   MARKDOWN = 'markdown',
   HTML = 'html',
   PDF = 'pdf',
-  JSON = 'json'
+  JSON = 'json',
 }
 
 // Extension types

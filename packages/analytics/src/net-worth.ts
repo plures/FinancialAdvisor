@@ -66,14 +66,16 @@ export interface NetWorthSnapshot {
  */
 export function computeNetWorth(
   accounts: readonly Account[],
-  currency: Currency = 'USD',
+  currency: Currency = 'USD'
 ): NetWorthResult {
   let assetsCents = 0;
   let liabilitiesCents = 0;
   const byTypeMut = new Map<string, number>();
 
   for (const account of accounts) {
-    if (!account.isActive) continue;
+    if (!account.isActive) {
+      continue;
+    }
 
     const balanceCents = Math.round(account.balance * 100);
     const absBalance = Math.abs(balanceCents);
@@ -94,7 +96,7 @@ export function computeNetWorth(
   const netWorth = subtractMoney(assets, liabilities);
 
   const byAccountType = new Map<string, Money>(
-    Array.from(byTypeMut.entries()).map(([k, v]) => [k, createMoney(v, currency)]),
+    Array.from(byTypeMut.entries()).map(([k, v]) => [k, createMoney(v, currency)])
   );
 
   return { assets, liabilities, netWorth, byAccountType };
@@ -113,7 +115,7 @@ export function takeNetWorthSnapshot(
   accounts: readonly Account[],
   periodLabel: string,
   currency: Currency = 'USD',
-  computedAt: Date = new Date(),
+  computedAt: Date = new Date()
 ): NetWorthSnapshot {
   return {
     periodLabel,
@@ -128,12 +130,8 @@ export function takeNetWorthSnapshot(
  * Returns the snapshots sorted chronologically by `periodLabel` (lexicographic
  * order, which works correctly for `"YYYY-MM"` and `"YYYY"` labels).
  */
-export function sortSnapshotsByPeriod(
-  snapshots: readonly NetWorthSnapshot[],
-): NetWorthSnapshot[] {
-  return [...snapshots].sort((a, b) =>
-    a.periodLabel.localeCompare(b.periodLabel),
-  );
+export function sortSnapshotsByPeriod(snapshots: readonly NetWorthSnapshot[]): NetWorthSnapshot[] {
+  return [...snapshots].sort((a, b) => a.periodLabel.localeCompare(b.periodLabel));
 }
 
 /**
@@ -142,12 +140,9 @@ export function sortSnapshotsByPeriod(
  * @returns A `Money` value representing the difference
  *          (`later.netWorth − earlier.netWorth`).
  */
-export function netWorthChange(
-  earlier: NetWorthSnapshot,
-  later: NetWorthSnapshot,
-): Money {
+export function netWorthChange(earlier: NetWorthSnapshot, later: NetWorthSnapshot): Money {
   return addMoney(
     later.result.netWorth,
-    createMoney(-earlier.result.netWorth.cents, earlier.result.netWorth.currency),
+    createMoney(-earlier.result.netWorth.cents, earlier.result.netWorth.currency)
   );
 }

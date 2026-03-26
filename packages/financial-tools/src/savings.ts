@@ -2,7 +2,14 @@
  * Goal tracking and savings planning tools
  */
 
-import { Goal, GoalCategory, Priority, Transaction, TransactionType, moneyToDecimal } from '@financialadvisor/shared';
+import {
+  Goal,
+  GoalCategory,
+  Priority,
+  Transaction,
+  TransactionType,
+  moneyToDecimal,
+} from '@financialadvisor/shared';
 
 /** Progress tracking and projections for a single savings goal. */
 export interface GoalProgress {
@@ -45,16 +52,17 @@ export class SavingsPlanner {
     currentDate: Date = new Date()
   ): GoalProgress {
     const monthlyContributions = this.calculateMonthlyContributions(savingsTransactions, goal.id);
-    const averageMonthlyContribution = this.calculateAverageMonthlyContribution(monthlyContributions);
-    
-    const progressPercentage = goal.targetAmount > 0 ? 
-      (goal.currentAmount / goal.targetAmount) * 100 : 0;
+    const averageMonthlyContribution =
+      this.calculateAverageMonthlyContribution(monthlyContributions);
+
+    const progressPercentage =
+      goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
 
     const remaining = goal.targetAmount - goal.currentAmount;
     const monthsToTarget = this.monthsBetween(currentDate, goal.targetDate);
-    
+
     const recommendedMonthlyContribution = monthsToTarget > 0 ? remaining / monthsToTarget : 0;
-    
+
     let projectedCompletionDate: Date;
     if (averageMonthlyContribution > 0) {
       const monthsToCompletion = remaining / averageMonthlyContribution;
@@ -96,13 +104,15 @@ export class SavingsPlanner {
     const recommendations: SavingsRecommendation[] = [];
 
     if (disposableIncome <= 0) {
-      return [{
-        goalId: 'budget',
-        recommendedAmount: 0,
-        frequency: 'monthly',
-        reason: 'Focus on reducing expenses before setting savings goals',
-        impact: 'Create positive cash flow first'
-      }];
+      return [
+        {
+          goalId: 'budget',
+          recommendedAmount: 0,
+          frequency: 'monthly',
+          reason: 'Focus on reducing expenses before setting savings goals',
+          impact: 'Create positive cash flow first',
+        },
+      ];
     }
 
     // Prioritize goals
@@ -110,11 +120,26 @@ export class SavingsPlanner {
       .filter(g => !g.isCompleted)
       .sort((a, b) => {
         // Emergency fund first
-        if (a.category === GoalCategory.EMERGENCY_FUND && b.category !== GoalCategory.EMERGENCY_FUND) return -1;
-        if (b.category === GoalCategory.EMERGENCY_FUND && a.category !== GoalCategory.EMERGENCY_FUND) return 1;
-        
+        if (
+          a.category === GoalCategory.EMERGENCY_FUND &&
+          b.category !== GoalCategory.EMERGENCY_FUND
+        ) {
+          return -1;
+        }
+        if (
+          b.category === GoalCategory.EMERGENCY_FUND &&
+          a.category !== GoalCategory.EMERGENCY_FUND
+        ) {
+          return 1;
+        }
+
         // Then by priority
-        const priorityOrder = { [Priority.CRITICAL]: 0, [Priority.HIGH]: 1, [Priority.MEDIUM]: 2, [Priority.LOW]: 3 };
+        const priorityOrder = {
+          [Priority.CRITICAL]: 0,
+          [Priority.HIGH]: 1,
+          [Priority.MEDIUM]: 2,
+          [Priority.LOW]: 3,
+        };
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       });
 
@@ -122,7 +147,7 @@ export class SavingsPlanner {
 
     prioritizedGoals.forEach(goal => {
       const progress = this.analyzeGoalProgress(goal, [], currentDate);
-      
+
       if (remainingIncome > 0) {
         const allocation = Math.min(
           progress.recommendedMonthlyContribution,
@@ -135,7 +160,7 @@ export class SavingsPlanner {
             recommendedAmount: allocation,
             frequency: 'monthly',
             reason: this.getRecommendationReason(goal, progress),
-            impact: this.getRecommendationImpact(goal, allocation, progress)
+            impact: this.getRecommendationImpact(goal, allocation, progress),
           });
 
           remainingIncome -= allocation;
@@ -156,15 +181,15 @@ export class SavingsPlanner {
   ): EmergencyFundAnalysis {
     // Base recommendation: 3-6 months of expenses
     let recommendedMultiplier = 3;
-    
+
     // Increase for dependents
     if (dependents > 0) {
       recommendedMultiplier += dependents * 0.5;
     }
-    
+
     // Cap at 12 months
     recommendedMultiplier = Math.min(recommendedMultiplier, 12);
-    
+
     const recommendedAmount = monthlyExpenses * recommendedMultiplier;
     const monthsOfExpensesCovered = monthlyExpenses > 0 ? emergencyFundAmount / monthlyExpenses : 0;
     const isAdequate = monthsOfExpensesCovered >= 3;
@@ -189,18 +214,35 @@ export class SavingsPlanner {
   ): Record<string, number> {
     const allocation: Record<string, number> = {};
     const goalProgresses = goals.map(goal => this.analyzeGoalProgress(goal, [], currentDate));
-    
+
     // Sort by priority and urgency
     const sortedGoals = goalProgresses.sort((a, b) => {
       // Emergency fund first
-      if (a.goal.category === GoalCategory.EMERGENCY_FUND && b.goal.category !== GoalCategory.EMERGENCY_FUND) return -1;
-      if (b.goal.category === GoalCategory.EMERGENCY_FUND && a.goal.category !== GoalCategory.EMERGENCY_FUND) return 1;
-      
+      if (
+        a.goal.category === GoalCategory.EMERGENCY_FUND &&
+        b.goal.category !== GoalCategory.EMERGENCY_FUND
+      ) {
+        return -1;
+      }
+      if (
+        b.goal.category === GoalCategory.EMERGENCY_FUND &&
+        a.goal.category !== GoalCategory.EMERGENCY_FUND
+      ) {
+        return 1;
+      }
+
       // Then by priority
-      const priorityOrder = { [Priority.CRITICAL]: 0, [Priority.HIGH]: 1, [Priority.MEDIUM]: 2, [Priority.LOW]: 3 };
+      const priorityOrder = {
+        [Priority.CRITICAL]: 0,
+        [Priority.HIGH]: 1,
+        [Priority.MEDIUM]: 2,
+        [Priority.LOW]: 3,
+      };
       const priorityDiff = priorityOrder[a.goal.priority] - priorityOrder[b.goal.priority];
-      if (priorityDiff !== 0) return priorityDiff;
-      
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+
       // Then by urgency (months remaining)
       return a.monthsRemaining - b.monthsRemaining;
     });
@@ -208,11 +250,13 @@ export class SavingsPlanner {
     let remainingAmount = totalSavingsAmount;
 
     sortedGoals.forEach(progress => {
-      if (remainingAmount <= 0) return;
-      
+      if (remainingAmount <= 0) {
+        return;
+      }
+
       const needed = progress.goal.targetAmount - progress.goal.currentAmount;
       const allocation_amount = Math.min(needed, remainingAmount);
-      
+
       if (allocation_amount > 0) {
         allocation[progress.goal.id] = allocation_amount;
         remainingAmount -= allocation_amount;
@@ -234,7 +278,9 @@ export class SavingsPlanner {
   }
 
   private static calculateAverageMonthlyContribution(contributions: number[]): number {
-    if (contributions.length === 0) return 0;
+    if (contributions.length === 0) {
+      return 0;
+    }
     return contributions.reduce((sum, amount) => sum + amount, 0) / contributions.length;
   }
 
@@ -248,15 +294,15 @@ export class SavingsPlanner {
     if (goal.category === GoalCategory.EMERGENCY_FUND) {
       return 'Emergency fund provides financial security and should be prioritized';
     }
-    
+
     if (progress.monthsRemaining < 12) {
       return `Goal deadline is approaching in ${progress.monthsRemaining} months`;
     }
-    
+
     if (goal.priority === Priority.CRITICAL) {
       return 'High priority goal requiring immediate attention';
     }
-    
+
     return 'Regular contributions will help achieve this goal on schedule';
   }
 

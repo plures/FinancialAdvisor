@@ -68,10 +68,7 @@ export class CSVImporter implements IFileImporter {
     }
   }
 
-  async import(
-    filePath: string,
-    options: CSVImportOptions = {}
-  ): Promise<ImportResult> {
+  async import(filePath: string, options: CSVImportOptions = {}): Promise<ImportResult> {
     const startTime = Date.now();
     const accountId = options.accountId ?? 'unknown';
     const result: ImportResult = {
@@ -91,7 +88,7 @@ export class CSVImporter implements IFileImporter {
       // 1. Validate file
       const validation = await this.validate(filePath, options);
       if (!validation.valid) {
-        result.errors = validation.errors.map((err) => ({ message: err }));
+        result.errors = validation.errors.map(err => ({ message: err }));
         return result;
       }
 
@@ -164,8 +161,7 @@ export class CSVImporter implements IFileImporter {
 
       // 7. Finalise ImportSession with accurate counts
       const finalErrorCount = result.transactionsFailed;
-      const finalStatus =
-        finalErrorCount === totalRows && totalRows > 0 ? 'failed' : 'complete';
+      const finalStatus = finalErrorCount === totalRows && totalRows > 0 ? 'failed' : 'complete';
       const finalSession = createImportSession(
         sessionId,
         fileHash,
@@ -232,9 +228,7 @@ export class CSVImporter implements IFileImporter {
           relax_column_count: true,
         });
       } catch (error) {
-        errors.push(
-          `CSV parsing error: ${error instanceof Error ? error.message : 'Unknown'}`
-        );
+        errors.push(`CSV parsing error: ${error instanceof Error ? error.message : 'Unknown'}`);
         return { valid: false, errors };
       }
 
@@ -385,14 +379,21 @@ export class CSVImporter implements IFileImporter {
 
   private validateTemplate(template: CSVTemplate): string[] {
     const errors: string[] = [];
-    if (!template.id) errors.push('Template ID is required');
-    if (!template.name) errors.push('Template name is required');
-    if (template.dateColumn === undefined || template.dateColumn === null)
+    if (!template.id) {
+      errors.push('Template ID is required');
+    }
+    if (!template.name) {
+      errors.push('Template name is required');
+    }
+    if (template.dateColumn === undefined || template.dateColumn === null) {
       errors.push('Date column is required');
-    if (template.descriptionColumn === undefined || template.descriptionColumn === null)
+    }
+    if (template.descriptionColumn === undefined || template.descriptionColumn === null) {
       errors.push('Description column is required');
-    if (template.amountColumn === undefined || template.amountColumn === null)
+    }
+    if (template.amountColumn === undefined || template.amountColumn === null) {
       errors.push('Amount column is required');
+    }
     return errors;
   }
 
@@ -400,7 +401,7 @@ export class CSVImporter implements IFileImporter {
     return new Promise((resolve, reject) => {
       const hash = crypto.createHash('sha256');
       const stream = fs.createReadStream(filePath);
-      stream.on('data', (data) => hash.update(data));
+      stream.on('data', data => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
     });

@@ -59,9 +59,7 @@ export function createJournalEntry(
     );
   }
   if (!Number.isInteger(amountCents) || !Number.isSafeInteger(amountCents)) {
-    throw new Error(
-      `JournalEntry.amountCents must be a safe integer, received: ${amountCents}`
-    );
+    throw new Error(`JournalEntry.amountCents must be a safe integer, received: ${amountCents}`);
   }
   if (amountCents < 0) {
     throw new Error(
@@ -95,7 +93,9 @@ export function journalEntryMoney(entry: JournalEntry): Money {
  * arrays (e.g. from storage) and want to assert integrity before use.
  */
 export function journalEntriesAreValid(entries: readonly JournalEntry[]): boolean {
-  if (entries.length === 0) return false;
+  if (entries.length === 0) {
+    return false;
+  }
   return entries.every(
     e =>
       e.amountCents >= 0 &&

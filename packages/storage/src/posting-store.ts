@@ -21,18 +21,20 @@ export class PostingStore {
 
   findByCanonicalTransaction(canonicalTransactionId: string): PostingRecord[] {
     const ids = this.byCanonicalTx.get(canonicalTransactionId) ?? [];
-    return ids.map((id) => this.records.get(id)!).filter(Boolean);
+    return ids.map(id => this.records.get(id)!).filter(Boolean);
   }
 
   findByDateRange(from: Date, to: Date): PostingRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.date >= from && r.date <= to);
+    return Array.from(this.records.values()).filter(r => r.date >= from && r.date <= to);
   }
 
   delete(id: string): boolean {
     const record = this.records.get(id);
-    if (!record) return false;
+    if (!record) {
+      return false;
+    }
     const ids = this.byCanonicalTx.get(record.canonicalTransactionId) ?? [];
-    const filtered = ids.filter((i) => i !== id);
+    const filtered = ids.filter(i => i !== id);
     if (filtered.length > 0) {
       this.byCanonicalTx.set(record.canonicalTransactionId, filtered);
     } else {
