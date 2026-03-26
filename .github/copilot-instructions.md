@@ -27,27 +27,14 @@ Breaking changes: add `!` after type or `BREAKING CHANGE:` in footer.
 
 ### Release Pipeline
 
-We use a **reusable release workflow** from `plures/.github`:
+This repository uses a release workflow defined in `.github/workflows/release.yml`.
 
-```yaml
-name: Release
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-    inputs:
-      bump:
-        type: choice
-        options: [patch, minor, major]
-jobs:
-  release:
-    uses: plures/.github/.github/workflows/release-reusable.yml@main
-    with:
-      bump: ${{ inputs.bump || '' }}
-    secrets: inherit
-```
+- Treat that workflow file as the **source of truth** for triggers, inputs (for example `release_type`, including any `prerelease` option), and job behavior.
+- Do **not** assume it uses the reusable workflow from `plures/.github` — always check this repo’s `release.yml` before making changes.
+- Follow the organization-wide guidance in the development guide for release practices and expectations:
+  - https://github.com/plures/development-guide (see the CI/CD & Releases sections)
 
-The pipeline auto-detects project type and publishes to the appropriate registry.
+The pipeline is responsible for publishing artifacts and managing versioning according to our conventional commit rules.
 Version bumps are automatic from conventional commits. Do NOT manually bump versions.
 
 ### What NOT to Do
