@@ -15,6 +15,7 @@ export interface WhatIfScenarioResult {
 }
 
 
+/** A complete AI-generated financial plan with goals, strategies, and progress metrics. */
 export interface FinancialPlan {
   id: string;
   goals: Goal[];

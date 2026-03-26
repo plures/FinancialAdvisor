@@ -1,5 +1,6 @@
 // @deprecated — use @financialadvisor/ai-providers directly.
 // This package is kept for backward compatibility only.
+/** @deprecated Use `@financialadvisor/ai-providers` directly. Re-exports all AI provider classes and utilities. */
 export * from '@financialadvisor/ai-providers';
 
 // Version information
