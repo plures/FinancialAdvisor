@@ -15,7 +15,7 @@ import type { DatabaseConfig } from './storage.js';
 import { SecureStorage } from './storage.js';
 import { TransactionAnalyzer } from '@financialadvisor/resolution';
 import type { Account, Transaction } from '@financialadvisor/domain';
-import { TransactionType, generateId, moneyFromDecimal, moneyToDecimal } from '@financialadvisor/domain';
+import { AccountType, TransactionType, generateId, moneyFromDecimal, moneyToDecimal } from '@financialadvisor/domain';
 
 /** MCP server that exposes financial advisor tools and resources via the Model Context Protocol. */
 export class FinancialAdvisorMCPServer {
@@ -200,22 +200,39 @@ export class FinancialAdvisorMCPServer {
       
       switch (name) {
         case 'add_account':
-          return await this.addAccount(args as any);
+          return await this.addAccount(args as {
+            name: string;
+            type: string;
+            balance: number;
+            currency?: string;
+            institution?: string;
+          });
           
         case 'add_transaction':
-          return await this.addTransaction(args as any);
+          return await this.addTransaction(args as {
+            accountId: string;
+            amount: number;
+            description: string;
+            category?: string;
+            merchant?: string;
+            date?: string;
+          });
           
         case 'analyze_spending':
-          return await this.analyzeSpending(args as any);
+          return await this.analyzeSpending(args as {
+            startDate?: string;
+            endDate?: string;
+            accountId?: string;
+          });
           
         case 'analyze_portfolio':
-          return await this.analyzePortfolio(args as any);
+          return await this.analyzePortfolio(args as { accountId?: string });
           
         case 'analyze_budgets':
           return await this.analyzeBudgets();
           
         case 'categorize_transactions':
-          return await this.categorizeTransactions(args as any);
+          return await this.categorizeTransactions(args as { limit?: number });
           
         default:
           throw new Error(`Unknown tool: ${name}`);
@@ -244,8 +261,9 @@ export class FinancialAdvisorMCPServer {
     }
 
     // Validate account type against allowed values
-    const validAccountTypes = ['checking', 'savings', 'credit_card', 'investment', 'loan', 'mortgage', 'retirement'];
-    if (!validAccountTypes.includes(args.type.toLowerCase())) {
+    const validAccountTypes = Object.values(AccountType) as string[];
+    const normalizedType = args.type.toLowerCase();
+    if (!validAccountTypes.includes(normalizedType)) {
       throw new Error(`Invalid account type. Must be one of: ${validAccountTypes.join(', ')}`);
     }
 
@@ -258,7 +276,7 @@ export class FinancialAdvisorMCPServer {
     const account: Account = {
       id: generateId(),
       name: args.name.trim(),
-      type: args.type.toLowerCase() as any,
+      type: normalizedType as AccountType,
       balance: args.balance,
       currency: args.currency || 'USD',
       lastUpdated: new Date(),

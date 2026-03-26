@@ -20,7 +20,7 @@ export interface HealthStatus {
   status: 'ok' | 'warning' | 'error';
   message: string;
   responseTime?: number;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 /** A single named, time-stamped measurement emitted by the monitoring system. */
@@ -318,19 +318,23 @@ export class ProductionMonitor {
 /**
  * Error logging and tracking
  */
+
+/** A logged error entry with optional contextual metadata. */
+export interface ErrorEntry {
+  message: string;
+  stack?: string;
+  timestamp: Date;
+  context?: Record<string, unknown>;
+}
+
 export class ErrorLogger {
-  private errors: Array<{
-    message: string;
-    stack?: string;
-    timestamp: Date;
-    context?: any;
-  }> = [];
+  private errors: ErrorEntry[] = [];
   private readonly MAX_ERRORS = 1000;
 
   /**
    * Log an error
    */
-  logError(error: Error, context?: any): void {
+  logError(error: Error, context?: Record<string, unknown>): void {
     this.errors.push({
       message: error.message,
       stack: error.stack,
@@ -356,14 +360,14 @@ export class ErrorLogger {
   /**
    * Get recent errors
    */
-  getRecentErrors(count: number = 10): Array<any> {
+  getRecentErrors(count: number = 10): ErrorEntry[] {
     return this.errors.slice(-count);
   }
 
   /**
    * Get errors by time range
    */
-  getErrorsByTimeRange(sinceMinutes: number = 60): Array<any> {
+  getErrorsByTimeRange(sinceMinutes: number = 60): ErrorEntry[] {
     const cutoff = new Date();
     cutoff.setMinutes(cutoff.getMinutes() - sinceMinutes);
 

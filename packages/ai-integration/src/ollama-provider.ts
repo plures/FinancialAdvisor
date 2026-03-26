@@ -6,6 +6,12 @@ import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
 import { AIProviderConfig, AIQuery, FinancialContext } from '@financialadvisor/shared';
 
+/** A single model entry returned by the Ollama /api/tags endpoint. */
+interface OllamaModel {
+  name: string;
+  [key: string]: unknown;
+}
+
 /** AI provider implementation that connects to a locally-running Ollama LLM server. */
 export class OllamaProvider extends BaseAIProvider {
   private client: AxiosInstance;
@@ -124,7 +130,7 @@ Category:`;
   async listModels(): Promise<string[]> {
     try {
       const response = await this.client.get('/api/tags');
-      return response.data.models?.map((model: any) => model.name) || [];
+      return (response.data.models as OllamaModel[] | undefined)?.map((model) => model.name) ?? [];
     } catch {
       return [];
     }
