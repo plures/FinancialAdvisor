@@ -4,7 +4,6 @@
 
 import * as vscode from 'vscode';
 import { MCPServerManager } from '../services/mcpServerManager';
-import { AIProviderManager } from '@financialadvisor/ai-providers';
 
 /** Message sent from the dashboard WebView to add a new transaction. */
 interface AddTransactionMessage {
@@ -52,8 +51,7 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly mcpManager: MCPServerManager,
-    _aiManager: AIProviderManager
+    private readonly mcpManager: MCPServerManager
   ) {}
 
   public resolveWebviewView(

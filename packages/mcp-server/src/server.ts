@@ -261,8 +261,9 @@ export class FinancialAdvisorMCPServer {
     }
 
     // Validate account type against allowed values
-    const validAccountTypes = ['checking', 'savings', 'credit_card', 'investment', 'loan', 'mortgage', 'retirement'];
-    if (!validAccountTypes.includes(args.type.toLowerCase())) {
+    const validAccountTypes = Object.values(AccountType) as string[];
+    const normalizedType = args.type.toLowerCase();
+    if (!validAccountTypes.includes(normalizedType)) {
       throw new Error(`Invalid account type. Must be one of: ${validAccountTypes.join(', ')}`);
     }
 
@@ -275,7 +276,7 @@ export class FinancialAdvisorMCPServer {
     const account: Account = {
       id: generateId(),
       name: args.name.trim(),
-      type: args.type.toLowerCase() as AccountType,
+      type: normalizedType as AccountType,
       balance: args.balance,
       currency: args.currency || 'USD',
       lastUpdated: new Date(),

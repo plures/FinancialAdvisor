@@ -5,7 +5,6 @@
 import * as vscode from 'vscode';
 import { FinancialAdvisorProvider } from './providers/financialAdvisorProvider';
 import { MCPServerManager } from './services/mcpServerManager';
-import { AIProviderManager } from '@financialadvisor/ai-providers';
 import { DashboardViewProvider } from './views/dashboardView';
 
 /** A single content item returned by an MCP tool call. */
@@ -20,7 +19,6 @@ interface MCPToolResult {
 }
 
 let mcpServerManager: MCPServerManager;
-let aiProviderManager: AIProviderManager;
 
 /**
  * Called by VS Code when the extension is activated. Initializes services,
@@ -32,11 +30,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Initialize services
   mcpServerManager = new MCPServerManager(context);
-  aiProviderManager = new AIProviderManager();
 
   // Initialize providers
   const financialAdvisorProvider = new FinancialAdvisorProvider(context, mcpServerManager);
-  const dashboardProvider = new DashboardViewProvider(context, mcpServerManager, aiProviderManager);
+  const dashboardProvider = new DashboardViewProvider(context, mcpServerManager);
 
   // Register tree data providers
   vscode.window.createTreeView('financialAdvisor.accounts', {
