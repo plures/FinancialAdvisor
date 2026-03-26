@@ -9,6 +9,7 @@ import type {
   IFileImporter,
   ImportSourceConfig,
   ImportResult,
+  ImportHistory,
   CSVTemplate,
   PrivacyLevel,
 } from './account-integration-types.js';
@@ -202,7 +203,7 @@ export class AccountIntegrationService {
       startDate?: Date;
       endDate?: Date;
     }
-  ): Promise<any[]> {
+  ): Promise<ImportHistory[]> {
     // TODO: Implement history retrieval
     throw new Error('AccountIntegrationService.getImportHistory not implemented');
   }
