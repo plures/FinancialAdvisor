@@ -6,6 +6,10 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { spawn, ChildProcess } from 'child_process';
 
+/**
+ * Manages the lifecycle of the MCP (Model Context Protocol) server process,
+ * including starting, stopping, and communicating with it via JSON-RPC over stdio.
+ */
 export class MCPServerManager {
   private process?: ChildProcess;
   private context: vscode.ExtensionContext;

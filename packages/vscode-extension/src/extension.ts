@@ -11,6 +11,11 @@ import { DashboardViewProvider } from './views/dashboardView';
 let mcpServerManager: MCPServerManager;
 let aiProviderManager: AIProviderManager;
 
+/**
+ * Called by VS Code when the extension is activated. Initializes services,
+ * registers tree view and webview providers, and registers all extension commands.
+ * @param context - The extension context provided by VS Code.
+ */
 export function activate(context: vscode.ExtensionContext) {
   console.log('Financial Advisor extension is now active!');
 
@@ -76,6 +81,10 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand('setContext', 'financialAdvisor.initialized', true);
 }
 
+/**
+ * Called by VS Code when the extension is deactivated. Stops the MCP server
+ * process to release resources on extension shutdown.
+ */
 export function deactivate() {
   if (mcpServerManager) {
     mcpServerManager.stop();

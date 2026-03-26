@@ -6,6 +6,10 @@ import * as vscode from 'vscode';
 import { MCPServerManager } from '../services/mcpServerManager';
 import { AIProviderManager } from '@financialadvisor/ai-providers';
 
+/**
+ * Provides the Financial Advisor dashboard as a VS Code WebviewView,
+ * handling account and transaction data display and user interactions.
+ */
 export class DashboardViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'financialAdvisor.dashboard';
 

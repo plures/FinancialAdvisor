@@ -7,6 +7,10 @@ import { BaseAIProvider } from '../base-provider.js';
 import type { FinancialContext, Goal, Budget } from '@financialadvisor/domain';
 import { BudgetPeriod, moneyToDecimal } from '@financialadvisor/domain';
 
+/**
+ * Represents a comprehensive AI-generated financial plan, including goals,
+ * budget recommendations, strategies, timelines, risk assessment, and progress metrics.
+ */
 export interface FinancialPlan {
   id: string;
   goals: Goal[];
@@ -19,6 +23,10 @@ export interface FinancialPlan {
   updatedAt: Date;
 }
 
+/**
+ * Describes a milestone within a financial plan, specifying a target date,
+ * the actions required to reach it, and any prerequisite dependencies.
+ */
 export interface PlanTimeline {
   milestone: string;
   targetDate: Date;
@@ -26,6 +34,10 @@ export interface PlanTimeline {
   dependencies: string[];
 }
 
+/**
+ * A single actionable financial strategy with priority, estimated impact,
+ * implementation timeline, and category (e.g., savings, debt, investment).
+ */
 export interface Strategy {
   name: string;
   description: string;
@@ -35,12 +47,20 @@ export interface Strategy {
   category: 'savings' | 'investment' | 'debt' | 'income' | 'expense';
 }
 
+/**
+ * Overall risk assessment for a financial plan, summarising the risk level,
+ * individual risk factors, and recommended mitigation strategies.
+ */
 export interface RiskAssessment {
   overallRisk: 'low' | 'medium' | 'high';
   factors: RiskFactor[];
   mitigationStrategies: string[];
 }
 
+/**
+ * An individual risk factor within a {@link RiskAssessment}, capturing its
+ * severity, probability of occurrence, and potential financial impact.
+ */
 export interface RiskFactor {
   name: string;
   severity: 'low' | 'medium' | 'high';
@@ -48,6 +68,10 @@ export interface RiskFactor {
   impact: string;
 }
 
+/**
+ * A measurable metric for tracking progress toward a financial target,
+ * including current value, goal value, unit, and trend direction.
+ */
 export interface ProgressMetric {
   name: string;
   current: number;
