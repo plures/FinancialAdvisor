@@ -1,6 +1,6 @@
 /**
  * CSV File Importer for Financial Advisor
- * 
+ *
  * Implements flexible CSV import with template-based column mapping
  * for different bank CSV formats.
  */
@@ -55,7 +55,7 @@ export class CSVImporter implements IFileImporter {
       // Try to read first few lines to verify it's text
       const buffer = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' });
       const firstLines = buffer.split('\n').slice(0, 5).join('\n');
-      
+
       // Basic CSV detection - should have commas or semicolons
       return firstLines.includes(',') || firstLines.includes(';') || firstLines.includes('\t');
     } catch (error) {
@@ -63,10 +63,7 @@ export class CSVImporter implements IFileImporter {
     }
   }
 
-  async import(
-    filePath: string,
-    options: CSVImportOptions = {}
-  ): Promise<ImportResult> {
+  async import(filePath: string, options: CSVImportOptions = {}): Promise<ImportResult> {
     const startTime = Date.now();
     const result: ImportResult = {
       success: false,
@@ -95,7 +92,7 @@ export class CSVImporter implements IFileImporter {
 
       // Read file
       const fileContent = fs.readFileSync(filePath, 'utf8');
-      
+
       // Parse CSV with template
       const transactions = await this.parseCSV(fileContent, options.csvTemplate);
 
@@ -171,7 +168,7 @@ export class CSVImporter implements IFileImporter {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         const lines = fileContent.split('\n').slice(0, 10);
         const delimiter = this.detectDelimiter(lines.join('\n'));
-        
+
         parse(lines.join('\n'), {
           delimiter,
           skip_empty_lines: true,
@@ -192,15 +189,12 @@ export class CSVImporter implements IFileImporter {
   /**
    * Parse CSV content into transactions
    */
-  private async parseCSV(
-    content: string,
-    template?: CSVTemplate
-  ): Promise<ParsedCSVTransaction[]> {
+  private async parseCSV(content: string, template?: CSVTemplate): Promise<ParsedCSVTransaction[]> {
     const transactions: ParsedCSVTransaction[] = [];
 
     // Detect delimiter
     const delimiter = template?.delimiter || this.detectDelimiter(content);
-    
+
     // Parse CSV
     const records = parse(content, {
       delimiter,
@@ -280,7 +274,10 @@ export class CSVImporter implements IFileImporter {
   /**
    * Get column value by name or index
    */
-  private getColumnValue(record: Record<string, string> | string[], column: string | number): string {
+  private getColumnValue(
+    record: Record<string, string> | string[],
+    column: string | number
+  ): string {
     if (typeof column === 'number') {
       return Array.isArray(record) ? (record[column] ?? '') : '';
     }
@@ -306,18 +303,18 @@ export class CSVImporter implements IFileImporter {
 
   /**
    * Parse date string to ISO format
-   * 
+   *
    * TODO: Implement comprehensive date parsing with different formats
    * Priority: Medium
    * Suggested library: date-fns or dayjs for better format handling
-   * 
+   *
    * Current implementation handles ISO and basic US dates.
    * For production, should support all formats in CSVTemplate.dateFormat
    */
   private parseDate(dateStr: string, format?: string): string {
     // TODO: Use date-fns to parse with format string
     // Example: parse(dateStr, format || 'MM/dd/yyyy', new Date())
-    
+
     // For now, assume ISO or US format
     const date = new Date(dateStr);
     if (!isNaN(date.getTime())) {
@@ -332,7 +329,7 @@ export class CSVImporter implements IFileImporter {
   private detectDelimiter(content: string): string {
     const firstLine = content.split('\n')[0];
     const delimiters = [',', ';', '\t', '|'];
-    
+
     let maxCount = 0;
     let detectedDelimiter = ',';
 
@@ -384,7 +381,7 @@ export class CSVImporter implements IFileImporter {
       const hash = crypto.createHash('sha256');
       const stream = fs.createReadStream(filePath);
 
-      stream.on('data', (data) => hash.update(data));
+      stream.on('data', data => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
     });

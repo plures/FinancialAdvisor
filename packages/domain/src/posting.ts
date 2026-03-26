@@ -37,9 +37,7 @@ export function createPosting(
     throw new Error('Posting.creditAccountId must not be empty');
   }
   if (debitAccountId === creditAccountId) {
-    throw new Error(
-      `Posting debit and credit accounts must differ, both are: "${debitAccountId}"`
-    );
+    throw new Error(`Posting debit and credit accounts must differ, both are: "${debitAccountId}"`);
   }
   if (amount.cents < 0) {
     throw new Error(

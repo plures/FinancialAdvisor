@@ -75,7 +75,7 @@ export interface GoalProgressOptions {
  */
 export function computeGoalProgress(
   goal: Goal,
-  options: GoalProgressOptions = {},
+  options: GoalProgressOptions = {}
 ): GoalProgressResult {
   const referenceDate = options.referenceDate ?? new Date();
   const now = referenceDate.getTime();
@@ -87,9 +87,7 @@ export function computeGoalProgress(
   const amountRemaining = Math.max(0, goal.targetAmount - goal.currentAmount);
 
   const percentComplete =
-    goal.targetAmount <= 0
-      ? 100
-      : Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
+    goal.targetAmount <= 0 ? 100 : Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
 
   // ── On-track calculation ──────────────────────────────────────────────────
   let isOnTrack: boolean;
@@ -146,7 +144,7 @@ export function computeGoalProgress(
  */
 export function computeGoalsProgress(
   goals: readonly Goal[],
-  options: GoalProgressOptions = {},
+  options: GoalProgressOptions = {}
 ): GoalProgressResult[] {
-  return goals.map((g) => computeGoalProgress(g, options));
+  return goals.map(g => computeGoalProgress(g, options));
 }

@@ -16,10 +16,7 @@ interface AddTransactionMessage {
 }
 
 /** Union of all messages the dashboard WebView may send to the extension host. */
-type WebviewMessage =
-  | AddTransactionMessage
-  | { type: 'refresh' }
-  | { type: 'analyzeSpending' };
+type WebviewMessage = AddTransactionMessage | { type: 'refresh' } | { type: 'analyzeSpending' };
 
 /** A single content item returned by an MCP tool call. */
 interface MCPToolContent {
@@ -58,15 +55,13 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken,
+    _token: vscode.CancellationToken
   ) {
     this._view = webviewView;
 
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [
-        this.context.extensionUri
-      ]
+      localResourceRoots: [this.context.extensionUri],
     };
 
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
@@ -96,18 +91,18 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
 
   private async handleAddTransaction(data: AddTransactionMessage) {
     try {
-      const result = await this.mcpManager.callTool('add_transaction', {
+      const result = (await this.mcpManager.callTool('add_transaction', {
         accountId: data.accountId,
         amount: parseFloat(data.amount),
         description: data.description,
         category: data.category,
-        merchant: data.merchant
-      }) as MCPToolResult;
+        merchant: data.merchant,
+      })) as MCPToolResult;
 
       this._view?.webview.postMessage({
         type: 'transactionAdded',
         success: true,
-        message: result.content[0]?.text ?? ''
+        message: result.content[0]?.text ?? '',
       });
 
       await this.refreshDashboard();
@@ -115,7 +110,7 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
       this._view?.webview.postMessage({
         type: 'transactionAdded',
         success: false,
-        message: `Error: ${error}`
+        message: `Error: ${error}`,
       });
     }
   }
@@ -126,39 +121,45 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
 
-      const result = await this.mcpManager.callTool('analyze_spending', {
+      const result = (await this.mcpManager.callTool('analyze_spending', {
         startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
-      }) as MCPToolResult;
+        endDate: endDate.toISOString(),
+      })) as MCPToolResult;
 
       this._view?.webview.postMessage({
         type: 'analysisResult',
-        data: result.content[0]?.text ?? ''
+        data: result.content[0]?.text ?? '',
       });
     } catch (error) {
       this._view?.webview.postMessage({
         type: 'analysisResult',
-        data: `Error analyzing spending: ${error}`
+        data: `Error analyzing spending: ${error}`,
       });
     }
   }
 
   private async refreshDashboard() {
-    if (!this._view) return;
+    if (!this._view) {
+      return;
+    }
 
     try {
       // Get accounts data
-      const accountsResource = await this.mcpManager.readResource('financial://accounts') as MCPResourceResult;
+      const accountsResource = (await this.mcpManager.readResource(
+        'financial://accounts'
+      )) as MCPResourceResult;
       const accounts = JSON.parse(accountsResource.contents[0]?.text ?? '[]');
 
       // Get recent transactions
-      const transactionsResource = await this.mcpManager.readResource('financial://transactions') as MCPResourceResult;
+      const transactionsResource = (await this.mcpManager.readResource(
+        'financial://transactions'
+      )) as MCPResourceResult;
       const transactions = JSON.parse(transactionsResource.contents[0]?.text ?? '[]');
 
       this._view.webview.postMessage({
         type: 'dataUpdate',
         accounts,
-        transactions: (transactions as unknown[]).slice(0, 10)
+        transactions: (transactions as unknown[]).slice(0, 10),
       });
     } catch (error) {
       console.error('Error refreshing dashboard:', error);

@@ -69,10 +69,7 @@ export class OFXImporter implements IFileImporter {
     }
   }
 
-  async import(
-    filePath: string,
-    options: OFXImportOptions = {}
-  ): Promise<ImportResult> {
+  async import(filePath: string, options: OFXImportOptions = {}): Promise<ImportResult> {
     const startTime = Date.now();
     const accountId = options.accountId ?? 'unknown';
     const result: ImportResult = {
@@ -92,7 +89,7 @@ export class OFXImporter implements IFileImporter {
       // 1. Validate file
       const validation = await this.validate(filePath, options);
       if (!validation.valid) {
-        result.errors = validation.errors.map((err) => ({ message: err }));
+        result.errors = validation.errors.map(err => ({ message: err }));
         return result;
       }
 
@@ -163,8 +160,7 @@ export class OFXImporter implements IFileImporter {
 
       // 7. Finalise ImportSession with accurate counts
       const finalErrorCount = result.transactionsFailed;
-      const finalStatus =
-        finalErrorCount === totalRows && totalRows > 0 ? 'failed' : 'complete';
+      const finalStatus = finalErrorCount === totalRows && totalRows > 0 ? 'failed' : 'complete';
       const finalSession = createImportSession(
         sessionId,
         fileHash,
@@ -217,9 +213,7 @@ export class OFXImporter implements IFileImporter {
         const content = fs.readFileSync(filePath, 'utf8');
         await this.parseOFX(content);
       } catch (error) {
-        errors.push(
-          `OFX parsing error: ${error instanceof Error ? error.message : 'Unknown'}`
-        );
+        errors.push(`OFX parsing error: ${error instanceof Error ? error.message : 'Unknown'}`);
         return { valid: false, errors };
       }
 
@@ -272,7 +266,9 @@ export class OFXImporter implements IFileImporter {
     if (transactions.length === 0 && rowErrors.length === 0) {
       const parts = transactionSection.split(/(?=<STMTTRN>)/i);
       for (const part of parts) {
-        if (part.trim().length === 0) continue;
+        if (part.trim().length === 0) {
+          continue;
+        }
         const tx = this.parseTransaction(part);
         if (tx) {
           transactions.push(tx);
@@ -317,16 +313,8 @@ export class OFXImporter implements IFileImporter {
     const startMatch = content.match(startPattern);
     const endMatch = content.match(endPattern);
 
-    if (
-      startMatch &&
-      endMatch &&
-      startMatch.index !== undefined &&
-      endMatch.index !== undefined
-    ) {
-      return content.substring(
-        startMatch.index + startMatch[0].length,
-        endMatch.index
-      );
+    if (startMatch && endMatch && startMatch.index !== undefined && endMatch.index !== undefined) {
+      return content.substring(startMatch.index + startMatch[0].length, endMatch.index);
     }
     return null;
   }
@@ -339,7 +327,9 @@ export class OFXImporter implements IFileImporter {
       // XML (closing tag present) OFX formats.  The lazy (.*?)(?:<\/TAG>)?
       // pattern matches an empty string because the closing tag is optional.
       const fitidMatch = content.match(/<FITID>([^<\r\n]+)/i);
-      if (fitidMatch) transaction.id = fitidMatch[1].trim();
+      if (fitidMatch) {
+        transaction.id = fitidMatch[1].trim();
+      }
 
       const typeMatch = content.match(/<TRNTYPE>([^<\r\n]+)/i);
       if (typeMatch) {
@@ -349,19 +339,29 @@ export class OFXImporter implements IFileImporter {
       }
 
       const dateMatch = content.match(/<DTPOSTED>([^<\r\n]+)/i);
-      if (dateMatch) transaction.date = this.parseOFXDate(dateMatch[1].trim());
+      if (dateMatch) {
+        transaction.date = this.parseOFXDate(dateMatch[1].trim());
+      }
 
       const amountMatch = content.match(/<TRNAMT>([^<\r\n]+)/i);
-      if (amountMatch) transaction.amount = parseFloat(amountMatch[1].trim());
+      if (amountMatch) {
+        transaction.amount = parseFloat(amountMatch[1].trim());
+      }
 
       const nameMatch = content.match(/<NAME>([^<\r\n]+)/i);
-      if (nameMatch) transaction.name = nameMatch[1].trim();
+      if (nameMatch) {
+        transaction.name = nameMatch[1].trim();
+      }
 
       const memoMatch = content.match(/<MEMO>([^<\r\n]+)/i);
-      if (memoMatch) transaction.memo = memoMatch[1].trim();
+      if (memoMatch) {
+        transaction.memo = memoMatch[1].trim();
+      }
 
       const checkMatch = content.match(/<CHECKNUM>([^<\r\n]+)/i);
-      if (checkMatch) transaction.checkNum = checkMatch[1].trim();
+      if (checkMatch) {
+        transaction.checkNum = checkMatch[1].trim();
+      }
 
       if (!transaction.id || !transaction.date || transaction.amount === undefined) {
         return null;
@@ -384,9 +384,15 @@ export class OFXImporter implements IFileImporter {
    */
   private missingOFXFields(content: string): string {
     const missing: string[] = [];
-    if (!/<FITID>([^<\r\n]+)/i.test(content)) missing.push('FITID');
-    if (!/<DTPOSTED>([^<\r\n]+)/i.test(content)) missing.push('DTPOSTED');
-    if (!/<TRNAMT>([^<\r\n]+)/i.test(content)) missing.push('TRNAMT');
+    if (!/<FITID>([^<\r\n]+)/i.test(content)) {
+      missing.push('FITID');
+    }
+    if (!/<DTPOSTED>([^<\r\n]+)/i.test(content)) {
+      missing.push('DTPOSTED');
+    }
+    if (!/<TRNAMT>([^<\r\n]+)/i.test(content)) {
+      missing.push('TRNAMT');
+    }
     return missing.length > 0 ? `missing: ${missing.join(', ')}` : 'unknown reason';
   }
 
@@ -402,7 +408,7 @@ export class OFXImporter implements IFileImporter {
     return new Promise((resolve, reject) => {
       const hash = crypto.createHash('sha256');
       const stream = fs.createReadStream(filePath);
-      stream.on('data', (data) => hash.update(data));
+      stream.on('data', data => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
     });

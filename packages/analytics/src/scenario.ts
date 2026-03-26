@@ -109,7 +109,7 @@ export interface ScenarioComparisonResult {
  */
 export function compareScenarioToBaseline(
   baseline: ScenarioBaselineInput,
-  changes: ScenarioChangeInput = {},
+  changes: ScenarioChangeInput = {}
 ): ScenarioComparisonResult {
   const burnDelta = changes.monthlyBurnDeltaCents ?? 0;
   const incomeDelta = changes.monthlyIncomeDeltaCents ?? 0;
@@ -166,6 +166,8 @@ export function compareScenarioToBaseline(
 // ---------------------------------------------------------------------------
 
 function _runwayMonths(liquidBalanceCents: number, monthlyBurnCents: number): number {
-  if (monthlyBurnCents === 0) return Infinity;
+  if (monthlyBurnCents === 0) {
+    return Infinity;
+  }
   return Math.max(0, liquidBalanceCents) / monthlyBurnCents;
 }

@@ -7,12 +7,7 @@
  * Deterministic — no AI, no randomness.
  */
 
-import {
-  createMoney,
-  addMoney,
-  multiplyMoney,
-  type Currency,
-} from '@financialadvisor/domain';
+import { createMoney, addMoney, multiplyMoney, type Currency } from '@financialadvisor/domain';
 
 import type {
   Recommendation,
@@ -37,7 +32,7 @@ import { summarizeFinancialState } from './summarizer.js';
  */
 export function generatePlan(
   state: FinancialStateSnapshot,
-  recommendations: readonly Recommendation[],
+  recommendations: readonly Recommendation[]
 ): FinancialPlan {
   const currency: Currency = state.currency as Currency;
 
@@ -57,16 +52,15 @@ export function generatePlan(
 
   // Add an emergency-fund action if runway is short (< 3 months)
   const runway =
-    state.monthlyBurnCents > 0
-      ? state.liquidBalanceCents / state.monthlyBurnCents
-      : Infinity;
+    state.monthlyBurnCents > 0 ? state.liquidBalanceCents / state.monthlyBurnCents : Infinity;
 
   if (runway < 3 && isFinite(runway)) {
     const emergencyTarget = state.monthlyBurnCents * 3;
     const shortfall = Math.max(0, emergencyTarget - state.liquidBalanceCents);
-    const months = state.monthlyIncomeCents > state.monthlyBurnCents
-      ? Math.ceil(shortfall / (state.monthlyIncomeCents - state.monthlyBurnCents))
-      : 24; // default estimate
+    const months =
+      state.monthlyIncomeCents > state.monthlyBurnCents
+        ? Math.ceil(shortfall / (state.monthlyIncomeCents - state.monthlyBurnCents))
+        : 24; // default estimate
 
     actions.unshift({
       order: 0,
@@ -111,11 +105,17 @@ export function generatePlan(
 
 function _priorityFromConfidence(
   confidence: Recommendation['confidence'],
-  index: number,
+  index: number
 ): ActionPriority {
-  if (index === 0 && confidence === 'high') return 'critical';
-  if (confidence === 'high') return 'high';
-  if (confidence === 'medium') return 'medium';
+  if (index === 0 && confidence === 'high') {
+    return 'critical';
+  }
+  if (confidence === 'high') {
+    return 'high';
+  }
+  if (confidence === 'medium') {
+    return 'medium';
+  }
   return 'low';
 }
 

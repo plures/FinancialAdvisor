@@ -1,6 +1,6 @@
 /**
  * Local-First Account Integration Service
- * 
+ *
  * This service manages file-based account imports and synchronization
  * following the local-first, privacy-by-design principles.
  */
@@ -15,7 +15,7 @@ import type {
 
 /**
  * Account integration service for local-first file imports
- * 
+ *
  * Primary method: File-based import (OFX/QFX/CSV)
  * Secondary: Self-hosted Open Bank Project
  * Optional: Plaid (with explicit user consent and privacy warnings)
@@ -31,7 +31,7 @@ export class AccountIntegrationService {
 
   /**
    * Register a file importer (OFX, QFX, CSV)
-   * 
+   *
    * @param extensions - File extensions this importer handles
    * @param importer - Importer implementation
    */
@@ -43,7 +43,7 @@ export class AccountIntegrationService {
 
   /**
    * Register a CSV template for a specific bank
-   * 
+   *
    * @param template - CSV template configuration
    */
   registerCSVTemplate(template: CSVTemplate): void {
@@ -52,7 +52,7 @@ export class AccountIntegrationService {
 
   /**
    * Get CSV template by ID
-   * 
+   *
    * @param templateId - Template ID
    * @returns CSV template or undefined
    */
@@ -62,7 +62,7 @@ export class AccountIntegrationService {
 
   /**
    * List all registered CSV templates
-   * 
+   *
    * @returns Array of CSV templates
    */
   listCSVTemplates(): CSVTemplate[] {
@@ -71,11 +71,11 @@ export class AccountIntegrationService {
 
   /**
    * Import transactions from a file
-   * 
+   *
    * @param filePath - Path to file to import
    * @param options - Import options
    * @returns Import result
-   * 
+   *
    * @example
    * ```typescript
    * const result = await service.importFile('/path/to/transactions.ofx', {
@@ -94,13 +94,13 @@ export class AccountIntegrationService {
   ): Promise<ImportResult> {
     // 1. Detect file type from extension
     const extension = filePath.toLowerCase().split('.').pop() || '';
-    
+
     // 2. Find appropriate importer
     const importer = this.importers.get(extension);
     if (!importer) {
       throw new Error(`No importer found for file type: ${extension}`);
     }
-    
+
     // 3. For CSV, load template if provided
     let csvTemplate: CSVTemplate | undefined;
     if (extension === 'csv' && options?.csvTemplateId) {
@@ -109,29 +109,29 @@ export class AccountIntegrationService {
         throw new Error(`CSV template not found: ${options.csvTemplateId}`);
       }
     }
-    
+
     // 4. Call importer.import()
     const result = await importer.import(filePath, {
       accountId: options?.accountId,
       csvTemplate,
     });
-    
+
     // 5. Save import history
     // TODO: Implement import history storage
     // Priority: High - Required for duplicate detection
     // Implementation: packages/ledger/src/database/import-history-repository.ts
     // Will track: fileHash, timestamp, transaction count, errors
-    
+
     // 6. Return result
     return result;
   }
 
   /**
    * Watch a directory for new files to auto-import
-   * 
+   *
    * @param directory - Directory to watch
    * @param options - Watch options
-   * 
+   *
    * @example
    * ```typescript
    * await service.watchDirectory('~/Downloads/BankStatements', {
@@ -152,14 +152,14 @@ export class AccountIntegrationService {
     // TODO: Implement directory watcher
     // Priority: High - Phase 5 objective
     // Suggested library: chokidar for cross-platform file watching
-    // 
+    //
     // Implementation plan:
     // 1. Use chokidar to watch directory
     // 2. On file add event, check if it's a financial file (OFX/QFX/CSV)
     // 3. If auto-import enabled, call importFile()
     // 4. If archive enabled, move file to archive folder
     // 5. Track watched directories in memory or database
-    // 
+    //
     // Example:
     // const watcher = chokidar.watch(directory, {
     //   ignored: /(^|[\/\\])\../,
@@ -179,7 +179,7 @@ export class AccountIntegrationService {
 
   /**
    * Stop watching a directory
-   * 
+   *
    * @param directory - Directory to stop watching
    */
   async unwatchDirectory(directory: string): Promise<void> {
@@ -189,7 +189,7 @@ export class AccountIntegrationService {
 
   /**
    * Get import history for a source
-   * 
+   *
    * @param sourceConfigId - Source configuration ID
    * @param options - Query options
    * @returns Array of import history records
@@ -209,7 +209,7 @@ export class AccountIntegrationService {
 
   /**
    * Check if user has consented to third-party data sharing (for Plaid)
-   * 
+   *
    * @param sourceConfigId - Source configuration ID
    * @returns Whether consent was given
    */
@@ -225,11 +225,11 @@ export class AccountIntegrationService {
 
   /**
    * Request user consent for third-party data sharing
-   * 
+   *
    * @param sourceConfigId - Source configuration ID
    * @param privacyLevel - Privacy level of the source
    * @returns Whether user consented
-   * 
+   *
    * @example
    * ```typescript
    * const consented = await service.requestPrivacyConsent('plaid-config-1', 'third-party');

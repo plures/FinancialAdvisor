@@ -102,7 +102,7 @@ Generate a detailed plan with:
 Provide output in JSON format.`;
 
     const response = await this.aiProvider.query(prompt, context);
-    
+
     // Parse AI response and create structured plan
     return this.parsePlanFromAI(response.content, goals, context);
   }
@@ -165,7 +165,7 @@ Provide detailed analysis.`;
       results.push({
         scenario: scenario.name,
         analysis: response.content,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     }
 
@@ -175,10 +175,7 @@ Provide detailed analysis.`;
   /**
    * Auto-generate budget recommendations based on goals
    */
-  async generateBudgetRecommendations(
-    context: FinancialContext,
-    goals: Goal[]
-  ): Promise<Budget[]> {
+  async generateBudgetRecommendations(context: FinancialContext, goals: Goal[]): Promise<Budget[]> {
     const prompt = `Generate optimal budget recommendations to achieve these financial goals:
 
 Goals:
@@ -242,11 +239,15 @@ Provide 5-10 innovative, actionable strategies ranked by potential impact.`;
   ): Promise<void> {
     const prompt = `Learn from these user categorization decisions to improve future automatic categorization:
 
-${manualCategorizations.map((m, i) => `
+${manualCategorizations
+  .map(
+    (m, i) => `
 ${i + 1}. Transaction: "${m.description}"
    User Category: ${m.category}
    ${m.reasoning ? `Reasoning: ${m.reasoning}` : ''}
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 Extract patterns and rules that can improve future categorization accuracy.`;
 
@@ -261,7 +262,9 @@ Extract patterns and rules that can improve future categorization accuracy.`;
 
     if (context.accounts?.length) {
       const totalBalance = context.accounts.reduce((sum, a) => sum + a.balance, 0);
-      parts.push(`Accounts: ${context.accounts.length} accounts, Total Balance: $${totalBalance.toFixed(2)}`);
+      parts.push(
+        `Accounts: ${context.accounts.length} accounts, Total Balance: $${totalBalance.toFixed(2)}`
+      );
     }
 
     if (context.transactions?.length) {
@@ -287,7 +290,11 @@ Extract patterns and rules that can improve future categorization accuracy.`;
     return parts.join('\n');
   }
 
-  private parsePlanFromAI(content: string, goals: Goal[], context: FinancialContext): FinancialPlan {
+  private parsePlanFromAI(
+    content: string,
+    goals: Goal[],
+    context: FinancialContext
+  ): FinancialPlan {
     // Attempt to parse JSON response from AI, with fallback to structured data extraction
     try {
       // Try parsing as JSON first
@@ -302,11 +309,11 @@ Extract patterns and rules that can improve future categorization accuracy.`;
           riskAssessment: parsed.riskAssessment || {
             overallRisk: 'medium',
             factors: [],
-            mitigationStrategies: []
+            mitigationStrategies: [],
           },
           progressMetrics: parsed.metrics || [],
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         };
       }
     } catch {
@@ -323,11 +330,11 @@ Extract patterns and rules that can improve future categorization accuracy.`;
       riskAssessment: {
         overallRisk: 'medium',
         factors: [],
-        mitigationStrategies: this.extractMitigationStrategies(content)
+        mitigationStrategies: this.extractMitigationStrategies(content),
       },
       progressMetrics: [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     return plan;
@@ -350,17 +357,21 @@ Extract patterns and rules that can improve future categorization accuracy.`;
     const lines = content.split('\n');
     const insights: string[] = [];
     const warnings: string[] = [];
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed.length > 15) {
-        if (trimmed.toLowerCase().includes('warning') || 
-            trimmed.toLowerCase().includes('concern') ||
-            trimmed.toLowerCase().includes('risk')) {
+        if (
+          trimmed.toLowerCase().includes('warning') ||
+          trimmed.toLowerCase().includes('concern') ||
+          trimmed.toLowerCase().includes('risk')
+        ) {
           warnings.push(trimmed);
-        } else if (trimmed.toLowerCase().includes('insight') ||
-                   trimmed.toLowerCase().includes('strength') ||
-                   trimmed.toLowerCase().includes('opportunity')) {
+        } else if (
+          trimmed.toLowerCase().includes('insight') ||
+          trimmed.toLowerCase().includes('strength') ||
+          trimmed.toLowerCase().includes('opportunity')
+        ) {
           insights.push(trimmed);
         }
       }
@@ -370,24 +381,27 @@ Extract patterns and rules that can improve future categorization accuracy.`;
       healthScore,
       insights,
       recommendations: this.extractStrategiesFromText(content),
-      warnings
+      warnings,
     };
   }
 
   private parseBudgetRecommendations(content: string): Budget[] {
     const budgets: Budget[] = [];
     const lines = content.split('\n');
-    
+
     // Look for budget-related lines with amounts
     const budgetPattern = /(\$|USD|€)?(\d+(?:,\d{3})*(?:\.\d{2})?)/;
-    
+
     for (const line of lines) {
       const match = line.match(budgetPattern);
-      if (match && (line.toLowerCase().includes('budget') || 
-                    line.toLowerCase().includes('allocate') ||
-                    line.toLowerCase().includes('monthly'))) {
+      if (
+        match &&
+        (line.toLowerCase().includes('budget') ||
+          line.toLowerCase().includes('allocate') ||
+          line.toLowerCase().includes('monthly'))
+      ) {
         const amount = parseFloat(match[2].replace(/,/g, ''));
-        
+
         // Extract category from line context
         let category = 'Other';
         if (line.toLowerCase().includes('food') || line.toLowerCase().includes('groceries')) {
@@ -399,7 +413,7 @@ Extract patterns and rules that can improve future categorization accuracy.`;
         } else if (line.toLowerCase().includes('saving')) {
           category = 'Savings';
         }
-        
+
         budgets.push({
           id: `budget_${Date.now()}_${budgets.length}`,
           name: `${category} Budget`,
@@ -408,11 +422,11 @@ Extract patterns and rules that can improve future categorization accuracy.`;
           period: BudgetPeriod.MONTHLY,
           startDate: new Date(),
           spent: 0,
-          remaining: amount
+          remaining: amount,
         });
       }
     }
-    
+
     return budgets;
   }
 
@@ -425,27 +439,28 @@ Extract patterns and rules that can improve future categorization accuracy.`;
    */
   private extractStrategiesFromText(content: string): Strategy[] {
     const strategies: Strategy[] = [];
-    
+
     // Look for numbered lists or bullet points indicating strategies
     const lines = content.split('\n');
     const strategyPattern = /^\d+\.|^-|^\*/;
-    
+
     for (const line of lines) {
       if (strategyPattern.test(line.trim())) {
         const text = line.replace(strategyPattern, '').trim();
-        if (text.length > 10) { // Ignore very short lines
+        if (text.length > 10) {
+          // Ignore very short lines
           strategies.push({
             name: text.substring(0, 100), // First 100 chars as name
             description: text,
             priority: 'medium',
             estimatedImpact: 10, // Default 10% impact
             timeToImplement: 30, // Default 30 days
-            category: 'savings' // Default category
+            category: 'savings', // Default category
           });
         }
       }
     }
-    
+
     return strategies;
   }
 
@@ -455,19 +470,21 @@ Extract patterns and rules that can improve future categorization accuracy.`;
   private extractMitigationStrategies(content: string): string[] {
     const strategies: string[] = [];
     const lines = content.split('\n');
-    
+
     // Look for risk-related content
     for (const line of lines) {
-      if (line.toLowerCase().includes('risk') || 
-          line.toLowerCase().includes('mitigation') ||
-          line.toLowerCase().includes('protect')) {
+      if (
+        line.toLowerCase().includes('risk') ||
+        line.toLowerCase().includes('mitigation') ||
+        line.toLowerCase().includes('protect')
+      ) {
         const cleaned = line.trim();
         if (cleaned.length > 10) {
           strategies.push(cleaned);
         }
       }
     }
-    
+
     return strategies;
   }
 }

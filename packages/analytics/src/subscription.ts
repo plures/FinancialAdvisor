@@ -88,21 +88,16 @@ export interface SubscriptionDashboardResult {
 export function computeSubscriptionDashboard(
   transactions: readonly Transaction[],
   cancelledLabels: ReadonlySet<string> = new Set<string>(),
-  referenceDate: Date = new Date(),
+  referenceDate: Date = new Date()
 ): SubscriptionDashboardResult {
   const recurring = transactions.filter(
-    (t) =>
-      t.isRecurring === true &&
-      (t.type === TransactionType.EXPENSE || t.amount.cents < 0),
+    t => t.isRecurring === true && (t.type === TransactionType.EXPENSE || t.amount.cents < 0)
   );
 
   const currency: Currency = recurring[0]?.amount.currency ?? 'USD';
 
   // Group by normalised label only (not amount bucket) so we can detect price changes.
-  const groups = new Map<
-    string,
-    { label: string; category: string; txns: Transaction[] }
-  >();
+  const groups = new Map<string, { label: string; category: string; txns: Transaction[] }>();
 
   for (const t of recurring) {
     const label = _normaliseLabel(t);
@@ -129,8 +124,7 @@ export function computeSubscriptionDashboard(
       status = 'cancelled';
     } else {
       const daysSinceLast =
-        (referenceDate.getTime() - lastTransactionDate.getTime()) /
-        (1000 * 60 * 60 * 24);
+        (referenceDate.getTime() - lastTransactionDate.getTime()) / (1000 * 60 * 60 * 24);
       status = daysSinceLast <= UNUSED_THRESHOLD_DAYS ? 'active' : 'unused';
     }
 
@@ -145,8 +139,7 @@ export function computeSubscriptionDashboard(
     if (sorted.length >= 2) {
       const recentCents = Math.abs(lastTxn.amount.cents);
       const historicalCents = Math.round(
-        sorted.slice(0, -1).reduce((s, t) => s + Math.abs(t.amount.cents), 0) /
-          (sorted.length - 1),
+        sorted.slice(0, -1).reduce((s, t) => s + Math.abs(t.amount.cents), 0) / (sorted.length - 1)
       );
       if (historicalCents > 0) {
         const changePercent = (recentCents - historicalCents) / historicalCents;
@@ -172,7 +165,7 @@ export function computeSubscriptionDashboard(
       status,
       lastTransactionDate,
       priceAlert,
-      sourceTransactionIds: txns.map((t) => t.id),
+      sourceTransactionIds: txns.map(t => t.id),
     });
   }
 
@@ -183,9 +176,9 @@ export function computeSubscriptionDashboard(
     items,
     totalMonthlyCost,
     totalAnnualCost,
-    activeCount: items.filter((i) => i.status === 'active').length,
-    cancelledCount: items.filter((i) => i.status === 'cancelled').length,
-    unusedCount: items.filter((i) => i.status === 'unused').length,
+    activeCount: items.filter(i => i.status === 'active').length,
+    cancelledCount: items.filter(i => i.status === 'cancelled').length,
+    unusedCount: items.filter(i => i.status === 'unused').length,
   };
 }
 

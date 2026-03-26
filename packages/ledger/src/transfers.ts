@@ -38,15 +38,13 @@ export function createTransfer(transfer: Transfer): JournalEntry {
     );
   }
   if (transfer.amountCents < 0) {
-    throw new Error(
-      `Transfer.amountCents must be non-negative, received: ${transfer.amountCents}`
-    );
+    throw new Error(`Transfer.amountCents must be non-negative, received: ${transfer.amountCents}`);
   }
 
   return createJournalEntry(
     transfer.id,
     transfer.date,
-    transfer.toAccountId,   // debit  — receiving account increases
+    transfer.toAccountId, // debit  — receiving account increases
     transfer.fromAccountId, // credit — sending account decreases
     transfer.amountCents,
     transfer.currency,
@@ -88,18 +86,28 @@ export function detectTransfers(
 
   for (let i = 0; i < entries.length; i++) {
     const a = entries[i];
-    if (!a || usedIds.has(a.id)) continue;
+    if (!a || usedIds.has(a.id)) {
+      continue;
+    }
 
     for (let j = i + 1; j < entries.length; j++) {
       const b = entries[j];
-      if (!b || usedIds.has(b.id)) continue;
-      if (a.currency !== b.currency) continue;
+      if (!b || usedIds.has(b.id)) {
+        continue;
+      }
+      if (a.currency !== b.currency) {
+        continue;
+      }
 
       const dateDiff = Math.abs(a.date.getTime() - b.date.getTime());
-      if (dateDiff > dateToleranceMs) continue;
+      if (dateDiff > dateToleranceMs) {
+        continue;
+      }
 
       const amountDiff = Math.abs(a.amountCents - b.amountCents);
-      if (amountDiff > amountTolerance) continue;
+      if (amountDiff > amountTolerance) {
+        continue;
+      }
 
       // Require all four account references to be distinct
       const accounts = new Set([
@@ -108,7 +116,9 @@ export function detectTransfers(
         b.debitAccountId,
         b.creditAccountId,
       ]);
-      if (accounts.size < 4) continue;
+      if (accounts.size < 4) {
+        continue;
+      }
 
       usedIds.add(a.id);
       usedIds.add(b.id);

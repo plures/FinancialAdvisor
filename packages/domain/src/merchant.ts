@@ -25,8 +25,14 @@ export function createMerchantEntity(
   aliases: readonly string[] = [],
   metadata: Readonly<Record<string, string>> = {}
 ): MerchantEntity {
-  if (!id.trim()) throw new Error('MerchantEntity.id must not be empty');
-  if (!name.trim()) throw new Error('MerchantEntity.name must not be empty');
-  if (!category.trim()) throw new Error('MerchantEntity.category must not be empty');
+  if (!id.trim()) {
+    throw new Error('MerchantEntity.id must not be empty');
+  }
+  if (!name.trim()) {
+    throw new Error('MerchantEntity.name must not be empty');
+  }
+  if (!category.trim()) {
+    throw new Error('MerchantEntity.category must not be empty');
+  }
   return Object.freeze({ id, name, category, aliases, metadata });
 }

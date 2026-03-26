@@ -68,7 +68,7 @@ export class ProductionMonitor {
       database: await this.checkDatabase(dbHealthFn),
       aiProvider: await this.checkAIProvider(aiProviderHealthFn),
       memory: this.checkMemory(),
-      disk: this.checkDisk()
+      disk: this.checkDisk(),
     };
 
     const allHealthy = Object.values(checks).every(c => c.status === 'ok');
@@ -78,7 +78,7 @@ export class ProductionMonitor {
       status: anyError ? 'unhealthy' : allHealthy ? 'healthy' : 'degraded',
       checks,
       timestamp: new Date(),
-      uptime: Date.now() - this.startTime.getTime()
+      uptime: Date.now() - this.startTime.getTime(),
     };
   }
 
@@ -91,7 +91,7 @@ export class ProductionMonitor {
       value,
       unit,
       timestamp: new Date(),
-      tags
+      tags,
     });
 
     // Limit metrics array size
@@ -106,7 +106,7 @@ export class ProductionMonitor {
   recordRequest(responseTimeMs: number, isError: boolean = false): void {
     this.requestCount++;
     this.responseTimes.push(responseTimeMs);
-    
+
     if (isError) {
       this.errorCount++;
     }
@@ -132,16 +132,13 @@ export class ProductionMonitor {
     const p95Index = Math.floor(sortedTimes.length * 0.95);
     const p99Index = Math.floor(sortedTimes.length * 0.99);
 
-    const avgResponseTime = sortedTimes.length > 0
-      ? sortedTimes.reduce((sum, t) => sum + t, 0) / sortedTimes.length
-      : 0;
+    const avgResponseTime =
+      sortedTimes.length > 0 ? sortedTimes.reduce((sum, t) => sum + t, 0) / sortedTimes.length : 0;
 
     // Calculate cache hit rate from metrics
     const cacheHits = this.metrics.filter(m => m.name === 'cache.hit').length;
     const cacheMisses = this.metrics.filter(m => m.name === 'cache.miss').length;
-    const cacheHitRate = cacheHits + cacheMisses > 0
-      ? cacheHits / (cacheHits + cacheMisses)
-      : 0;
+    const cacheHitRate = cacheHits + cacheMisses > 0 ? cacheHits / (cacheHits + cacheMisses) : 0;
 
     return {
       requestCount: this.requestCount,
@@ -149,7 +146,7 @@ export class ProductionMonitor {
       averageResponseTime: Math.round(avgResponseTime),
       p95ResponseTime: sortedTimes[p95Index] || 0,
       p99ResponseTime: sortedTimes[p99Index] || 0,
-      cacheHitRate: Math.round(cacheHitRate * 100) / 100
+      cacheHitRate: Math.round(cacheHitRate * 100) / 100,
     };
   }
 
@@ -160,9 +157,7 @@ export class ProductionMonitor {
     const cutoff = new Date();
     cutoff.setMinutes(cutoff.getMinutes() - sinceMinutes);
 
-    return this.metrics.filter(m => 
-      m.name === name && m.timestamp >= cutoff
-    );
+    return this.metrics.filter(m => m.name === name && m.timestamp >= cutoff);
   }
 
   /**
@@ -222,7 +217,7 @@ export class ProductionMonitor {
     if (!healthFn) {
       return {
         status: 'warning',
-        message: 'No database health check configured'
+        message: 'No database health check configured',
       };
     }
 
@@ -234,13 +229,13 @@ export class ProductionMonitor {
       return {
         status: isHealthy ? 'ok' : 'error',
         message: isHealthy ? 'Database is responding' : 'Database is not responding',
-        responseTime
+        responseTime,
       };
     } catch (error) {
       return {
         status: 'error',
         message: `Database error: ${error instanceof Error ? error.message : 'Unknown'}`,
-        responseTime: Date.now() - startTime
+        responseTime: Date.now() - startTime,
       };
     }
   }
@@ -249,7 +244,7 @@ export class ProductionMonitor {
     if (!healthFn) {
       return {
         status: 'warning',
-        message: 'No AI provider health check configured'
+        message: 'No AI provider health check configured',
       };
     }
 
@@ -261,13 +256,13 @@ export class ProductionMonitor {
       return {
         status: isHealthy ? 'ok' : 'error',
         message: isHealthy ? 'AI provider is responding' : 'AI provider is not responding',
-        responseTime
+        responseTime,
       };
     } catch (error) {
       return {
         status: 'error',
         message: `AI provider error: ${error instanceof Error ? error.message : 'Unknown'}`,
-        responseTime: Date.now() - startTime
+        responseTime: Date.now() - startTime,
       };
     }
   }
@@ -276,7 +271,7 @@ export class ProductionMonitor {
     if (typeof process === 'undefined') {
       return {
         status: 'warning',
-        message: 'Memory check not available in this environment'
+        message: 'Memory check not available in this environment',
       };
     }
 
@@ -300,8 +295,8 @@ export class ProductionMonitor {
       details: {
         heapUsedMB,
         heapTotalMB,
-        usagePercent: Math.round(usagePercent)
-      }
+        usagePercent: Math.round(usagePercent),
+      },
     };
   }
 
@@ -310,7 +305,7 @@ export class ProductionMonitor {
     // For now, return a basic status
     return {
       status: 'ok',
-      message: 'Disk space monitoring not implemented'
+      message: 'Disk space monitoring not implemented',
     };
   }
 }
@@ -340,7 +335,7 @@ export class ErrorLogger {
       message: error.message,
       stack: error.stack,
       timestamp: new Date(),
-      context
+      context,
     });
 
     // Limit error log size
@@ -353,7 +348,7 @@ export class ErrorLogger {
       console.error('[ERROR]', {
         message: error.message,
         stack: error.stack,
-        context
+        context,
       });
     }
   }

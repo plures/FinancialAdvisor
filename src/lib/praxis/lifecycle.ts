@@ -32,25 +32,25 @@ export function initializeAppPraxis(callbacks?: DataEventCallbacks): PraxisEngin
     onImportCompleted: payload => {
       console.info(
         `[praxis] import.completed — session ${payload.session.id} ` +
-        `(${payload.transactions.length} transactions)`
+          `(${payload.transactions.length} transactions)`
       );
     },
     onTransactionAdded: payload => {
       console.info(
         `[praxis] transaction.added — ${payload.transactionId} ` +
-        `(category: ${payload.category ?? 'none'})`
+          `(category: ${payload.category ?? 'none'})`
       );
     },
     onTransactionUpdated: payload => {
       console.info(
         `[praxis] transaction.updated — ${payload.transactionId} ` +
-        `category: ${payload.previousCategory ?? 'none'} → ${payload.newCategory ?? 'none'}`
+          `category: ${payload.previousCategory ?? 'none'} → ${payload.newCategory ?? 'none'}`
       );
     },
     onAccountUpdated: payload => {
       console.info(
         `[praxis] account.updated — ${payload.accountId} ` +
-        `(${payload.affectedEntries.length} affected entries)`
+          `(${payload.affectedEntries.length} affected entries)`
       );
     },
     onBudgetUpdated: payload => {

@@ -31,9 +31,7 @@ export interface ReconciliationItem {
 }
 
 /** Indicates whether an item is absent from the internal ledger or from the external source. */
-export type ReconciliationMismatchType =
-  | 'missing_in_ledger'
-  | 'missing_in_external';
+export type ReconciliationMismatchType = 'missing_in_ledger' | 'missing_in_external';
 
 /** A single discrepancy between an external bank item and the internal journal. */
 export interface ReconciliationMismatch {
@@ -81,14 +79,22 @@ export function reconcile(
   const matchedExternalIds = new Set<string>();
 
   for (const item of externalItems) {
-    if (options.currency && item.currency !== options.currency) continue;
+    if (options.currency && item.currency !== options.currency) {
+      continue;
+    }
 
     const absAmount = Math.abs(item.amountCents);
 
     const match = accountEntries.find(entry => {
-      if (matchedEntryIds.has(entry.id)) return false;
-      if (entry.currency !== item.currency) return false;
-      if (entry.amountCents !== absAmount) return false;
+      if (matchedEntryIds.has(entry.id)) {
+        return false;
+      }
+      if (entry.currency !== item.currency) {
+        return false;
+      }
+      if (entry.amountCents !== absAmount) {
+        return false;
+      }
 
       const dateDiff = Math.abs(entry.date.getTime() - item.date.getTime());
       return dateDiff <= dateToleranceMs;
@@ -114,7 +120,9 @@ export function reconcile(
   // When a currency filter is active, skip entries in other currencies (they
   // were not part of this reconciliation scope).
   for (const entry of accountEntries) {
-    if (options.currency && entry.currency !== options.currency) continue;
+    if (options.currency && entry.currency !== options.currency) {
+      continue;
+    }
     if (!matchedEntryIds.has(entry.id)) {
       mismatches.push({
         type: 'missing_in_external',

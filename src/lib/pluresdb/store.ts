@@ -54,7 +54,7 @@ export class FinancialDataStore {
   async saveAccount(account: Account) {
     await this.initialize();
     const accounts = this.getAccounts();
-    const index = accounts.findIndex((a) => a.id === account.id);
+    const index = accounts.findIndex(a => a.id === account.id);
 
     if (index >= 0) {
       accounts[index] = account;
@@ -87,12 +87,12 @@ export class FinancialDataStore {
 
   async getAccount(id: string) {
     const accounts = this.getAccounts();
-    return accounts.find((a) => a.id === id);
+    return accounts.find(a => a.id === id);
   }
 
   async deleteAccount(id: string) {
     const accounts = this.getAccounts();
-    const filtered = accounts.filter((a) => a.id !== id);
+    const filtered = accounts.filter(a => a.id !== id);
 
     try {
       this.storage?.setItem('fa_accounts', JSON.stringify(filtered));
@@ -108,7 +108,7 @@ export class FinancialDataStore {
   async saveTransaction(transaction: Transaction) {
     await this.initialize();
     const transactions = this.getTransactions();
-    const index = transactions.findIndex((t) => t.id === transaction.id);
+    const index = transactions.findIndex(t => t.id === transaction.id);
 
     if (index >= 0) {
       transactions[index] = transaction;
@@ -141,14 +141,14 @@ export class FinancialDataStore {
 
   async getTransactionsByAccount(accountId: string) {
     const transactions = this.getTransactions();
-    return transactions.filter((t) => t.accountId === accountId);
+    return transactions.filter(t => t.accountId === accountId);
   }
 
   // Budget operations
   async saveBudget(budget: Budget) {
     await this.initialize();
     const budgets = this.getBudgets();
-    const index = budgets.findIndex((b) => b.id === budget.id);
+    const index = budgets.findIndex(b => b.id === budget.id);
 
     if (index >= 0) {
       budgets[index] = budget;
@@ -181,7 +181,7 @@ export class FinancialDataStore {
 
   async deleteBudget(id: string) {
     const budgets = this.getBudgets();
-    const filtered = budgets.filter((b) => b.id !== id);
+    const filtered = budgets.filter(b => b.id !== id);
 
     try {
       this.storage?.setItem('fa_budgets', JSON.stringify(filtered));
@@ -197,7 +197,7 @@ export class FinancialDataStore {
   async saveGoal(goal: Goal) {
     await this.initialize();
     const goals = this.getGoals();
-    const index = goals.findIndex((g) => g.id === goal.id);
+    const index = goals.findIndex(g => g.id === goal.id);
 
     if (index >= 0) {
       goals[index] = goal;
@@ -230,7 +230,7 @@ export class FinancialDataStore {
 
   async deleteGoal(id: string) {
     const goals = this.getGoals();
-    const filtered = goals.filter((g) => g.id !== id);
+    const filtered = goals.filter(g => g.id !== id);
 
     try {
       this.storage?.setItem('fa_goals', JSON.stringify(filtered));
@@ -248,10 +248,7 @@ export class FinancialDataStore {
     console.log('Vector storage will be implemented with PluresDB backend integration');
   }
 
-  async searchSimilar(
-    _vector: number[],
-    _limit = 5
-  ): Promise<EmbeddingResult[]> {
+  async searchSimilar(_vector: number[], _limit = 5): Promise<EmbeddingResult[]> {
     // TODO: Implement with PluresDB vector search via Tauri backend
     console.log('Vector search will be implemented with PluresDB backend integration');
     return [];

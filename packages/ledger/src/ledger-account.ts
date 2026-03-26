@@ -12,12 +12,7 @@
  *   - Liability / Equity / Income → credit-normal (credits increase, debits decrease)
  */
 
-export type LedgerAccountType =
-  | 'asset'
-  | 'liability'
-  | 'income'
-  | 'expense'
-  | 'equity';
+export type LedgerAccountType = 'asset' | 'liability' | 'income' | 'expense' | 'equity';
 
 /**
  * A ledger account is an individual node in the chart of accounts.
@@ -46,9 +41,15 @@ export function createLedgerAccount(
     createdAt?: Date;
   } = {}
 ): LedgerAccount {
-  if (!id.trim()) throw new Error('LedgerAccount.id must not be empty');
-  if (!name.trim()) throw new Error('LedgerAccount.name must not be empty');
-  if (!currency.trim()) throw new Error('LedgerAccount.currency must not be empty');
+  if (!id.trim()) {
+    throw new Error('LedgerAccount.id must not be empty');
+  }
+  if (!name.trim()) {
+    throw new Error('LedgerAccount.name must not be empty');
+  }
+  if (!currency.trim()) {
+    throw new Error('LedgerAccount.currency must not be empty');
+  }
 
   return Object.freeze({
     id,

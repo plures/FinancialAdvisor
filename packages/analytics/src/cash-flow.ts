@@ -119,20 +119,19 @@ export interface CashFlowOptions {
  */
 export function computeCashFlow(
   transactions: readonly Transaction[],
-  options: CashFlowOptions,
+  options: CashFlowOptions
 ): CashFlowResult {
   const { period, accountId = '', periodUnit = 'month', startingBalance } = options;
 
   const filtered = transactions.filter(
-    (t) =>
+    t =>
       (accountId === '' || t.accountId === accountId) &&
       t.date >= period.start &&
       t.date <= period.end &&
-      t.type !== TransactionType.TRANSFER,
+      t.type !== TransactionType.TRANSFER
   );
 
-  const currency: Currency =
-    startingBalance?.currency ?? filtered[0]?.amount.currency ?? 'USD';
+  const currency: Currency = startingBalance?.currency ?? filtered[0]?.amount.currency ?? 'USD';
 
   // ── Group transactions into period buckets ────────────────────────────────
   const bucketMap = new Map<string, Transaction[]>();
@@ -192,10 +191,7 @@ export function computeCashFlow(
         }
         const cat = t.category ?? 'Uncategorized';
         byCat.set(cat, addMoney(byCat.get(cat) ?? createMoney(0, currency), amt));
-        byAcc.set(
-          t.accountId,
-          addMoney(byAcc.get(t.accountId) ?? createMoney(0, currency), amt),
-        );
+        byAcc.set(t.accountId, addMoney(byAcc.get(t.accountId) ?? createMoney(0, currency), amt));
       }
       // Zero-amount transactions are skipped — no economic effect.
     }
@@ -222,7 +218,7 @@ export function computeCashFlow(
       runningBalance,
       byCategory: byCat,
       byAccount: byAcc,
-      sourceTransactionIds: txns.map((t) => t.id),
+      sourceTransactionIds: txns.map(t => t.id),
     });
   }
 
@@ -311,20 +307,15 @@ export function projectCashFlow(options: CashFlowProjectionOptions): CashFlowPro
   } = options;
 
   if (projectionMonths <= 0) {
-    throw new Error(
-      `projectionMonths must be positive, received: ${projectionMonths}`,
-    );
+    throw new Error(`projectionMonths must be positive, received: ${projectionMonths}`);
   }
 
   const currency = currentBalance.currency;
 
-  const baseInflowCents = recurringInflows.reduce(
-    (sum, item) => sum + item.monthlyAmount.cents,
-    0,
-  );
+  const baseInflowCents = recurringInflows.reduce((sum, item) => sum + item.monthlyAmount.cents, 0);
   const baseOutflowCents = recurringOutflows.reduce(
     (sum, item) => sum + item.monthlyAmount.cents,
-    0,
+    0
   );
 
   const buckets: CashFlowProjectionBucket[] = [];
@@ -341,7 +332,7 @@ export function projectCashFlow(options: CashFlowProjectionOptions): CashFlowPro
 
     // Add irregular income items that fall within this calendar month.
     const irregularCents = irregularInflows
-      .filter((item) => {
+      .filter(item => {
         return (
           item.expectedDate.getFullYear() === projYear &&
           item.expectedDate.getMonth() + 1 === projMonth

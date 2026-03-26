@@ -56,7 +56,7 @@ export class CorrectionLearner {
       this.upsert(
         this.merchantCorrections,
         correction.merchantName.toLowerCase().trim(),
-        correction.correctedCategory,
+        correction.correctedCategory
       );
     }
 
@@ -75,10 +75,7 @@ export class CorrectionLearner {
    * Merchant matches (exact, normalised) carry higher confidence than
    * description-term matches.
    */
-  findCorrection(
-    merchantName?: string,
-    description?: string,
-  ): CorrectionMatch | null {
+  findCorrection(merchantName?: string, description?: string): CorrectionMatch | null {
     if (merchantName) {
       const key = merchantName.toLowerCase().trim();
       const entry = this.merchantCorrections.get(key);
@@ -159,11 +156,7 @@ export class CorrectionLearner {
 
   // ── Private helpers ─────────────────────────────────────────────────────────
 
-  private upsert(
-    map: Map<string, LearnedEntry>,
-    key: string,
-    category: string,
-  ): void {
+  private upsert(map: Map<string, LearnedEntry>, key: string, category: string): void {
     const existing = map.get(key);
     if (existing && existing.category === category) {
       map.set(key, { category, count: existing.count + 1 });

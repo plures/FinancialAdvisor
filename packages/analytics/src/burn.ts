@@ -40,14 +40,14 @@ export interface MonthlyBurnResult {
 export function computeMonthlyBurn(
   transactions: readonly Transaction[],
   accountId: string,
-  period: DateRange,
+  period: DateRange
 ): MonthlyBurnResult {
   const expenses = transactions.filter(
-    (t) =>
+    t =>
       (accountId === '' || t.accountId === accountId) &&
       t.date >= period.start &&
       t.date <= period.end &&
-      (t.type === TransactionType.EXPENSE || t.amount.cents < 0),
+      (t.type === TransactionType.EXPENSE || t.amount.cents < 0)
   );
 
   const currency: Currency = expenses[0]?.amount.currency ?? 'USD';
@@ -75,6 +75,6 @@ export function computeMonthlyBurn(
     recurring,
     discretionary,
     byCategory: byCategoryMut,
-    sourceTransactionIds: expenses.map((t) => t.id),
+    sourceTransactionIds: expenses.map(t => t.id),
   };
 }

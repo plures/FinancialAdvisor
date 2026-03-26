@@ -60,9 +60,7 @@ export function generateAllSnapshots(
   periodLabel: string,
   computedAt: Date = new Date()
 ): BalanceSnapshot[] {
-  return accounts.map(account =>
-    generateSnapshot(account, entries, periodLabel, computedAt)
-  );
+  return accounts.map(account => generateSnapshot(account, entries, periodLabel, computedAt));
 }
 
 /**
@@ -76,8 +74,12 @@ export function verifySnapshot(
   account: LedgerAccount,
   entries: readonly JournalEntry[]
 ): boolean {
-  if (snapshot.accountId !== account.id) return false;
-  if (snapshot.currency !== account.currency) return false;
+  if (snapshot.accountId !== account.id) {
+    return false;
+  }
+  if (snapshot.currency !== account.currency) {
+    return false;
+  }
 
   const asOf = periodLabelToEndDate(snapshot.periodLabel);
   const accountBalance = computeBalance(account, entries, asOf);
@@ -111,9 +113,15 @@ export function periodRange(startLabel: string, endLabel: string): string[] {
 type PeriodGranularity = 'month' | 'quarter' | 'year';
 
 function detectGranularity(label: string): PeriodGranularity {
-  if (/^\d{4}-\d{2}$/.test(label)) return 'month';
-  if (/^\d{4}-Q[1-4]$/.test(label)) return 'quarter';
-  if (/^\d{4}$/.test(label)) return 'year';
+  if (/^\d{4}-\d{2}$/.test(label)) {
+    return 'month';
+  }
+  if (/^\d{4}-Q[1-4]$/.test(label)) {
+    return 'quarter';
+  }
+  if (/^\d{4}$/.test(label)) {
+    return 'year';
+  }
   throw new Error(
     `Unrecognized period label format: "${label}". Expected "YYYY-MM", "YYYY-QN", or "YYYY".`
   );

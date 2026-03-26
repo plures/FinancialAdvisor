@@ -23,8 +23,10 @@ interface MCPResourceResult {
  * budgets, and goals) as a collapsible tree view in the Activity Bar.
  */
 export class FinancialAdvisorProvider implements vscode.TreeDataProvider<FinancialItem> {
-  private _onDidChangeTreeData: vscode.EventEmitter<FinancialItem | undefined | null | void> = new vscode.EventEmitter<FinancialItem | undefined | null | void>();
-  readonly onDidChangeTreeData: vscode.Event<FinancialItem | undefined | null | void> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<FinancialItem | undefined | null | void> =
+    new vscode.EventEmitter<FinancialItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<FinancialItem | undefined | null | void> =
+    this._onDidChangeTreeData.event;
 
   constructor(
     _context: vscode.ExtensionContext,
@@ -41,16 +43,22 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
 
   async getChildren(element?: FinancialItem): Promise<FinancialItem[]> {
     if (!this.mcpManager.isRunning()) {
-      return [new FinancialItem('MCP Server not running', vscode.TreeItemCollapsibleState.None, 'error')];
+      return [
+        new FinancialItem('MCP Server not running', vscode.TreeItemCollapsibleState.None, 'error'),
+      ];
     }
 
     if (!element) {
       // Root level
       return [
         new FinancialItem('Accounts', vscode.TreeItemCollapsibleState.Collapsed, 'accounts'),
-        new FinancialItem('Recent Transactions', vscode.TreeItemCollapsibleState.Collapsed, 'transactions'),
+        new FinancialItem(
+          'Recent Transactions',
+          vscode.TreeItemCollapsibleState.Collapsed,
+          'transactions'
+        ),
         new FinancialItem('Budgets', vscode.TreeItemCollapsibleState.Collapsed, 'budgets'),
-        new FinancialItem('Goals', vscode.TreeItemCollapsibleState.Collapsed, 'goals')
+        new FinancialItem('Goals', vscode.TreeItemCollapsibleState.Collapsed, 'goals'),
       ];
     }
 
@@ -74,9 +82,11 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
 
   private async getAccounts(): Promise<FinancialItem[]> {
     try {
-      const resource = await this.mcpManager.readResource('financial://accounts') as MCPResourceResult;
+      const resource = (await this.mcpManager.readResource(
+        'financial://accounts'
+      )) as MCPResourceResult;
       const accounts: Account[] = JSON.parse(resource.contents[0]?.text ?? '[]');
-      
+
       return accounts.map(account => {
         const item = new FinancialItem(
           `${account.name} (${account.currency} ${account.balance.toFixed(2)})`,
@@ -89,15 +99,19 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
         return item;
       });
     } catch (error) {
-      return [new FinancialItem('No accounts found', vscode.TreeItemCollapsibleState.None, 'empty')];
+      return [
+        new FinancialItem('No accounts found', vscode.TreeItemCollapsibleState.None, 'empty'),
+      ];
     }
   }
 
   private async getTransactions(): Promise<FinancialItem[]> {
     try {
-      const resource = await this.mcpManager.readResource('financial://transactions') as MCPResourceResult;
+      const resource = (await this.mcpManager.readResource(
+        'financial://transactions'
+      )) as MCPResourceResult;
       const transactions: Transaction[] = JSON.parse(resource.contents[0]?.text ?? '[]');
-      
+
       return transactions.slice(0, 10).map(transaction => {
         const amountDecimal = moneyToDecimal(transaction.amount);
         const item = new FinancialItem(
@@ -111,16 +125,22 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
         return item;
       });
     } catch (error) {
-      return [new FinancialItem('No transactions found', vscode.TreeItemCollapsibleState.None, 'empty')];
+      return [
+        new FinancialItem('No transactions found', vscode.TreeItemCollapsibleState.None, 'empty'),
+      ];
     }
   }
 
   private async getBudgets(): Promise<FinancialItem[]> {
-    return [new FinancialItem('No budgets configured', vscode.TreeItemCollapsibleState.None, 'empty')];
+    return [
+      new FinancialItem('No budgets configured', vscode.TreeItemCollapsibleState.None, 'empty'),
+    ];
   }
 
   private async getGoals(): Promise<FinancialItem[]> {
-    return [new FinancialItem('No goals configured', vscode.TreeItemCollapsibleState.None, 'empty')];
+    return [
+      new FinancialItem('No goals configured', vscode.TreeItemCollapsibleState.None, 'empty'),
+    ];
   }
 }
 

@@ -4,7 +4,12 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
-import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
+import {
+  AIProviderConfig,
+  AIProviderType,
+  AIQuery,
+  FinancialContext,
+} from '@financialadvisor/domain';
 
 /** A single model entry returned by the Ollama /api/tags endpoint. */
 interface OllamaModel {
@@ -18,13 +23,13 @@ export class OllamaProvider extends BaseAIProvider {
 
   constructor(config: AIProviderConfig) {
     super(config, 'Ollama');
-    
+
     this.client = axios.create({
       baseURL: config.baseUrl || 'http://localhost:11434',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      timeout: 60000 // Longer timeout for local processing
+      timeout: 60000, // Longer timeout for local processing
     });
   }
 
@@ -37,15 +42,16 @@ export class OllamaProvider extends BaseAIProvider {
       supportsStreaming: true,
       supportsFunction: false, // Most local models don't support function calling
       maxTokens: this.config.maxTokens || 2048,
-      supportedFormats: ['text']
+      supportedFormats: ['text'],
     };
   }
 
   async query(prompt: string, context?: FinancialContext): Promise<AIResponse> {
     try {
-      const systemPrompt = 'You are a professional financial advisor AI assistant. Provide helpful, accurate, and personalized financial advice based on the data provided. Always prioritize the user\'s financial well-being and suggest conservative, responsible financial strategies.';
-      
-      const fullPrompt = context 
+      const systemPrompt =
+        "You are a professional financial advisor AI assistant. Provide helpful, accurate, and personalized financial advice based on the data provided. Always prioritize the user's financial well-being and suggest conservative, responsible financial strategies.";
+
+      const fullPrompt = context
         ? `${systemPrompt}\n\nFinancial Context:\n${this.formatFinancialContext(context)}\n\nUser Question: ${prompt}`
         : `${systemPrompt}\n\nUser Question: ${prompt}`;
 
@@ -55,8 +61,8 @@ export class OllamaProvider extends BaseAIProvider {
         stream: false,
         options: {
           temperature: this.config.temperature || 0.7,
-          num_predict: this.config.maxTokens || 1000
-        }
+          num_predict: this.config.maxTokens || 1000,
+        },
       });
 
       return {
@@ -64,13 +70,16 @@ export class OllamaProvider extends BaseAIProvider {
         usage: {
           promptTokens: this.estimateTokens(fullPrompt),
           completionTokens: this.estimateTokens(response.data.response),
-          totalTokens: this.estimateTokens(fullPrompt) + this.estimateTokens(response.data.response)
+          totalTokens:
+            this.estimateTokens(fullPrompt) + this.estimateTokens(response.data.response),
         },
         model: this.config.model,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } catch (error) {
-      throw new Error(`Ollama API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Ollama API error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -99,22 +108,26 @@ Transaction: ${description}${merchant ? ` at ${merchant}` : ''}
 Category:`;
 
     const response = await this.query(prompt);
-    
+
     // Extract just the category name from the response
     const lines = response.content.trim().split('\n');
     for (const line of lines) {
       const trimmed = line.trim();
-      if (trimmed && !trimmed.toLowerCase().includes('transaction') && !trimmed.toLowerCase().includes('category')) {
+      if (
+        trimmed &&
+        !trimmed.toLowerCase().includes('transaction') &&
+        !trimmed.toLowerCase().includes('category')
+      ) {
         return trimmed;
       }
     }
-    
+
     return response.content.trim().split('\n')[0];
   }
 
   async generateReport(context: FinancialContext, reportType: string): Promise<string> {
     const prompt = `Generate a detailed financial ${reportType} report in Markdown format. Include key insights, trends, and recommendations based on the financial data provided. Structure the report with clear headings and bullet points.`;
-    
+
     const response = await this.query(prompt, context);
     return response.content;
   }
@@ -134,7 +147,7 @@ Category:`;
   async listModels(): Promise<string[]> {
     try {
       const response = await this.client.get('/api/tags');
-      return (response.data.models as OllamaModel[] | undefined)?.map((model) => model.name) ?? [];
+      return (response.data.models as OllamaModel[] | undefined)?.map(model => model.name) ?? [];
     } catch {
       return [];
     }

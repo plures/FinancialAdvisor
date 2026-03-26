@@ -1,6 +1,6 @@
 /**
  * Types for local-first account integration and synchronization
- * 
+ *
  * This module supports the local-first, privacy-by-design approach where
  * users own their data completely. Primary method is file-based import.
  */
@@ -41,7 +41,7 @@ export interface ImportSourceConfig {
   name: string; // User-friendly name
   enabled: boolean;
   privacyLevel: PrivacyLevel;
-  
+
   // File-based configuration (primary method)
   fileConfig?: {
     watchFolder?: string; // Auto-import from this folder
@@ -50,17 +50,17 @@ export interface ImportSourceConfig {
     archivePath?: string;
     supportedFormats?: Array<'ofx' | 'qfx' | 'csv'>;
   };
-  
+
   // CSV-specific configuration
   csvTemplate?: CSVTemplate;
-  
+
   // Self-hosted Open Bank Project configuration
   obpConfig?: {
     serverUrl: string; // User's self-hosted OBP server
     apiKey?: string; // Encrypted
     accountId?: string;
   };
-  
+
   // Optional Plaid (user must explicitly opt-in with privacy warning)
   plaidConfig?: {
     accessToken?: string; // Encrypted
@@ -68,7 +68,7 @@ export interface ImportSourceConfig {
     consentGiven?: Date; // When user explicitly consented
     privacyWarningShown?: boolean;
   };
-  
+
   lastImportAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -82,24 +82,24 @@ export interface ImportHistory {
   sourceConfigId: string;
   type: ImportSource;
   status: ImportStatus;
-  
+
   // File metadata
   fileName?: string;
   filePath?: string;
   fileHash?: string; // SHA-256 to prevent duplicate imports
   fileSize?: number;
-  
+
   // Import results
   importedAt: Date;
   transactionsImported: number;
   transactionsSkipped: number; // Duplicates
   transactionsFailed: number;
   errors: string[];
-  
+
   // Privacy tracking
   privacyLevel: PrivacyLevel;
   dataSharedWith?: string[]; // Empty for local, ['self-hosted OBP'] or ['Plaid'] if applicable
-  
+
   metadata?: Record<string, any>;
 }
 
@@ -160,20 +160,23 @@ export interface IFileImporter {
    * Get supported file extensions
    */
   getSupportedExtensions(): string[];
-  
+
   /**
    * Check if file can be imported
    */
   canImport(filePath: string): Promise<boolean>;
-  
+
   /**
    * Import transactions from file
    */
-  import(filePath: string, options?: {
-    accountId?: string;
-    csvTemplate?: CSVTemplate;
-  }): Promise<ImportResult>;
-  
+  import(
+    filePath: string,
+    options?: {
+      accountId?: string;
+      csvTemplate?: CSVTemplate;
+    }
+  ): Promise<ImportResult>;
+
   /**
    * Validate file format
    */
@@ -193,22 +196,22 @@ export enum AccountIntegrationErrorCode {
   FILE_CORRUPTED = 'file_corrupted',
   FILE_TOO_LARGE = 'file_too_large',
   FILE_ALREADY_IMPORTED = 'file_already_imported',
-  
+
   // CSV template errors
   TEMPLATE_NOT_FOUND = 'template_not_found',
   TEMPLATE_INVALID = 'template_invalid',
   COLUMN_NOT_FOUND = 'column_not_found',
-  
+
   // Import errors
   IMPORT_FAILED = 'import_failed',
   PARSE_ERROR = 'parse_error',
   DUPLICATE_TRANSACTION = 'duplicate_transaction',
   INVALID_DATA = 'invalid_data',
-  
+
   // Privacy errors
   PRIVACY_WARNING_NOT_ACKNOWLEDGED = 'privacy_warning_not_acknowledged',
   THIRD_PARTY_NOT_CONSENTED = 'third_party_not_consented',
-  
+
   // System errors
   STORAGE_ERROR = 'storage_error',
   INTERNAL_ERROR = 'internal_error',

@@ -1,6 +1,6 @@
 /**
  * OFX/QFX File Importer for Financial Advisor
- * 
+ *
  * Implements OFX (Open Financial Exchange) and QFX (Quicken Financial Exchange)
  * file import. OFX is an industry-standard format supported by most banks.
  */
@@ -53,7 +53,7 @@ export class OFXImporter implements IFileImporter {
       // Read first few lines to verify it's OFX
       const content = fs.readFileSync(filePath, 'utf8');
       const firstLines = content.substring(0, 500);
-      
+
       // OFX files should contain these tags
       return (
         firstLines.includes('OFX') ||
@@ -66,10 +66,7 @@ export class OFXImporter implements IFileImporter {
     }
   }
 
-  async import(
-    filePath: string,
-    options: OFXImportOptions = {}
-  ): Promise<ImportResult> {
+  async import(filePath: string, options: OFXImportOptions = {}): Promise<ImportResult> {
     const startTime = Date.now();
     const result: ImportResult = {
       success: false,
@@ -176,7 +173,7 @@ export class OFXImporter implements IFileImporter {
 
   /**
    * Parse OFX content into transactions
-   * 
+   *
    * NOTE: This is a simplified OFX parser. For production use, consider
    * using a robust OFX parsing library like 'ofx-js' or building a complete
    * SGML/XML parser.
@@ -214,7 +211,9 @@ export class OFXImporter implements IFileImporter {
 
       return transactions;
     } catch (error) {
-      throw new Error(`Failed to parse OFX file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to parse OFX file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -247,10 +246,7 @@ export class OFXImporter implements IFileImporter {
     const endMatch = content.match(endPattern);
 
     if (startMatch && endMatch && startMatch.index !== undefined && endMatch.index !== undefined) {
-      return content.substring(
-        startMatch.index + startMatch[0].length,
-        endMatch.index
-      );
+      return content.substring(startMatch.index + startMatch[0].length, endMatch.index);
     }
 
     return null;
@@ -273,7 +269,8 @@ export class OFXImporter implements IFileImporter {
       const typeMatch = content.match(/<TRNTYPE>(.*?)(?:<\/TRNTYPE>)?/i);
       if (typeMatch) {
         const trnType = typeMatch[1].trim().toUpperCase();
-        transaction.type = trnType === 'DEBIT' ? 'debit' : trnType === 'CREDIT' ? 'credit' : 'other';
+        transaction.type =
+          trnType === 'DEBIT' ? 'debit' : trnType === 'CREDIT' ? 'credit' : 'other';
       }
 
       // Extract date
@@ -322,19 +319,21 @@ export class OFXImporter implements IFileImporter {
    */
   private parseSGMLTransactions(content: string): OFXTransaction[] {
     const transactions: OFXTransaction[] = [];
-    
+
     // Split by STMTTRN markers
     const parts = content.split(/(?=<STMTTRN>)/i);
-    
+
     for (const part of parts) {
-      if (part.trim().length === 0) continue;
-      
+      if (part.trim().length === 0) {
+        continue;
+      }
+
       const transaction = this.parseTransaction(part);
       if (transaction) {
         transactions.push(transaction);
       }
     }
-    
+
     return transactions;
   }
 
@@ -345,11 +344,11 @@ export class OFXImporter implements IFileImporter {
     // OFX dates are typically YYYYMMDDHHMMSS[.XXX][GMT offset]
     // We only care about YYYYMMDD
     const dateStr = ofxDate.substring(0, 8);
-    
+
     const year = dateStr.substring(0, 4);
     const month = dateStr.substring(4, 6);
     const day = dateStr.substring(6, 8);
-    
+
     return `${year}-${month}-${day}`;
   }
 
@@ -361,7 +360,7 @@ export class OFXImporter implements IFileImporter {
       const hash = crypto.createHash('sha256');
       const stream = fs.createReadStream(filePath);
 
-      stream.on('data', (data) => hash.update(data));
+      stream.on('data', data => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
     });

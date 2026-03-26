@@ -55,8 +55,12 @@ export function computeBalance(
   let credits = 0;
 
   for (const entry of entries) {
-    if (entry.date > asOf) continue;
-    if (entry.currency !== account.currency) continue;
+    if (entry.date > asOf) {
+      continue;
+    }
+    if (entry.currency !== account.currency) {
+      continue;
+    }
 
     if (entry.debitAccountId === account.id) {
       debits += entry.amountCents;
@@ -68,7 +72,13 @@ export function computeBalance(
   const netDebitBalance = debits - credits;
   const balance = isDebitNormal(account.type) ? netDebitBalance : -netDebitBalance;
 
-  return Object.freeze({ accountId: account.id, currency: account.currency, netDebitBalance, balance, asOf });
+  return Object.freeze({
+    accountId: account.id,
+    currency: account.currency,
+    netDebitBalance,
+    balance,
+    asOf,
+  });
 }
 
 /**

@@ -27,24 +27,23 @@ export class BudgetCalculator {
     currentDate: Date = new Date()
   ): BudgetAnalysis {
     const budgetTransactions = this.filterTransactionsForBudget(budget, transactions);
-    const totalSpent = budgetTransactions.reduce((sum, t) => sum + Math.abs(moneyToDecimal(t.amount)), 0);
+    const totalSpent = budgetTransactions.reduce(
+      (sum, t) => sum + Math.abs(moneyToDecimal(t.amount)),
+      0
+    );
     const remaining = budget.amount - totalSpent;
     const percentageUsed =
-      budget.amount > 0
-        ? (totalSpent / budget.amount) * 100
-        : totalSpent > 0
-          ? 100
-          : 0;
-    
+      budget.amount > 0 ? (totalSpent / budget.amount) * 100 : totalSpent > 0 ? 100 : 0;
+
     const periodDays = this.getPeriodDays(budget.period);
     const daysPassed = this.getDaysPassed(budget.startDate, currentDate);
     const daysRemaining = Math.max(0, periodDays - daysPassed);
     const dailyBudget = daysRemaining > 0 ? remaining / daysRemaining : 0;
-    
+
     const averageDailySpend = daysPassed > 0 ? totalSpent / daysPassed : 0;
     const projectedTotal = averageDailySpend * periodDays;
     const projectedOverage = Math.max(0, projectedTotal - budget.amount);
-    
+
     const isOnTrack = percentageUsed <= (daysPassed / periodDays) * 100;
 
     return {
@@ -69,23 +68,28 @@ export class BudgetCalculator {
   /**
    * Get budgets that are at risk of going over
    */
-  static getAtRiskBudgets(budgetAnalyses: BudgetAnalysis[], threshold: number = 0.8): BudgetAnalysis[] {
+  static getAtRiskBudgets(
+    budgetAnalyses: BudgetAnalysis[],
+    threshold: number = 0.8
+  ): BudgetAnalysis[] {
     return budgetAnalyses.filter(
-      analysis => 
-        analysis.percentageUsed >= threshold * 100 && 
-        analysis.remaining > 0
+      analysis => analysis.percentageUsed >= threshold * 100 && analysis.remaining > 0
     );
   }
 
-  private static filterTransactionsForBudget(budget: Budget, transactions: Transaction[]): Transaction[] {
+  private static filterTransactionsForBudget(
+    budget: Budget,
+    transactions: Transaction[]
+  ): Transaction[] {
     const periodStart = budget.startDate;
     const periodEnd = budget.endDate || this.getPeriodEnd(budget.startDate, budget.period);
-    
-    return transactions.filter(transaction =>
-      transaction.category === budget.category &&
-      transaction.date >= periodStart &&
-      transaction.date <= periodEnd &&
-      transaction.amount.cents < 0 // Expenses only
+
+    return transactions.filter(
+      transaction =>
+        transaction.category === budget.category &&
+        transaction.date >= periodStart &&
+        transaction.date <= periodEnd &&
+        transaction.amount.cents < 0 // Expenses only
     );
   }
 

@@ -20,21 +20,21 @@ export class AIProviderFactory {
           throw new Error('OpenAI API key is required');
         }
         return new OpenAIProvider(config);
-      
+
       case AIProviderType.OLLAMA:
         return new OllamaProvider(config);
-      
+
       case AIProviderType.COPILOT:
         return new CopilotProvider(config);
-      
+
       case AIProviderType.ANTHROPIC:
         // TODO: Implement Anthropic provider
         throw new Error('Anthropic provider not yet implemented');
-      
+
       case AIProviderType.CUSTOM:
         // TODO: Implement custom provider support
         throw new Error('Custom provider not yet implemented');
-      
+
       default:
         throw new Error(`Unsupported AI provider type: ${type}`);
     }
@@ -64,7 +64,7 @@ export class AIProviderManager {
   registerProvider(name: string, type: AIProviderType, config: AIProviderConfig): void {
     const provider = AIProviderFactory.createProvider(type, config);
     this.providers.set(name, provider);
-    
+
     if (!this.defaultProvider) {
       this.defaultProvider = name;
     }
@@ -78,12 +78,12 @@ export class AIProviderManager {
     if (!providerName) {
       throw new Error('No AI provider available');
     }
-    
+
     const provider = this.providers.get(providerName);
     if (!provider) {
       throw new Error(`AI provider '${providerName}' not found`);
     }
-    
+
     return provider;
   }
 
@@ -110,8 +110,8 @@ export class AIProviderManager {
   removeProvider(name: string): void {
     this.providers.delete(name);
     if (this.defaultProvider === name) {
-      this.defaultProvider = this.providers.size > 0 ? 
-        this.providers.keys().next().value : undefined;
+      this.defaultProvider =
+        this.providers.size > 0 ? this.providers.keys().next().value : undefined;
     }
   }
 
@@ -120,7 +120,7 @@ export class AIProviderManager {
    */
   async testAllProviders(): Promise<Record<string, boolean>> {
     const results: Record<string, boolean> = {};
-    
+
     for (const [name, provider] of this.providers) {
       try {
         results[name] = await provider.testConnection();
@@ -128,7 +128,7 @@ export class AIProviderManager {
         results[name] = false;
       }
     }
-    
+
     return results;
   }
 }

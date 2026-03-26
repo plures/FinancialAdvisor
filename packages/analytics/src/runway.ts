@@ -5,10 +5,7 @@
  * Deterministic — no AI, no randomness.
  */
 
-import {
-  createMoney,
-  type Money,
-} from '@financialadvisor/domain';
+import { createMoney, type Money } from '@financialadvisor/domain';
 
 /**
  * Liquidity runway expressed in months — best-case, expected, and worst-case scenarios.
@@ -43,13 +40,10 @@ export interface RunwayResult {
  * @param liquidBalance    - Current liquid (spendable) balance.
  * @param monthlyBurnRate  - Average monthly outflow (must be non-negative cents).
  */
-export function computeRunway(
-  liquidBalance: Money,
-  monthlyBurnRate: Money,
-): RunwayResult {
+export function computeRunway(liquidBalance: Money, monthlyBurnRate: Money): RunwayResult {
   if (liquidBalance.currency !== monthlyBurnRate.currency) {
     throw new Error(
-      `Currency mismatch: liquidBalance is ${liquidBalance.currency} but monthlyBurnRate is ${monthlyBurnRate.currency}`,
+      `Currency mismatch: liquidBalance is ${liquidBalance.currency} but monthlyBurnRate is ${monthlyBurnRate.currency}`
     );
   }
 

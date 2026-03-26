@@ -2,7 +2,14 @@
  * Base AI provider interface and types
  */
 
-import { AIProvider, AIProviderConfig, AIProviderType, AIQuery, FinancialContext, moneyToDecimal } from '@financialadvisor/domain';
+import {
+  AIProvider,
+  AIProviderConfig,
+  AIProviderType,
+  AIQuery,
+  FinancialContext,
+  moneyToDecimal,
+} from '@financialadvisor/domain';
 
 /** Response object returned by any AI provider after processing a query. */
 export interface AIResponse {
@@ -60,7 +67,7 @@ export abstract class BaseAIProvider {
     return {
       name: this.name,
       type: this.providerType,
-      config: this.config
+      config: this.config,
     };
   }
 
@@ -69,11 +76,13 @@ export abstract class BaseAIProvider {
    */
   protected formatFinancialContext(context: FinancialContext): string {
     const summary = [];
-    
+
     if (context.accounts && context.accounts.length > 0) {
-      summary.push(`Accounts: ${context.accounts.length} accounts with total balance of $${context.accounts.reduce((sum, acc) => sum + acc.balance, 0).toFixed(2)}`);
+      summary.push(
+        `Accounts: ${context.accounts.length} accounts with total balance of $${context.accounts.reduce((sum, acc) => sum + acc.balance, 0).toFixed(2)}`
+      );
     }
-    
+
     if (context.transactions && context.transactions.length > 0) {
       const totalExpenses = context.transactions
         .filter(t => t.amount.cents < 0)
@@ -81,24 +90,28 @@ export abstract class BaseAIProvider {
       const totalIncome = context.transactions
         .filter(t => t.amount.cents > 0)
         .reduce((sum, t) => sum + moneyToDecimal(t.amount), 0);
-      
+
       summary.push(`Transactions: ${context.transactions.length} transactions`);
       summary.push(`Total Income: $${totalIncome.toFixed(2)}`);
       summary.push(`Total Expenses: $${totalExpenses.toFixed(2)}`);
     }
-    
+
     if (context.budgets && context.budgets.length > 0) {
       summary.push(`Budgets: ${context.budgets.length} active budgets`);
     }
-    
+
     if (context.goals && context.goals.length > 0) {
       summary.push(`Goals: ${context.goals.length} financial goals`);
     }
-    
+
     if (context.investments && context.investments.length > 0) {
-      const totalValue = context.investments.reduce((sum, inv) => 
-        sum + (inv.shares * inv.currentPrice), 0);
-      summary.push(`Investments: ${context.investments.length} investments worth $${totalValue.toFixed(2)}`);
+      const totalValue = context.investments.reduce(
+        (sum, inv) => sum + inv.shares * inv.currentPrice,
+        0
+      );
+      summary.push(
+        `Investments: ${context.investments.length} investments worth $${totalValue.toFixed(2)}`
+      );
     }
 
     return summary.join('\n');
@@ -109,7 +122,7 @@ export abstract class BaseAIProvider {
    */
   protected getFinancialPrompt(type: string, context: FinancialContext): string {
     const contextStr = this.formatFinancialContext(context);
-    
+
     const prompts = {
       analysis: `Analyze the following financial data and provide insights:
 ${contextStr}
@@ -154,7 +167,7 @@ Please include:
 1. Executive summary
 2. Detailed analysis
 3. Visual data insights
-4. Action items and recommendations`
+4. Action items and recommendations`,
     };
 
     return prompts[type as keyof typeof prompts] || prompts.analysis;

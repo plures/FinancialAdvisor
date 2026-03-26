@@ -60,25 +60,20 @@ export interface RecurringLoadResult {
  */
 export function computeRecurringLoad(
   transactions: readonly Transaction[],
-  periodMonths: number = 1,
+  periodMonths: number = 1
 ): RecurringLoadResult {
   if (periodMonths <= 0) {
     throw new Error(`periodMonths must be positive, received: ${periodMonths}`);
   }
 
   const recurring = transactions.filter(
-    (t) =>
-      t.isRecurring === true &&
-      (t.type === TransactionType.EXPENSE || t.amount.cents < 0),
+    t => t.isRecurring === true && (t.type === TransactionType.EXPENSE || t.amount.cents < 0)
   );
 
   const currency: Currency = recurring[0]?.amount.currency ?? 'USD';
 
   // Group by commitment key: normalised label + amount bucket (rounded to $5)
-  const groups = new Map<
-    string,
-    { label: string; category: string; txns: Transaction[] }
-  >();
+  const groups = new Map<string, { label: string; category: string; txns: Transaction[] }>();
 
   for (const t of recurring) {
     const label = _normaliseLabel(t);
@@ -100,10 +95,7 @@ export function computeRecurringLoad(
   for (const { label, category, txns } of groups.values()) {
     // Monthly amount = total observed / number of months in the sample period
     const totalCents = txns.reduce((s, t) => s + Math.abs(t.amount.cents), 0);
-    const monthlyAmount = createMoney(
-      Math.round(totalCents / periodMonths),
-      currency,
-    );
+    const monthlyAmount = createMoney(Math.round(totalCents / periodMonths), currency);
     const annualAmount = multiplyMoney(monthlyAmount, 12);
 
     items.push({
@@ -111,7 +103,7 @@ export function computeRecurringLoad(
       category,
       monthlyAmount,
       annualAmount,
-      sourceTransactionIds: txns.map((t) => t.id),
+      sourceTransactionIds: txns.map(t => t.id),
     });
 
     monthly = addMoney(monthly, monthlyAmount);

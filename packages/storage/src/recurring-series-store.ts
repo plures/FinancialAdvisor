@@ -19,15 +19,15 @@ export class RecurringSeriesStore {
   }
 
   findByMerchant(merchantId: string): RecurringSeriesRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.merchantId === merchantId);
+    return Array.from(this.records.values()).filter(r => r.merchantId === merchantId);
   }
 
   findByAccount(accountId: string): RecurringSeriesRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.accountId === accountId);
+    return Array.from(this.records.values()).filter(r => r.accountId === accountId);
   }
 
   findByStatus(status: RecurringSeriesStatus): RecurringSeriesRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.status === status);
+    return Array.from(this.records.values()).filter(r => r.status === status);
   }
 
   /**
@@ -36,7 +36,9 @@ export class RecurringSeriesStore {
    */
   update(id: string, patch: RecurringSeriesPatch): RecurringSeriesRecord | undefined {
     const existing = this.records.get(id);
-    if (!existing) return undefined;
+    if (!existing) {
+      return undefined;
+    }
     const updated = Object.freeze({ ...existing, ...patch });
     this.records.set(id, updated);
     return updated;

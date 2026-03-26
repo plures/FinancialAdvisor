@@ -46,7 +46,7 @@ const noLocalPrimitives = {
           node.name && typeof node.name === 'string'
             ? node.name
             : node.name && node.name.name;
-        if (!tagName) return;
+        if (!tagName) {return;}
         const component = PRIMITIVE_TAG_MAP[tagName];
         if (component) {
           context.report({
@@ -79,8 +79,8 @@ const preferDesignDojoImports = {
       ImportDeclaration(node) {
         const source = node.source.value;
         // Only flag local imports (relative paths), not the package itself
-        if (typeof source !== 'string' || source.startsWith('@plures/design-dojo')) return;
-        if (!source.startsWith('.')) return;
+        if (typeof source !== 'string' || source.startsWith('@plures/design-dojo')) {return;}
+        if (!source.startsWith('.')) {return;}
 
         for (const specifier of node.specifiers) {
           const name =

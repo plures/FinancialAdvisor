@@ -4,7 +4,12 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
-import { AIProviderConfig, AIProviderType, AIQuery, FinancialContext } from '@financialadvisor/domain';
+import {
+  AIProviderConfig,
+  AIProviderType,
+  AIQuery,
+  FinancialContext,
+} from '@financialadvisor/domain';
 
 /** AI provider implementation that sends queries to the OpenAI Chat Completions API. */
 export class OpenAIProvider extends BaseAIProvider {
@@ -12,13 +17,13 @@ export class OpenAIProvider extends BaseAIProvider {
 
   constructor(config: AIProviderConfig) {
     super(config, 'OpenAI');
-    
+
     this.client = axios.create({
       baseURL: config.baseUrl || 'https://api.openai.com/v1',
       headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
     });
   }
 
@@ -31,7 +36,7 @@ export class OpenAIProvider extends BaseAIProvider {
       supportsStreaming: true,
       supportsFunction: true,
       maxTokens: this.config.maxTokens || 4096,
-      supportedFormats: ['text', 'json']
+      supportedFormats: ['text', 'json'],
     };
   }
 
@@ -40,31 +45,34 @@ export class OpenAIProvider extends BaseAIProvider {
       const messages = [
         {
           role: 'system',
-          content: 'You are a professional financial advisor AI assistant. Provide helpful, accurate, and personalized financial advice based on the data provided. Always prioritize the user\'s financial well-being and suggest conservative, responsible financial strategies.'
+          content:
+            "You are a professional financial advisor AI assistant. Provide helpful, accurate, and personalized financial advice based on the data provided. Always prioritize the user's financial well-being and suggest conservative, responsible financial strategies.",
         },
         {
           role: 'user',
-          content: context ? `${this.formatFinancialContext(context)}\n\n${prompt}` : prompt
-        }
+          content: context ? `${this.formatFinancialContext(context)}\n\n${prompt}` : prompt,
+        },
       ];
 
       const response = await this.client.post('/chat/completions', {
         model: this.config.model,
         messages,
         max_tokens: this.config.maxTokens || 1000,
-        temperature: this.config.temperature || 0.7
+        temperature: this.config.temperature || 0.7,
       });
 
       const choice = response.data.choices[0];
-      
+
       return {
         content: choice.message.content,
         usage: response.data.usage,
         model: this.config.model,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } catch (error) {
-      throw new Error(`OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -98,7 +106,7 @@ Respond with only the category name.`;
 
   async generateReport(context: FinancialContext, reportType: string): Promise<string> {
     const prompt = `Generate a detailed financial ${reportType} report in Markdown format based on the provided financial data. Include charts and visualizations using Mermaid syntax where appropriate.`;
-    
+
     const response = await this.query(prompt, context);
     return response.content;
   }

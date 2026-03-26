@@ -7,7 +7,11 @@ import type { Currency, DateRange } from './types.js';
 /**
  * Format currency amount with proper locale and currency symbol
  */
-export function formatCurrency(amount: number, currency: Currency = 'USD', locale: string = 'en-US'): string {
+export function formatCurrency(
+  amount: number,
+  currency: Currency = 'USD',
+  locale: string = 'en-US'
+): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency,
@@ -116,7 +120,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
@@ -147,14 +151,17 @@ export function groupBy<T, K extends string | number | symbol>(
   array: T[],
   keyFn: (item: T) => K
 ): Record<K, T[]> {
-  return array.reduce((groups, item) => {
-    const key = keyFn(item);
-    if (!groups[key]) {
-      groups[key] = [];
-    }
-    groups[key].push(item);
-    return groups;
-  }, {} as Record<K, T[]>);
+  return array.reduce(
+    (groups, item) => {
+      const key = keyFn(item);
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(item);
+      return groups;
+    },
+    {} as Record<K, T[]>
+  );
 }
 
 /**

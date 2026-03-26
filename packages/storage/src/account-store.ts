@@ -14,11 +14,11 @@ export class AccountStore {
   }
 
   findByType(type: string): AccountRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.type === type);
+    return Array.from(this.records.values()).filter(r => r.type === type);
   }
 
   findByInstitution(institution: string): AccountRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.institution === institution);
+    return Array.from(this.records.values()).filter(r => r.institution === institution);
   }
 
   delete(id: string): boolean {

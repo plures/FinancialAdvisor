@@ -30,12 +30,14 @@ export class MerchantStore {
   }
 
   findByCategory(category: string): MerchantRecord[] {
-    return Array.from(this.records.values()).filter((r) => r.category === category);
+    return Array.from(this.records.values()).filter(r => r.category === category);
   }
 
   delete(id: string): boolean {
     const record = this.records.get(id);
-    if (!record) return false;
+    if (!record) {
+      return false;
+    }
     this.byName.delete(record.canonicalName);
     this.records.delete(id);
     return true;
@@ -76,14 +78,16 @@ export class MerchantAliasStore {
 
   findByMerchant(merchantId: string): MerchantAliasRecord[] {
     const ids = this.byMerchant.get(merchantId) ?? [];
-    return ids.map((id) => this.records.get(id)!).filter(Boolean);
+    return ids.map(id => this.records.get(id)!).filter(Boolean);
   }
 
   delete(id: string): boolean {
     const record = this.records.get(id);
-    if (!record) return false;
+    if (!record) {
+      return false;
+    }
     const ids = this.byMerchant.get(record.merchantId) ?? [];
-    const filtered = ids.filter((i) => i !== id);
+    const filtered = ids.filter(i => i !== id);
     if (filtered.length > 0) {
       this.byMerchant.set(record.merchantId, filtered);
     } else {
