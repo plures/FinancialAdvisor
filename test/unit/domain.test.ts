@@ -522,6 +522,294 @@ describe('CanonicalTransaction', () => {
 // AccountType enum
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Utils
+// ─────────────────────────────────────────────────────────────────────────────
+import {
+  formatCurrency,
+  formatPercentage,
+  parseDate,
+  generateId,
+  daysBetween,
+  getMonthRange,
+  getYearRange,
+  roundToDecimals,
+  calculateCompoundInterest,
+  isValidEmail,
+  sanitizeFilename,
+  deepClone,
+  debounce,
+  throttle,
+  groupBy,
+  movingAverage,
+} from '../../packages/domain/dist/utils.js';
+
+describe('formatCurrency', () => {
+  it('formats USD amounts with dollar sign', () => {
+    const result = formatCurrency(1234.56, 'USD', 'en-US');
+    assert.ok(result.includes('1,234.56'));
+    assert.ok(result.includes('$'));
+  });
+
+  it('defaults to USD and en-US locale', () => {
+    const result = formatCurrency(100);
+    assert.ok(result.includes('100'));
+  });
+
+  it('formats zero correctly', () => {
+    const result = formatCurrency(0);
+    assert.ok(result.includes('0'));
+  });
+});
+
+describe('formatPercentage', () => {
+  it('formats fraction as percentage string', () => {
+    assert.strictEqual(formatPercentage(0.1234), '12.34%');
+  });
+
+  it('respects custom decimal places', () => {
+    assert.strictEqual(formatPercentage(0.5, 0), '50%');
+  });
+
+  it('handles 100%', () => {
+    assert.strictEqual(formatPercentage(1, 2), '100.00%');
+  });
+});
+
+describe('parseDate', () => {
+  it('returns a Date when passed a string', () => {
+    const d = parseDate('2024-01-15');
+    assert.ok(d instanceof Date);
+    assert.strictEqual(d.getFullYear(), 2024);
+  });
+
+  it('returns the same Date when passed a Date', () => {
+    const original = new Date('2024-06-01');
+    const parsed = parseDate(original);
+    assert.strictEqual(parsed, original);
+  });
+});
+
+describe('generateId', () => {
+  it('returns a non-empty string', () => {
+    const id = generateId();
+    assert.ok(typeof id === 'string' && id.length > 0);
+  });
+
+  it('returns unique ids on successive calls', () => {
+    const ids = new Set(Array.from({ length: 10 }, () => generateId()));
+    assert.strictEqual(ids.size, 10);
+  });
+});
+
+describe('daysBetween', () => {
+  it('calculates days between two dates', () => {
+    const start = new Date('2024-01-01');
+    const end = new Date('2024-01-11');
+    assert.strictEqual(daysBetween(start, end), 10);
+  });
+
+  it('returns same value regardless of order', () => {
+    const a = new Date('2024-03-01');
+    const b = new Date('2024-03-15');
+    assert.strictEqual(daysBetween(a, b), daysBetween(b, a));
+  });
+
+  it('returns 0 for same date', () => {
+    const d = new Date('2024-05-10');
+    assert.strictEqual(daysBetween(d, d), 0);
+  });
+});
+
+describe('getMonthRange', () => {
+  it('returns the first and last day of the month', () => {
+    const { start, end } = getMonthRange(new Date('2024-02-15'));
+    assert.strictEqual(start.getDate(), 1);
+    assert.strictEqual(start.getMonth(), 1); // February = 1
+    assert.strictEqual(end.getMonth(), 1);
+    assert.strictEqual(end.getDate(), 29); // 2024 is a leap year
+  });
+
+  it('handles January correctly', () => {
+    const { start, end } = getMonthRange(new Date('2024-01-20'));
+    assert.strictEqual(start.getDate(), 1);
+    assert.strictEqual(end.getDate(), 31);
+  });
+});
+
+describe('getYearRange', () => {
+  it('returns Jan 1 and Dec 31 of the given year', () => {
+    const { start, end } = getYearRange(new Date('2024-06-15'));
+    assert.strictEqual(start.getMonth(), 0);
+    assert.strictEqual(start.getDate(), 1);
+    assert.strictEqual(end.getMonth(), 11);
+    assert.strictEqual(end.getDate(), 31);
+  });
+});
+
+describe('roundToDecimals', () => {
+  it('rounds to 2 decimal places by default', () => {
+    assert.strictEqual(roundToDecimals(1.235, 2), 1.24);
+  });
+
+  it('rounds to 0 decimal places', () => {
+    assert.strictEqual(roundToDecimals(3.7, 0), 4);
+  });
+
+  it('handles negative numbers', () => {
+    assert.strictEqual(roundToDecimals(-2.555, 2), -2.56);
+  });
+});
+
+describe('calculateCompoundInterest', () => {
+  it('returns principal for 0 years', () => {
+    const result = calculateCompoundInterest(1000, 0.05, 0);
+    assert.strictEqual(result, 1000);
+  });
+
+  it('grows with positive rate and time', () => {
+    const result = calculateCompoundInterest(1000, 0.05, 1);
+    assert.ok(result > 1000);
+  });
+
+  it('accepts custom compounding frequency', () => {
+    const monthly = calculateCompoundInterest(1000, 0.05, 1, 12);
+    const annual = calculateCompoundInterest(1000, 0.05, 1, 1);
+    assert.ok(monthly > annual, 'monthly compounding should yield more than annual');
+  });
+});
+
+describe('isValidEmail', () => {
+  it('accepts a standard email', () => {
+    assert.ok(isValidEmail('user@example.com'));
+  });
+
+  it('rejects missing @', () => {
+    assert.ok(!isValidEmail('userexample.com'));
+  });
+
+  it('rejects empty string', () => {
+    assert.ok(!isValidEmail(''));
+  });
+
+  it('rejects spaces in email', () => {
+    assert.ok(!isValidEmail('user @example.com'));
+  });
+});
+
+describe('sanitizeFilename', () => {
+  it('replaces spaces and special chars with underscores', () => {
+    const result = sanitizeFilename('My File Name!');
+    assert.ok(!result.includes(' '));
+    assert.ok(!result.includes('!'));
+  });
+
+  it('lowercases the result', () => {
+    const result = sanitizeFilename('ABC');
+    assert.strictEqual(result, 'abc');
+  });
+
+  it('keeps dots and dashes', () => {
+    const result = sanitizeFilename('file-name.txt');
+    assert.strictEqual(result, 'file-name.txt');
+  });
+});
+
+describe('deepClone', () => {
+  it('creates a new object with the same values', () => {
+    const original = { a: 1, b: { c: 2 } };
+    const clone = deepClone(original);
+    assert.deepStrictEqual(clone, original);
+    assert.notStrictEqual(clone, original);
+  });
+
+  it('deep-clones nested objects', () => {
+    const original = { nested: { value: 42 } };
+    const clone = deepClone(original);
+    clone.nested.value = 99;
+    assert.strictEqual(original.nested.value, 42);
+  });
+
+  it('clones arrays', () => {
+    const original = [1, 2, 3];
+    const clone = deepClone(original);
+    assert.deepStrictEqual(clone, original);
+    assert.notStrictEqual(clone, original);
+  });
+});
+
+describe('debounce', () => {
+  it('delays function execution', done => {
+    let callCount = 0;
+    const fn = debounce(() => { callCount++; }, 20);
+    fn();
+    fn();
+    fn();
+    assert.strictEqual(callCount, 0);
+    setTimeout(() => {
+      assert.strictEqual(callCount, 1);
+      done();
+    }, 50);
+  });
+});
+
+describe('throttle', () => {
+  it('calls the function immediately on first call', () => {
+    let callCount = 0;
+    const fn = throttle(() => { callCount++; }, 50);
+    fn();
+    assert.strictEqual(callCount, 1);
+  });
+
+  it('throttles subsequent calls within the delay window', () => {
+    let callCount = 0;
+    const fn = throttle(() => { callCount++; }, 100);
+    fn();
+    fn();
+    fn();
+    assert.strictEqual(callCount, 1);
+  });
+});
+
+describe('groupBy', () => {
+  it('groups items by a string key', () => {
+    const items = [
+      { category: 'a', value: 1 },
+      { category: 'b', value: 2 },
+      { category: 'a', value: 3 },
+    ];
+    const grouped = groupBy(items, item => item.category);
+    assert.strictEqual(grouped['a']!.length, 2);
+    assert.strictEqual(grouped['b']!.length, 1);
+  });
+
+  it('returns empty object for empty array', () => {
+    const grouped = groupBy([], (x: unknown) => String(x));
+    assert.deepStrictEqual(grouped, {});
+  });
+});
+
+describe('movingAverage', () => {
+  it('computes moving average correctly', () => {
+    const result = movingAverage([1, 2, 3, 4, 5], 3);
+    assert.strictEqual(result.length, 5);
+    assert.ok(Math.abs(result[2]! - 2) < 0.001);
+  });
+
+  it('returns flat array when window >= length', () => {
+    const result = movingAverage([2, 4, 6], 10);
+    const avg = (2 + 4 + 6) / 3;
+    for (const v of result) {
+      assert.ok(Math.abs(v - avg) < 0.001);
+    }
+  });
+
+  it('handles single element', () => {
+    const result = movingAverage([5], 1);
+    assert.strictEqual(result[0], 5);
+  });
+});
+
 describe('AccountType', () => {
   it('should include CREDIT as a canonical value', () => {
     assert.strictEqual(AccountType.CREDIT, 'credit');

@@ -22,6 +22,9 @@ import {
 import {
   ResolutionEngine,
 } from '../../packages/resolution/dist/resolution-engine.js';
+import {
+  TransactionAnalyzer,
+} from '../../packages/resolution/dist/categorization.js';
 import { TransactionType } from '../../packages/domain/dist/types.js';
 import { createMoney } from '../../packages/domain/dist/money.js';
 
@@ -572,6 +575,243 @@ describe('ResolutionEngine', () => {
       const tx = makeTxn({ amountCents: -2000, merchant: 'Starbucks' });
       const result = engine.resolve(tx);
       assert.strictEqual(result.explanation.category, result.category);
+    });
+  });
+});
+
+// ─── TransactionAnalyzer ─────────────────────────────────────────────────────
+
+function makeFullTxn(opts: {
+  id?: string;
+  amountCents: number;
+  description?: string;
+  merchant?: string;
+  category?: string;
+  date?: Date;
+}) {
+  const cents = opts.amountCents;
+  return {
+    id: opts.id ?? `txn-${Math.random()}`,
+    importSessionId: 'sess-1',
+    accountId: 'acc-1',
+    amount: createMoney(cents, 'USD'),
+    description: opts.description ?? opts.merchant ?? 'Transaction',
+    date: opts.date ?? new Date(2024, 0, 15),
+    category: opts.category,
+    subcategory: undefined as string | undefined,
+    tags: [] as string[],
+    type: cents < 0 ? TransactionType.EXPENSE : TransactionType.INCOME,
+    merchant: opts.merchant,
+    isRecurring: false,
+  };
+}
+
+describe('TransactionAnalyzer', () => {
+  describe('categorizeTransaction', () => {
+    it('returns existing category when present', () => {
+      const tx = makeFullTxn({ amountCents: -500, category: 'Groceries' });
+      assert.strictEqual(TransactionAnalyzer.categorizeTransaction(tx), 'Groceries');
+    });
+
+    it('categorizes grocery merchants', () => {
+      const tx = makeFullTxn({ amountCents: -1200, description: 'whole foods market' });
+      const cat = TransactionAnalyzer.categorizeTransaction(tx);
+      assert.strictEqual(cat, 'Groceries');
+    });
+
+    it('categorizes restaurant merchants as Food & Dining', () => {
+      const tx = makeFullTxn({ amountCents: -2500, description: 'starbucks coffee' });
+      const cat = TransactionAnalyzer.categorizeTransaction(tx);
+      assert.strictEqual(cat, 'Food & Dining');
+    });
+
+    it('categorizes Uber as Transportation', () => {
+      const tx = makeFullTxn({ amountCents: -1500, description: 'uber ride' });
+      const cat = TransactionAnalyzer.categorizeTransaction(tx);
+      assert.strictEqual(cat, 'Transportation');
+    });
+
+    it('categorizes Netflix as Entertainment', () => {
+      const tx = makeFullTxn({ amountCents: -1500, description: 'netflix subscription' });
+      const cat = TransactionAnalyzer.categorizeTransaction(tx);
+      assert.strictEqual(cat, 'Entertainment');
+    });
+
+    it('categorizes salary income', () => {
+      const tx = makeFullTxn({ amountCents: 300000, description: 'salary payroll deposit' });
+      const cat = TransactionAnalyzer.categorizeTransaction(tx);
+      assert.strictEqual(cat, 'Income');
+    });
+
+    it('returns Other for unknown transactions', () => {
+      const tx = makeFullTxn({ amountCents: -500, description: 'misc unknown xyz' });
+      const cat = TransactionAnalyzer.categorizeTransaction(tx);
+      assert.strictEqual(cat, 'Other');
+    });
+
+    it('uses merchant in categorization when description does not match', () => {
+      const tx = makeFullTxn({ amountCents: -1000, description: 'debit', merchant: 'amazon' });
+      const cat = TransactionAnalyzer.categorizeTransaction(tx);
+      assert.strictEqual(cat, 'Shopping');
+    });
+  });
+
+  describe('getCategorySummaries', () => {
+    it('returns empty array for empty transaction list', () => {
+      const summaries = TransactionAnalyzer.getCategorySummaries([]);
+      assert.deepStrictEqual(summaries, []);
+    });
+
+    it('groups expenses by category and computes totals', () => {
+      const txns = [
+        makeFullTxn({ amountCents: -2000, category: 'Groceries' }),
+        makeFullTxn({ amountCents: -3000, category: 'Groceries' }),
+        makeFullTxn({ amountCents: -1500, category: 'Transportation' }),
+      ];
+      const summaries = TransactionAnalyzer.getCategorySummaries(txns);
+      const groceries = summaries.find(s => s.category === 'Groceries');
+      assert.ok(groceries, 'Groceries category should be present');
+      assert.strictEqual(groceries.transactionCount, 2);
+      assert.ok(groceries.totalAmount > 0);
+    });
+
+    it('sorts categories by totalAmount descending', () => {
+      const txns = [
+        makeFullTxn({ amountCents: -1000, category: 'Cheap' }),
+        makeFullTxn({ amountCents: -9000, category: 'Expensive' }),
+      ];
+      const summaries = TransactionAnalyzer.getCategorySummaries(txns);
+      assert.ok(summaries.length >= 2);
+      assert.strictEqual(summaries[0]!.category, 'Expensive');
+    });
+
+    it('excludes income transactions from summaries', () => {
+      const txns = [
+        makeFullTxn({ amountCents: 500000, category: 'Income' }),
+        makeFullTxn({ amountCents: -2000, category: 'Groceries' }),
+      ];
+      const summaries = TransactionAnalyzer.getCategorySummaries(txns);
+      const incomeRow = summaries.find(s => s.category === 'Income');
+      assert.ok(!incomeRow, 'Income should not appear in expense summaries');
+    });
+
+    it('computes percentage based on total expenses', () => {
+      const txns = [
+        makeFullTxn({ amountCents: -4000, category: 'Groceries' }),
+        makeFullTxn({ amountCents: -1000, category: 'Transport' }),
+      ];
+      const summaries = TransactionAnalyzer.getCategorySummaries(txns);
+      const groceries = summaries.find(s => s.category === 'Groceries');
+      assert.ok(groceries);
+      assert.ok(Math.abs(groceries.percentage - 80) < 0.01);
+    });
+  });
+
+  describe('findRecurringPatterns', () => {
+    it('returns empty array when fewer than 3 similar transactions exist', () => {
+      const txns = [
+        makeFullTxn({ amountCents: -1500, merchant: 'Netflix' }),
+        makeFullTxn({ amountCents: -1500, merchant: 'Netflix' }),
+      ];
+      const patterns = TransactionAnalyzer.findRecurringPatterns(txns);
+      assert.strictEqual(patterns.length, 0);
+    });
+
+    it('identifies recurring transactions with 3+ occurrences', () => {
+      const txns = [
+        makeFullTxn({ amountCents: -1500, merchant: 'Netflix', date: new Date(2024, 0, 1) }),
+        makeFullTxn({ amountCents: -1500, merchant: 'Netflix', date: new Date(2024, 1, 1) }),
+        makeFullTxn({ amountCents: -1500, merchant: 'Netflix', date: new Date(2024, 2, 1) }),
+      ];
+      const patterns = TransactionAnalyzer.findRecurringPatterns(txns);
+      assert.ok(patterns.length >= 1);
+      assert.strictEqual(patterns[0]!.merchant, 'Netflix');
+    });
+
+    it('only considers expense transactions', () => {
+      const txns = [
+        makeFullTxn({ amountCents: 15000, merchant: 'Employer', date: new Date(2024, 0, 1) }),
+        makeFullTxn({ amountCents: 15000, merchant: 'Employer', date: new Date(2024, 1, 1) }),
+        makeFullTxn({ amountCents: 15000, merchant: 'Employer', date: new Date(2024, 2, 1) }),
+      ];
+      const patterns = TransactionAnalyzer.findRecurringPatterns(txns);
+      assert.strictEqual(patterns.length, 0);
+    });
+  });
+
+  describe('findUnusualTransactions', () => {
+    it('returns empty array when no expense transactions exist', () => {
+      const txns = [
+        makeFullTxn({ amountCents: 50000 }),
+      ];
+      const unusual = TransactionAnalyzer.findUnusualTransactions(txns);
+      assert.deepStrictEqual(unusual, []);
+    });
+
+    it('returns empty array for empty input', () => {
+      const unusual = TransactionAnalyzer.findUnusualTransactions([]);
+      assert.deepStrictEqual(unusual, []);
+    });
+
+    it('identifies outlier transactions above 2 standard deviations', () => {
+      // Use many normal-sized transactions so the outlier clearly exceeds the threshold
+      const normalTxns = Array.from({ length: 20 }, (_, i) =>
+        makeFullTxn({ amountCents: -(100 + i) }) // $1.00–$1.19
+      );
+      const outlier = makeFullTxn({ amountCents: -10000000 }); // $100,000 — extreme outlier
+      const txns = [...normalTxns, outlier];
+      const unusual = TransactionAnalyzer.findUnusualTransactions(txns);
+      assert.ok(unusual.length >= 1);
+      const amounts = unusual.map(t => Math.abs(t.amount.cents));
+      assert.ok(amounts.includes(10000000));
+    });
+  });
+
+  describe('analyzeTransactions', () => {
+    const baseTxns = [
+      makeFullTxn({ amountCents: 500000, description: 'salary payroll' }),
+      makeFullTxn({ amountCents: -2000, description: 'whole foods' }),
+      makeFullTxn({ amountCents: -1500, description: 'starbucks' }),
+      makeFullTxn({ amountCents: -500, description: 'uber ride' }),
+    ];
+
+    it('returns correct totalIncome and totalExpenses', () => {
+      const insights = TransactionAnalyzer.analyzeTransactions(baseTxns);
+      assert.ok(insights.totalIncome > 0);
+      assert.ok(insights.totalExpenses > 0);
+    });
+
+    it('computes netIncome as income minus expenses', () => {
+      const insights = TransactionAnalyzer.analyzeTransactions(baseTxns);
+      assert.ok(
+        Math.abs(insights.netIncome - (insights.totalIncome - insights.totalExpenses)) < 0.01
+      );
+    });
+
+    it('computes savingsRate as 0 when income is 0', () => {
+      const expensesOnly = [makeFullTxn({ amountCents: -1000 })];
+      const insights = TransactionAnalyzer.analyzeTransactions(expensesOnly);
+      assert.strictEqual(insights.savingsRate, 0);
+    });
+
+    it('filters transactions by timeframe when provided', () => {
+      const txns = [
+        makeFullTxn({ amountCents: -1000, date: new Date(2024, 0, 10) }),
+        makeFullTxn({ amountCents: -2000, date: new Date(2024, 5, 15) }),
+      ];
+      const insights = TransactionAnalyzer.analyzeTransactions(txns, {
+        start: new Date(2024, 0, 1),
+        end: new Date(2024, 2, 31),
+      });
+      assert.ok(insights.totalExpenses < 20); // Only Jan transaction
+    });
+
+    it('includes topCategories, largestExpenses, recurringPatterns, unusualTransactions', () => {
+      const insights = TransactionAnalyzer.analyzeTransactions(baseTxns);
+      assert.ok(Array.isArray(insights.topCategories));
+      assert.ok(Array.isArray(insights.largestExpenses));
+      assert.ok(Array.isArray(insights.recurringPatterns));
+      assert.ok(Array.isArray(insights.unusualTransactions));
     });
   });
 });
