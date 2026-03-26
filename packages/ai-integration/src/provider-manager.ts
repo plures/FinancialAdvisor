@@ -8,6 +8,7 @@ import { OllamaProvider } from './ollama-provider.js';
 import { CopilotProvider } from './copilot-provider.js';
 import { AIProviderConfig, AIProviderType } from '@financialadvisor/shared';
 
+/** Factory for instantiating AI provider implementations from configuration. */
 export class AIProviderFactory {
   /**
    * Create an AI provider instance based on configuration
@@ -52,6 +53,7 @@ export class AIProviderFactory {
   }
 }
 
+/** Registry that manages multiple named AI provider instances and routes queries to them. */
 export class AIProviderManager {
   private providers: Map<string, BaseAIProvider> = new Map();
   private defaultProvider?: string;

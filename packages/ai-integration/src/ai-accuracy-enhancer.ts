@@ -6,6 +6,7 @@
 import { AIResponse } from './base-provider.js';
 import type { FinancialContext, Account } from '@financialadvisor/shared';
 
+/** Represents the computed confidence of an AI-generated response. */
 export interface ConfidenceScore {
   overall: number;
   factors: {
@@ -16,6 +17,7 @@ export interface ConfidenceScore {
   };
 }
 
+/** Result of validating the quality and correctness of an AI response. */
 export interface ValidationResult {
   isValid: boolean;
   confidence: number;
@@ -23,6 +25,7 @@ export interface ValidationResult {
   suggestions: string[];
 }
 
+/** Measures how closely a transaction description matches a known spending category. */
 export interface CategorySimilarity {
   category: string;
   similarity: number;

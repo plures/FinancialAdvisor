@@ -7,6 +7,7 @@ import { BaseAIProvider } from '../base-provider';
 import type { FinancialContext, Goal, Budget } from '@financialadvisor/shared';
 import { BudgetPeriod, moneyToDecimal } from '@financialadvisor/shared';
 
+/** A complete AI-generated financial plan including goals, strategies, timeline, and risk assessment. */
 export interface FinancialPlan {
   id: string;
   goals: Goal[];
@@ -19,6 +20,7 @@ export interface FinancialPlan {
   updatedAt: Date;
 }
 
+/** A milestone entry in a financial plan's execution timeline. */
 export interface PlanTimeline {
   milestone: string;
   targetDate: Date;
@@ -26,6 +28,7 @@ export interface PlanTimeline {
   dependencies: string[];
 }
 
+/** A recommended action strategy within a financial plan. */
 export interface Strategy {
   name: string;
   description: string;
@@ -35,12 +38,14 @@ export interface Strategy {
   category: 'savings' | 'investment' | 'debt' | 'income' | 'expense';
 }
 
+/** Overall risk assessment for a financial plan, including individual risk factors and mitigations. */
 export interface RiskAssessment {
   overallRisk: 'low' | 'medium' | 'high';
   factors: RiskFactor[];
   mitigationStrategies: string[];
 }
 
+/** An individual risk factor identified within a financial risk assessment. */
 export interface RiskFactor {
   name: string;
   severity: 'low' | 'medium' | 'high';
@@ -48,6 +53,7 @@ export interface RiskFactor {
   impact: string;
 }
 
+/** A trackable progress metric used to measure advancement toward a financial goal. */
 export interface ProgressMetric {
   name: string;
   current: number;

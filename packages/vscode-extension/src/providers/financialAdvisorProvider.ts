@@ -6,6 +6,10 @@ import * as vscode from 'vscode';
 import { MCPServerManager } from '../services/mcpServerManager';
 import { Account, Transaction, moneyToDecimal } from '@financialadvisor/domain';
 
+/**
+ * VS Code TreeDataProvider that surfaces financial data (accounts, transactions,
+ * budgets, and goals) as a collapsible tree view in the Activity Bar.
+ */
 export class FinancialAdvisorProvider implements vscode.TreeDataProvider<FinancialItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<FinancialItem | undefined | null | void> = new vscode.EventEmitter<FinancialItem | undefined | null | void>();
   readonly onDidChangeTreeData: vscode.Event<FinancialItem | undefined | null | void> = this._onDidChangeTreeData.event;
@@ -108,6 +112,10 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
   }
 }
 
+/**
+ * A VS Code TreeItem representing a single node in the Financial Advisor tree view,
+ * such as an account, transaction, budget, or goal entry.
+ */
 export class FinancialItem extends vscode.TreeItem {
   constructor(
     public readonly label: string,

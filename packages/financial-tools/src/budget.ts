@@ -4,6 +4,7 @@
 
 import { Budget, Transaction, BudgetPeriod, moneyToDecimal } from '@financialadvisor/shared';
 
+/** Analysis of a budget against actual transactions for the current period. */
 export interface BudgetAnalysis {
   budget: Budget;
   totalSpent: number;
@@ -15,6 +16,7 @@ export interface BudgetAnalysis {
   isOnTrack: boolean;
 }
 
+/** Static utility class for analysing budgets, projecting overages, and identifying at-risk categories. */
 export class BudgetCalculator {
   /**
    * Analyze a budget against actual transactions

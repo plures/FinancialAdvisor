@@ -4,6 +4,7 @@
 
 import { Goal, GoalCategory, Priority, Transaction, TransactionType, moneyToDecimal } from '@financialadvisor/shared';
 
+/** Progress tracking and projections for a single savings goal. */
 export interface GoalProgress {
   goal: Goal;
   progressPercentage: number;
@@ -15,6 +16,7 @@ export interface GoalProgress {
   monthsRemaining: number;
 }
 
+/** A recommended savings action for a specific goal, including amount, frequency, and impact. */
 export interface SavingsRecommendation {
   goalId: string;
   recommendedAmount: number;
@@ -23,6 +25,7 @@ export interface SavingsRecommendation {
   impact: string;
 }
 
+/** Assessment of whether an emergency fund is adequate relative to monthly expenses and dependents. */
 export interface EmergencyFundAnalysis {
   currentAmount: number;
   recommendedAmount: number;
@@ -31,6 +34,7 @@ export interface EmergencyFundAnalysis {
   shortfall: number;
 }
 
+/** Static utility class for goal progress analysis, savings recommendations, and allocation optimisation. */
 export class SavingsPlanner {
   /**
    * Analyze progress towards a specific goal

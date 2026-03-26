@@ -4,6 +4,7 @@
 
 import { Investment, Account } from '@financialadvisor/shared';
 
+/** Aggregated analysis of a complete investment portfolio, including performance and diversification. */
 export interface PortfolioAnalysis {
   totalValue: number;
   totalCost: number;
@@ -15,6 +16,7 @@ export interface PortfolioAnalysis {
   dividendYield: number;
 }
 
+/** Allocation of portfolio value within a single market sector. */
 export interface SectorAllocation {
   sector: string;
   value: number;
@@ -22,6 +24,7 @@ export interface SectorAllocation {
   investmentCount: number;
 }
 
+/** Performance analysis for a single investment, including gain/loss and annualized return. */
 export interface InvestmentAnalysis {
   investment: Investment;
   currentValue: number;
@@ -31,6 +34,7 @@ export interface InvestmentAnalysis {
   annualizedReturn: number;
 }
 
+/** Static utility class for investment portfolio analysis, performance calculation, and rebalancing. */
 export class InvestmentCalculator {
   /**
    * Analyze a complete investment portfolio

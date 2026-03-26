@@ -5,9 +5,13 @@
  * users own their data completely. Primary method is file-based import.
  */
 
+/** Identifies the origin method or format of an account import. */
 export type ImportSource = 'ofx' | 'qfx' | 'csv' | 'obp_selfhosted' | 'plaid_optional' | 'manual';
+/** Current lifecycle state of an import operation. */
 export type ImportStatus = 'pending' | 'importing' | 'success' | 'error';
+/** Indicates where imported data resides and who can access it. */
 export type PrivacyLevel = 'local' | 'self-hosted' | 'third-party';
+/** Indicates whether an import covers all data or only new records since the last import. */
 export type ImportType = 'full' | 'incremental';
 
 /**

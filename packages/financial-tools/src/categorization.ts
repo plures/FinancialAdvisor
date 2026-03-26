@@ -5,6 +5,7 @@
 import type { Transaction } from '../../shared/dist/index.js';
 import { TransactionType, moneyToDecimal } from '../../shared/dist/index.js';
 
+/** Aggregated spending summary for a single transaction category. */
 export interface CategorySummary {
   category: string;
   totalAmount: number;
@@ -13,6 +14,7 @@ export interface CategorySummary {
   percentage: number;
 }
 
+/** Recurring or frequent spending behaviour detected for a category, subcategory, or merchant. */
 export interface SpendingPattern {
   category: string;
   subcategory?: string;
@@ -23,6 +25,7 @@ export interface SpendingPattern {
   lastTransaction: Date;
 }
 
+/** Comprehensive financial insights derived from a set of transactions. */
 export interface TransactionInsights {
   totalIncome: number;
   totalExpenses: number;
@@ -34,6 +37,7 @@ export interface TransactionInsights {
   unusualTransactions: Transaction[];
 }
 
+/** Static utility class for categorizing transactions and extracting spending insights. */
 export class TransactionAnalyzer {
   // Common spending categories for auto-categorization
   private static readonly CATEGORY_KEYWORDS = {
