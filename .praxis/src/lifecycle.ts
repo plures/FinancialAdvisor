@@ -82,8 +82,11 @@ export function getPraxisEngine(): PraxisEngine {
 }
 
 // Re-export engine types for consumers who import from the lifecycle entry point
+/** Data-event callback map, re-exported from the lifecycle entry point. */
 export type { DataEventCallbacks } from './triggers/data-events.js';
+/** PraxisEngine class, re-exported from the lifecycle entry point. */
 export { PraxisEngine } from './engine.js';
+/** Engine primitive types, re-exported from the lifecycle entry point. */
 export type {
   ExpectationResult,
   Expectation,

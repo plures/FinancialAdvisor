@@ -21,6 +21,7 @@ const randomUUID = (): string => {
 };
 // ─── Expectations ────────────────────────────────────────────────────────────
 
+/** The outcome produced by evaluating an expectation against a data payload. */
 export interface ExpectationResult {
   readonly passed: boolean;
   readonly expectationName: string;
@@ -28,16 +29,19 @@ export interface ExpectationResult {
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
+/** A named validation rule that evaluates typed data and returns an {@link ExpectationResult}. */
 export interface Expectation<T> {
   readonly name: string;
   readonly description: string;
   evaluate(data: T): ExpectationResult;
 }
 
+/** Build a passing {@link ExpectationResult} for the given expectation name. */
 export function passed(name: string, metadata?: Record<string, unknown>): ExpectationResult {
   return { passed: true, expectationName: name, violations: [], metadata };
 }
 
+/** Build a failing {@link ExpectationResult} with one or more violation messages. */
 export function failed(
   name: string,
   violations: string[],
@@ -48,6 +52,7 @@ export function failed(
 
 // ─── Triggers ────────────────────────────────────────────────────────────────
 
+/** A typed domain event carrying a payload, used to drive reactive triggers. */
 export interface TriggerEvent<
   TType extends string = string,
   TPayload = unknown,
@@ -57,6 +62,7 @@ export interface TriggerEvent<
   readonly timestamp: Date;
 }
 
+/** A named reactive handler that subscribes to one or more domain event types. */
 export interface Trigger<TEvent extends TriggerEvent = TriggerEvent> {
   readonly name: string;
   readonly eventTypes: readonly string[];
@@ -65,6 +71,7 @@ export interface Trigger<TEvent extends TriggerEvent = TriggerEvent> {
 
 // ─── Decision Ledger ─────────────────────────────────────────────────────────
 
+/** An immutable record in the financial decision ledger. */
 export interface DecisionEntry {
   readonly id: string;
   readonly timestamp: Date;
@@ -76,6 +83,7 @@ export interface DecisionEntry {
 
 // ─── Engine ──────────────────────────────────────────────────────────────────
 
+/** Orchestrates expectations, triggers, and the immutable decision ledger. */
 export class PraxisEngine {
   private readonly expectations = new Map<string, Expectation<unknown>>();
   private readonly triggersByEvent = new Map<string, Trigger[]>();

@@ -19,11 +19,13 @@ import type { Trigger, TriggerEvent } from '../engine.js';
 
 // ─── Event payload types ──────────────────────────────────────────────────────
 
+/** Payload emitted when an import session completes. */
 export interface ImportCompletedPayload {
   readonly session: ImportSession;
   readonly transactions: readonly RawTransaction[];
 }
 
+/** Payload emitted when a new transaction is added to an account. */
 export interface TransactionAddedPayload {
   readonly transactionId: string;
   readonly accountId: string;
@@ -31,6 +33,7 @@ export interface TransactionAddedPayload {
   readonly amountCents: number;
 }
 
+/** Payload emitted when an existing transaction is updated (e.g. recategorised). */
 export interface TransactionUpdatedPayload {
   readonly transactionId: string;
   readonly accountId: string;
@@ -38,11 +41,13 @@ export interface TransactionUpdatedPayload {
   readonly newCategory?: string;
 }
 
+/** Payload emitted when account metadata or journal entries change. */
 export interface AccountUpdatedPayload {
   readonly accountId: string;
   readonly affectedEntries: readonly JournalEntry[];
 }
 
+/** Payload emitted when a budget's limits or category mapping change. */
 export interface BudgetUpdatedPayload {
   readonly budgetId: string;
   readonly category: string;
@@ -50,6 +55,7 @@ export interface BudgetUpdatedPayload {
 
 // ─── Callback signatures ──────────────────────────────────────────────────────
 
+/** Optional reactive callbacks invoked by data-event triggers. */
 export interface DataEventCallbacks {
   onImportCompleted?: (payload: ImportCompletedPayload) => void | Promise<void>;
   onTransactionAdded?: (payload: TransactionAddedPayload) => void | Promise<void>;

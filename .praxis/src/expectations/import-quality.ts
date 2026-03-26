@@ -17,6 +17,7 @@ import type { ImportSession } from '@financialadvisor/domain';
 import type { RawTransaction } from '@financialadvisor/ingestion';
 import { type Expectation, type ExpectationResult, passed, failed } from '../engine.js';
 
+/** Input data shape for the import-quality expectation. */
 export interface ImportQualityData {
   readonly session: ImportSession;
   readonly transactions: readonly RawTransaction[];
@@ -24,6 +25,7 @@ export interface ImportQualityData {
   readonly maxErrorRate?: number;
 }
 
+/** The named import-quality expectation instance. */
 export const importQualityExpectation: Expectation<ImportQualityData> = {
   name: 'import.quality',
   description:

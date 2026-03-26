@@ -14,6 +14,7 @@
 import type { Budget } from '@financialadvisor/domain';
 import { type Expectation, type ExpectationResult, passed, failed } from '../engine.js';
 
+/** Input data shape for the budget-compliance expectation. */
 export interface BudgetComplianceData {
   readonly budgets: readonly Budget[];
   /**
@@ -42,6 +43,7 @@ export function budgetComplianceStatus(
   return { budget, percentageUsed, isOverBudget, isAtRisk };
 }
 
+/** The named budget-compliance expectation instance. */
 export const budgetComplianceExpectation: Expectation<BudgetComplianceData> = {
   name: 'budget.compliance',
   description:

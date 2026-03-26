@@ -13,12 +13,14 @@
 
 import { dataStore } from '$lib/pluresdb/store';
 
+/** Interface for an AI provider capable of generating embeddings and categorising transactions. */
 export interface AIProvider {
   name: string;
   generateEmbedding(text: string): Promise<number[]>;
   categorize(description: string): Promise<string>;
 }
 
+/** A labelled example pairing a transaction description with its expected category. */
 export interface CategoryExample {
   description: string;
   category: string;
@@ -26,6 +28,7 @@ export interface CategoryExample {
 }
 
 // Standard financial categories
+/** Canonical list of financial categories used for transaction classification. */
 export const STANDARD_CATEGORIES = [
   'Food & Groceries',
   'Transportation',
@@ -221,4 +224,5 @@ export class AICategorizer {
 }
 
 // Export singleton instance
+/** Singleton AI categorizer instance pre-configured with standard category examples. */
 export const aiCategorizer = new AICategorizer();

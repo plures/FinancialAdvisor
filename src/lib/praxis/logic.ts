@@ -7,6 +7,7 @@
 import type { Account, Transaction, Budget, Goal } from './schema';
 
 // Budget Analysis Logic
+/** The result of analysing a budget against actual transactions for a period. */
 export interface BudgetAnalysis {
   budget: Budget;
   totalSpent: number;
@@ -18,6 +19,7 @@ export interface BudgetAnalysis {
   isOnTrack: boolean;
 }
 
+/** Static utility class implementing Praxis financial business rules. */
 export class FinancialLogic {
   /**
    * Validate account data according to Praxis rules
