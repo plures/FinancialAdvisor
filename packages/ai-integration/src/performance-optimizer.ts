@@ -5,12 +5,27 @@
 
 import type { Transaction } from '@financialadvisor/shared';
 
+/** Minimal account summary kept after context optimization. */
+interface AccountSummary {
+  id: string;
+  name: string;
+  type: string;
+  balance: number;
+}
+
+/** Context object passed to the AI provider, potentially containing transactions and accounts. */
+export interface AIOptimizableContext {
+  transactions?: Transaction[];
+  accounts?: AccountSummary[];
+  [key: string]: unknown;
+}
+
 /** Options that control batch-processing behaviour for AI operations. */
 export interface BatchProcessingOptions {
   batchSize: number;
   delayBetweenBatches: number;
   onProgress?: (processed: number, total: number) => void;
-  onError?: (error: Error, item: any) => void;
+  onError?: (error: Error, item: unknown) => void;
 }
 
 /** Configuration for per-minute and per-hour request rate limiting. */
@@ -32,9 +47,9 @@ export interface CacheStats {
  * Request queue item for rate limiting
  */
 interface QueuedRequest {
-  execute: () => Promise<any>;
-  resolve: (value: any) => void;
-  reject: (error: any) => void;
+  execute: () => Promise<unknown>;
+  resolve: (value: unknown) => void;
+  reject: (error: unknown) => void;
   timestamp: number;
 }
 
@@ -99,10 +114,10 @@ export class PerformanceOptimizer {
    * Execute request with rate limiting
    */
   async executeWithRateLimit<T>(request: () => Promise<T>): Promise<T> {
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       this.requestQueue.push({
-        execute: request,
-        resolve,
+        execute: request as () => Promise<unknown>,
+        resolve: resolve as (value: unknown) => void,
         reject,
         timestamp: Date.now()
       });
@@ -151,7 +166,7 @@ export class PerformanceOptimizer {
   /**
    * Optimize context data for AI processing
    */
-  optimizeContext(context: any, maxSize: number = 4000): any {
+  optimizeContext(context: AIOptimizableContext, maxSize: number = 4000): AIOptimizableContext {
     const serialized = JSON.stringify(context);
     
     if (serialized.length <= maxSize) {
@@ -171,7 +186,7 @@ export class PerformanceOptimizer {
 
     // Reduce account details if needed
     if (optimized.accounts) {
-      optimized.accounts = optimized.accounts.map((acc: any) => ({
+      optimized.accounts = optimized.accounts.map((acc) => ({
         id: acc.id,
         name: acc.name,
         type: acc.type,

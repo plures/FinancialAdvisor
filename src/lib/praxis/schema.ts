@@ -87,11 +87,11 @@ export const financialAdvisorSchema = {
     // Account balance must be valid
     accountBalanceValid: {
       when: 'Account',
-      condition: (account: any) => {
-        if (account.type === 'credit_card') {
+      condition: (account: Record<string, unknown>) => {
+        if (account['type'] === 'credit_card') {
           return true; // Credit cards can have negative balance
         }
-        return account.balance >= 0;
+        return typeof account['balance'] === 'number' && account['balance'] >= 0;
       },
       message: 'Account balance cannot be negative for non-credit card accounts',
     },
@@ -99,14 +99,16 @@ export const financialAdvisorSchema = {
     // Transaction amount must be positive
     transactionAmountPositive: {
       when: 'Transaction',
-      condition: (transaction: any) => transaction.amount > 0,
+      condition: (transaction: Record<string, unknown>) =>
+        typeof transaction['amount'] === 'number' && transaction['amount'] > 0,
       message: 'Transaction amount must be positive',
     },
 
     // Budget amount must be positive
     budgetAmountPositive: {
       when: 'Budget',
-      condition: (budget: any) => budget.amount > 0,
+      condition: (budget: Record<string, unknown>) =>
+        typeof budget['amount'] === 'number' && budget['amount'] > 0,
       message: 'Budget amount must be positive',
     },
   },

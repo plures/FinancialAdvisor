@@ -3,7 +3,6 @@
  */
 
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { spawn, ChildProcess } from 'child_process';
 
 /**
@@ -11,11 +10,9 @@ import { spawn, ChildProcess } from 'child_process';
  * including starting, stopping, and communicating with it via JSON-RPC over stdio.
  */
 export class MCPServerManager {
-  private process?: ChildProcess;
-  private context: vscode.ExtensionContext;
+  private process: ChildProcess | undefined;
 
-  constructor(context: vscode.ExtensionContext) {
-    this.context = context;
+  constructor(_context: vscode.ExtensionContext) {
   }
 
   async start(): Promise<void> {
@@ -84,7 +81,7 @@ export class MCPServerManager {
     }
   }
 
-  async callTool(toolName: string, args: any): Promise<any> {
+  async callTool(toolName: string, args: Record<string, unknown>): Promise<unknown> {
     if (!this.process) {
       throw new Error('MCP server is not running');
     }
@@ -139,10 +136,11 @@ export class MCPServerManager {
     });
   }
 
-  async listResources(): Promise<any> {
+  async listResources(): Promise<unknown> {
     if (!this.process) {
       throw new Error('MCP server is not running');
     }
+    const proc = this.process;
 
     return new Promise((resolve, reject) => {
       const request = {
@@ -162,7 +160,7 @@ export class MCPServerManager {
           for (const line of lines) {
             const response = JSON.parse(line);
             if (response.id === request.id) {
-              this.process?.stdout?.off('data', onData);
+              proc.stdout?.off('data', onData);
               
               if (response.error) {
                 reject(new Error(response.error.message));
@@ -177,21 +175,22 @@ export class MCPServerManager {
         }
       };
 
-      this.process.stdout?.on('data', onData);
+      proc.stdout?.on('data', onData);
       
       setTimeout(() => {
-        this.process?.stdout?.off('data', onData);
+        proc.stdout?.off('data', onData);
         reject(new Error('MCP server request timeout'));
       }, 10000);
 
-      this.process.stdin?.write(requestStr);
+      proc.stdin?.write(requestStr);
     });
   }
 
-  async readResource(uri: string): Promise<any> {
+  async readResource(uri: string): Promise<unknown> {
     if (!this.process) {
       throw new Error('MCP server is not running');
     }
+    const proc = this.process;
 
     return new Promise((resolve, reject) => {
       const request = {
@@ -212,7 +211,7 @@ export class MCPServerManager {
           for (const line of lines) {
             const response = JSON.parse(line);
             if (response.id === request.id) {
-              this.process?.stdout?.off('data', onData);
+              proc.stdout?.off('data', onData);
               
               if (response.error) {
                 reject(new Error(response.error.message));
@@ -227,14 +226,14 @@ export class MCPServerManager {
         }
       };
 
-      this.process.stdout?.on('data', onData);
+      proc.stdout?.on('data', onData);
       
       setTimeout(() => {
-        this.process?.stdout?.off('data', onData);
+        proc.stdout?.off('data', onData);
         reject(new Error('MCP server request timeout'));
       }, 10000);
 
-      this.process.stdin?.write(requestStr);
+      proc.stdin?.write(requestStr);
     });
   }
 

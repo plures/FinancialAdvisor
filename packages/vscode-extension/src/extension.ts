@@ -8,6 +8,17 @@ import { MCPServerManager } from './services/mcpServerManager';
 import { AIProviderManager } from '@financialadvisor/ai-providers';
 import { DashboardViewProvider } from './views/dashboardView';
 
+/** A single content item returned by an MCP tool call. */
+interface MCPToolContent {
+  type: string;
+  text: string;
+}
+
+/** Response shape returned by MCP tool calls. */
+interface MCPToolResult {
+  content: MCPToolContent[];
+}
+
 let mcpServerManager: MCPServerManager;
 let aiProviderManager: AIProviderManager;
 
@@ -145,9 +156,9 @@ async function addTransaction() {
       description,
       category,
       merchant
-    });
+    }) as MCPToolResult;
 
-    vscode.window.showInformationMessage(result.content[0].text);
+    vscode.window.showInformationMessage(result.content[0]?.text ?? 'Transaction added');
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to add transaction: ${error}`);
   }
@@ -197,9 +208,9 @@ async function addAccount() {
       type,
       balance: parseFloat(balance),
       institution
-    });
+    }) as MCPToolResult;
 
-    vscode.window.showInformationMessage(result.content[0].text);
+    vscode.window.showInformationMessage(result.content[0]?.text ?? 'Account added');
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to add account: ${error}`);
   }
@@ -246,11 +257,11 @@ async function analyzeSpending() {
     const result = await mcpServerManager.callTool('analyze_spending', {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString()
-    });
+    }) as MCPToolResult;
 
     // Show analysis in a new document
     const doc = await vscode.workspace.openTextDocument({
-      content: result.content[0].text,
+      content: result.content[0]?.text ?? '',
       language: 'markdown'
     });
     await vscode.window.showTextDocument(doc);

@@ -6,8 +6,31 @@ import sqlite3 from 'sqlite3';
 import * as crypto from 'crypto';
 import * as path from 'path';
 import type { Account, Transaction, SecureCredential } from '@financialadvisor/domain';
+import { AccountType } from '@financialadvisor/domain';
 
 const { Database } = sqlite3;
+
+/** Raw SQLite row for an account record. */
+interface AccountRow {
+  id: string;
+  name: string;
+  type: string;
+  balance: number;
+  currency: string;
+  institution: string | null;
+  last_updated: string;
+  is_active: number;
+}
+
+/** Raw SQLite row for a credential record. */
+interface CredentialRow {
+  id: string;
+  service: string;
+  username: string;
+  encrypted_password: string;
+  notes: string | null;
+  last_updated: string;
+}
 
 /** Configuration for the SQLite database used by SecureStorage. */
 export interface DatabaseConfig {
@@ -228,7 +251,7 @@ export class SecureStorage {
     const sql = 'SELECT * FROM accounts WHERE is_active = 1';
     
     return new Promise((resolve, reject) => {
-      this.db.all(sql, (err, rows: any[]) => {
+      this.db.all(sql, (err, rows: AccountRow[]) => {
         if (err) {
           reject(err);
           return;
@@ -237,10 +260,10 @@ export class SecureStorage {
         const accounts = rows.map(row => ({
           id: row.id,
           name: row.name,
-          type: row.type,
+          type: row.type as AccountType,
           balance: row.balance,
           currency: row.currency,
-          institution: row.institution,
+          institution: row.institution ?? undefined,
           lastUpdated: new Date(row.last_updated),
           isActive: row.is_active === 1
         }));
@@ -257,7 +280,7 @@ export class SecureStorage {
     const sql = 'SELECT * FROM accounts WHERE name = ? AND is_active = 1';
     
     return new Promise((resolve, reject) => {
-      this.db.get(sql, [name], (err, row: any) => {
+      this.db.get(sql, [name], (err, row: AccountRow | undefined) => {
         if (err) {
           reject(err);
           return;
@@ -271,10 +294,10 @@ export class SecureStorage {
         const account: Account = {
           id: row.id,
           name: row.name,
-          type: row.type,
+          type: row.type as AccountType,
           balance: row.balance,
           currency: row.currency,
-          institution: row.institution,
+          institution: row.institution ?? undefined,
           lastUpdated: new Date(row.last_updated),
           isActive: row.is_active === 1
         };
@@ -430,7 +453,7 @@ export class SecureStorage {
     const sql = 'SELECT * FROM credentials WHERE id = ?';
     
     return new Promise((resolve, reject) => {
-      this.db.get(sql, [id], (err, row: any) => {
+      this.db.get(sql, [id], (err, row: CredentialRow | undefined) => {
         if (err) {
           reject(err);
           return;
@@ -446,7 +469,7 @@ export class SecureStorage {
           service: row.service,
           username: row.username,
           encryptedPassword: row.encrypted_password,
-          notes: row.notes,
+          notes: row.notes ?? undefined,
           lastUpdated: new Date(row.last_updated)
         });
       });

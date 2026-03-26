@@ -6,6 +6,18 @@ import * as vscode from 'vscode';
 import { MCPServerManager } from '../services/mcpServerManager';
 import { Account, Transaction, moneyToDecimal } from '@financialadvisor/domain';
 
+/** A single resource content item returned by an MCP resource read. */
+interface MCPResourceContent {
+  uri?: string;
+  mimeType?: string;
+  text: string;
+}
+
+/** Response shape returned by MCP resource reads. */
+interface MCPResourceResult {
+  contents: MCPResourceContent[];
+}
+
 /**
  * VS Code TreeDataProvider that surfaces financial data (accounts, transactions,
  * budgets, and goals) as a collapsible tree view in the Activity Bar.
@@ -15,7 +27,7 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
   readonly onDidChangeTreeData: vscode.Event<FinancialItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
   constructor(
-    private context: vscode.ExtensionContext,
+    _context: vscode.ExtensionContext,
     private mcpManager: MCPServerManager
   ) {}
 
@@ -62,8 +74,8 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
 
   private async getAccounts(): Promise<FinancialItem[]> {
     try {
-      const resource = await this.mcpManager.readResource('financial://accounts');
-      const accounts: Account[] = JSON.parse(resource.contents[0].text);
+      const resource = await this.mcpManager.readResource('financial://accounts') as MCPResourceResult;
+      const accounts: Account[] = JSON.parse(resource.contents[0]?.text ?? '[]');
       
       return accounts.map(account => {
         const item = new FinancialItem(
@@ -83,8 +95,8 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
 
   private async getTransactions(): Promise<FinancialItem[]> {
     try {
-      const resource = await this.mcpManager.readResource('financial://transactions');
-      const transactions: Transaction[] = JSON.parse(resource.contents[0].text);
+      const resource = await this.mcpManager.readResource('financial://transactions') as MCPResourceResult;
+      const transactions: Transaction[] = JSON.parse(resource.contents[0]?.text ?? '[]');
       
       return transactions.slice(0, 10).map(transaction => {
         const amountDecimal = moneyToDecimal(transaction.amount);
@@ -118,9 +130,9 @@ export class FinancialAdvisorProvider implements vscode.TreeDataProvider<Financi
  */
 export class FinancialItem extends vscode.TreeItem {
   constructor(
-    public readonly label: string,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-    public readonly contextValue: string
+    public override readonly label: string,
+    public override readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    public override readonly contextValue: string
   ) {
     super(label, collapsibleState);
     this.tooltip = `${this.label}`;

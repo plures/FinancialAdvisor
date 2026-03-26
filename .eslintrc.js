@@ -14,6 +14,7 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/semi': 'warn',
+    '@typescript-eslint/no-explicit-any': 'error',
     'curly': 'warn',
     'eqeqeq': 'warn',
     'no-throw-literal': 'warn',

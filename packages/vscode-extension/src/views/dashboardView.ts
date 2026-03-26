@@ -6,10 +6,45 @@ import * as vscode from 'vscode';
 import { MCPServerManager } from '../services/mcpServerManager';
 import { AIProviderManager } from '@financialadvisor/ai-providers';
 
-/**
- * Provides the Financial Advisor dashboard as a VS Code WebviewView,
- * handling account and transaction data display and user interactions.
- */
+/** Message sent from the dashboard WebView to add a new transaction. */
+interface AddTransactionMessage {
+  type: 'addTransaction';
+  accountId: string;
+  amount: string;
+  description: string;
+  category: string;
+  merchant: string;
+}
+
+/** Union of all messages the dashboard WebView may send to the extension host. */
+type WebviewMessage =
+  | AddTransactionMessage
+  | { type: 'refresh' }
+  | { type: 'analyzeSpending' };
+
+/** A single content item returned by an MCP tool call. */
+interface MCPToolContent {
+  type: string;
+  text: string;
+}
+
+/** Response shape returned by MCP tool calls. */
+interface MCPToolResult {
+  content: MCPToolContent[];
+}
+
+/** A single resource content item returned by an MCP resource read. */
+interface MCPResourceContent {
+  uri?: string;
+  mimeType?: string;
+  text: string;
+}
+
+/** Response shape returned by MCP resource reads. */
+interface MCPResourceResult {
+  contents: MCPResourceContent[];
+}
+
 export class DashboardViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'financialAdvisor.dashboard';
 
@@ -18,12 +53,12 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly mcpManager: MCPServerManager,
-    private readonly aiManager: AIProviderManager
+    _aiManager: AIProviderManager
   ) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
+    _context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
@@ -37,7 +72,7 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage(async (data) => {
+    webviewView.webview.onDidReceiveMessage(async (data: WebviewMessage) => {
       switch (data.type) {
         case 'addTransaction':
           await this.handleAddTransaction(data);
@@ -60,7 +95,7 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private async handleAddTransaction(data: any) {
+  private async handleAddTransaction(data: AddTransactionMessage) {
     try {
       const result = await this.mcpManager.callTool('add_transaction', {
         accountId: data.accountId,
@@ -68,12 +103,12 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
         description: data.description,
         category: data.category,
         merchant: data.merchant
-      });
+      }) as MCPToolResult;
 
       this._view?.webview.postMessage({
         type: 'transactionAdded',
         success: true,
-        message: result.content[0].text
+        message: result.content[0]?.text ?? ''
       });
 
       await this.refreshDashboard();
@@ -95,11 +130,11 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
       const result = await this.mcpManager.callTool('analyze_spending', {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString()
-      });
+      }) as MCPToolResult;
 
       this._view?.webview.postMessage({
         type: 'analysisResult',
-        data: result.content[0].text
+        data: result.content[0]?.text ?? ''
       });
     } catch (error) {
       this._view?.webview.postMessage({
@@ -114,24 +149,24 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
 
     try {
       // Get accounts data
-      const accountsResource = await this.mcpManager.readResource('financial://accounts');
-      const accounts = JSON.parse(accountsResource.contents[0].text);
+      const accountsResource = await this.mcpManager.readResource('financial://accounts') as MCPResourceResult;
+      const accounts = JSON.parse(accountsResource.contents[0]?.text ?? '[]');
 
       // Get recent transactions
-      const transactionsResource = await this.mcpManager.readResource('financial://transactions');
-      const transactions = JSON.parse(transactionsResource.contents[0].text);
+      const transactionsResource = await this.mcpManager.readResource('financial://transactions') as MCPResourceResult;
+      const transactions = JSON.parse(transactionsResource.contents[0]?.text ?? '[]');
 
       this._view.webview.postMessage({
         type: 'dataUpdate',
         accounts,
-        transactions: transactions.slice(0, 10)
+        transactions: (transactions as unknown[]).slice(0, 10)
       });
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
     }
   }
 
-  private getHtmlForWebview(webview: vscode.Webview) {
+  private getHtmlForWebview(_webview: vscode.Webview) {
     return `<!DOCTYPE html>
     <html lang="en">
     <head>

@@ -244,7 +244,7 @@ export class CSVImporter implements IFileImporter {
    * Map CSV record to transaction using template
    */
   private mapRecordToTransaction(
-    record: any,
+    record: Record<string, string> | string[],
     template: CSVTemplate
   ): ParsedCSVTransaction | null {
     try {
@@ -280,11 +280,14 @@ export class CSVImporter implements IFileImporter {
   /**
    * Get column value by name or index
    */
-  private getColumnValue(record: any, column: string | number): string {
+  private getColumnValue(record: Record<string, string> | string[], column: string | number): string {
     if (typeof column === 'number') {
-      return Array.isArray(record) ? record[column] : '';
+      return Array.isArray(record) ? (record[column] ?? '') : '';
     }
-    return record[column] || '';
+    if (Array.isArray(record)) {
+      return '';
+    }
+    return record[column] ?? '';
   }
 
   /**

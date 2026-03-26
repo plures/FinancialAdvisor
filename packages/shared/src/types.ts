@@ -247,7 +247,7 @@ export interface Report {
   content: string;
   format: ReportFormat;
   generatedAt: Date;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 /**
@@ -290,9 +290,9 @@ export interface ExtensionManifest {
  * Runtime context injected into a plugin, providing access to core services.
  */
 export interface PluginContext {
-  storage: any; // MCP storage interface
-  ai: any; // AI provider interface
-  notifications: any; // Notification system
+  storage: unknown; // MCP storage interface
+  ai: unknown; // AI provider interface
+  notifications: unknown; // Notification system
 }
 
 // Utility types
@@ -327,5 +327,5 @@ export interface SortOptions {
  * Arbitrary key/value map for filtering a list of results.
  */
 export interface FilterOptions {
-  [key: string]: any;
+  [key: string]: unknown;
 }
