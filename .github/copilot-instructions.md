@@ -14,7 +14,7 @@ You are working in the **plures** organization. Before making changes, understan
 
 **Conventional Commits** — all commit messages MUST follow:
 ```
-<type>[optional scope]: <description>
+<type>(optional scope): <description>
 ```
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
 Breaking changes: add `!` after type or `BREAKING CHANGE:` in footer.
