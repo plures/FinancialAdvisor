@@ -4,6 +4,7 @@
 
 import type { Currency } from './money.js';
 import type { DateRange } from './temporal.js';
+/** Re-exports the isDateInRange helper from the temporal module. */
 export { isDateInRange } from './temporal.js';
 
 /**

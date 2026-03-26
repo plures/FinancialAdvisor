@@ -44,6 +44,7 @@ interface MCPResourceResult {
   contents: MCPResourceContent[];
 }
 
+/** VS Code WebviewView provider that renders the Financial Advisor dashboard panel. */
 export class DashboardViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'financialAdvisor.dashboard';
 

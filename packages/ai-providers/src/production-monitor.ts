@@ -327,6 +327,7 @@ export interface ErrorEntry {
   context?: Record<string, unknown>;
 }
 
+/** In-memory error logger that retains up to 1 000 recent error entries for diagnostics. */
 export class ErrorLogger {
   private errors: ErrorEntry[] = [];
   private readonly MAX_ERRORS = 1000;

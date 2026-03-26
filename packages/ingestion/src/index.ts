@@ -1,6 +1,10 @@
+/** Re-exports the CSV transaction importer and bank template helpers. */
 export * from './csv-importer.js';
+/** Re-exports the OFX/QFX transaction importer. */
 export * from './ofx-importer.js';
+/** Re-exports the import-session store for tracking import history. */
 export * from './import-session-store.js';
+/** Re-exports the raw-transaction model and store. */
 export * from './raw-transaction.js';
 
 import { AccountIntegrationService } from '@financialadvisor/ledger';
