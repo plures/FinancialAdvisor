@@ -3,7 +3,16 @@
   import { budgets, transactions } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Budget } from '$lib/praxis/schema';
-  import { Button, Input, Select, Card, Badge, Alert, EmptyState, dojoSlide } from '@plures/design-dojo';
+  import {
+    Button,
+    Input,
+    Select,
+    Card,
+    Badge,
+    Alert,
+    EmptyState,
+    dojoSlide,
+  } from '@plures/design-dojo';
 
   let showAddForm = false;
   let errors: string[] = [];
@@ -127,7 +136,7 @@
         {/if}
 
         <form
-          onsubmit={(e) => {
+          onsubmit={e => {
             e.preventDefault();
             handleAddBudget();
           }}
@@ -233,7 +242,14 @@
               </dl>
 
               <div class="budget-progress">
-                <div class="progress-track" role="progressbar" aria-label="{budget.name} budget progress" aria-valuenow={Math.min(100, progress.percentageUsed)} aria-valuemin={0} aria-valuemax={100}>
+                <div
+                  class="progress-track"
+                  role="progressbar"
+                  aria-label="{budget.name} budget progress"
+                  aria-valuenow={Math.min(100, progress.percentageUsed)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
                   <div
                     class="progress-fill"
                     class:progress-fill--over={progress.percentageUsed > 100}
@@ -411,4 +427,3 @@
     gap: var(--space-2);
   }
 </style>
-

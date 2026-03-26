@@ -3,7 +3,17 @@
   import { goals } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Goal } from '$lib/praxis/schema';
-  import { Button, Input, Select, Card, Badge, Alert, EmptyState, dojoSlide, dojoFade } from '@plures/design-dojo';
+  import {
+    Button,
+    Input,
+    Select,
+    Card,
+    Badge,
+    Alert,
+    EmptyState,
+    dojoSlide,
+    dojoFade,
+  } from '@plures/design-dojo';
 
   let showAddForm = false;
   let showProgressForm = false;
@@ -73,7 +83,7 @@
       return;
     }
 
-    const goal = $goals.find((g) => g.id === id);
+    const goal = $goals.find(g => g.id === id);
     if (goal) {
       const newAmount = Math.max(0, goal.currentAmount || 0) + parsedAmount;
       goals.update({
@@ -152,7 +162,7 @@
         {/if}
 
         <form
-          onsubmit={(e) => {
+          onsubmit={e => {
             e.preventDefault();
             handleAddGoal();
           }}
@@ -211,13 +221,18 @@
   {/if}
 
   {#if showProgressForm}
-    <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="progress-modal-title">
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="progress-modal-title"
+    >
       <div transition:dojoFade class="modal-backdrop" onclick={cancelProgress}></div>
       <div class="modal-card">
         <Card elevated>
           <h2 id="progress-modal-title" class="form-heading">Add Progress</h2>
           <form
-            onsubmit={(e) => {
+            onsubmit={e => {
               e.preventDefault();
               updateGoalProgress(selectedGoalId, progressAmount);
             }}

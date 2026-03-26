@@ -3,7 +3,16 @@
   import { transactions, accounts } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Transaction } from '$lib/praxis/schema';
-  import { Button, Input, Select, Card, Badge, Alert, EmptyState, dojoSlide } from '@plures/design-dojo';
+  import {
+    Button,
+    Input,
+    Select,
+    Card,
+    Badge,
+    Alert,
+    EmptyState,
+    dojoSlide,
+  } from '@plures/design-dojo';
 
   let showAddForm = false;
   let errors: string[] = [];
@@ -73,7 +82,7 @@
   }
 
   function getAccountName(accountId: string): string {
-    const account = $accounts.find((a) => a.id === accountId);
+    const account = $accounts.find(a => a.id === accountId);
     return account?.name || 'Unknown Account';
   }
 
@@ -111,7 +120,7 @@
         {/if}
 
         <form
-          onsubmit={(e) => {
+          onsubmit={e => {
             e.preventDefault();
             handleAddTransaction();
           }}
@@ -174,7 +183,7 @@
       <EmptyState
         icon="💳"
         title="No transactions yet"
-        description='Click "Add Transaction" to get started.'
+        description={'Click "Add Transaction" to get started.'}
       />
     {:else}
       <Card padding="none" elevated>

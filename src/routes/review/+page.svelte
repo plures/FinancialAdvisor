@@ -10,13 +10,25 @@
     seedAllReviewData,
   } from '$lib/stores/review';
 
-  const importPending = derived(importReviewStore, $s => $s.filter(i => i.status === 'pending').length);
+  const importPending = derived(
+    importReviewStore,
+    $s => $s.filter(i => i.status === 'pending').length
+  );
   const importErrors = derived(importReviewStore, $s => $s.filter(i => !!i.error).length);
   const importDuplicates = derived(importReviewStore, $s => $s.filter(i => i.isDuplicate).length);
 
-  const merchantPending = derived(merchantMergeStore, $s => $s.filter(i => i.status === 'pending').length);
-  const recurringPending = derived(recurringStore, $s => $s.filter(i => i.status === 'pending').length);
-  const categoryPending = derived(categoryCorrectionStore, $s => $s.filter(i => i.status === 'pending').length);
+  const merchantPending = derived(
+    merchantMergeStore,
+    $s => $s.filter(i => i.status === 'pending').length
+  );
+  const recurringPending = derived(
+    recurringStore,
+    $s => $s.filter(i => i.status === 'pending').length
+  );
+  const categoryPending = derived(
+    categoryCorrectionStore,
+    $s => $s.filter(i => i.status === 'pending').length
+  );
 
   const totalPending = derived(
     [importPending, merchantPending, recurringPending, categoryPending],
@@ -47,7 +59,9 @@
       <Badge variant="danger">{$importErrors} error{$importErrors === 1 ? '' : 's'}</Badge>
     {/if}
     {#if $importDuplicates > 0}
-      <Badge variant="warning">{$importDuplicates} duplicate{$importDuplicates === 1 ? '' : 's'}</Badge>
+      <Badge variant="warning"
+        >{$importDuplicates} duplicate{$importDuplicates === 1 ? '' : 's'}</Badge
+      >
     {/if}
   </div>
 
@@ -64,7 +78,10 @@
           {/if}
         </div>
       {/snippet}
-      <p class="card-description">Review newly imported transactions for errors, duplicates, and anomalies before they are saved.</p>
+      <p class="card-description">
+        Review newly imported transactions for errors, duplicates, and anomalies before they are
+        saved.
+      </p>
       <div class="card-action">
         <Button variant={$importPending > 0 ? 'primary' : 'secondary'} size="sm">
           <a href="/review/import" class="btn-link">{$importPending > 0 ? 'Review now' : 'View'}</a>
@@ -84,10 +101,14 @@
           {/if}
         </div>
       {/snippet}
-      <p class="card-description">Resolve and merge raw transaction descriptions into clean merchant names.</p>
+      <p class="card-description">
+        Resolve and merge raw transaction descriptions into clean merchant names.
+      </p>
       <div class="card-action">
         <Button variant={$merchantPending > 0 ? 'primary' : 'secondary'} size="sm">
-          <a href="/review/merchants" class="btn-link">{$merchantPending > 0 ? 'Review now' : 'View'}</a>
+          <a href="/review/merchants" class="btn-link"
+            >{$merchantPending > 0 ? 'Review now' : 'View'}</a
+          >
         </Button>
       </div>
     </Card>
@@ -104,10 +125,14 @@
           {/if}
         </div>
       {/snippet}
-      <p class="card-description">Review auto-detected recurring transactions such as subscriptions, bills and income.</p>
+      <p class="card-description">
+        Review auto-detected recurring transactions such as subscriptions, bills and income.
+      </p>
       <div class="card-action">
         <Button variant={$recurringPending > 0 ? 'primary' : 'secondary'} size="sm">
-          <a href="/review/recurring" class="btn-link">{$recurringPending > 0 ? 'Review now' : 'View'}</a>
+          <a href="/review/recurring" class="btn-link"
+            >{$recurringPending > 0 ? 'Review now' : 'View'}</a
+          >
         </Button>
       </div>
     </Card>
@@ -124,10 +149,14 @@
           {/if}
         </div>
       {/snippet}
-      <p class="card-description">Fix incorrectly categorised transactions and teach the system your preferences.</p>
+      <p class="card-description">
+        Fix incorrectly categorised transactions and teach the system your preferences.
+      </p>
       <div class="card-action">
         <Button variant={$categoryPending > 0 ? 'primary' : 'secondary'} size="sm">
-          <a href="/review/categories" class="btn-link">{$categoryPending > 0 ? 'Review now' : 'View'}</a>
+          <a href="/review/categories" class="btn-link"
+            >{$categoryPending > 0 ? 'Review now' : 'View'}</a
+          >
         </Button>
       </div>
     </Card>

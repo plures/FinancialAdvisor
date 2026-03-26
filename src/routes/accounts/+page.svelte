@@ -3,7 +3,16 @@
   import { accounts } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Account } from '$lib/praxis/schema';
-  import { Button, Input, Select, Card, Badge, Alert, EmptyState, dojoSlide } from '@plures/design-dojo';
+  import {
+    Button,
+    Input,
+    Select,
+    Card,
+    Badge,
+    Alert,
+    EmptyState,
+    dojoSlide,
+  } from '@plures/design-dojo';
 
   let showAddForm = false;
   let errors: string[] = [];
@@ -97,7 +106,7 @@
         {/if}
 
         <form
-          onsubmit={(e) => {
+          onsubmit={e => {
             e.preventDefault();
             handleAddAccount();
           }}
@@ -159,7 +168,11 @@
   <section class="accounts-section">
     <h2 class="section-heading">Your Accounts</h2>
     {#if $accounts.length === 0}
-      <EmptyState icon="🏦" title="No accounts yet" description='Click "Add Account" to get started.' />
+      <EmptyState
+        icon="🏦"
+        title="No accounts yet"
+        description={'Click "Add Account" to get started.'}
+      />
     {:else}
       <div class="accounts-grid">
         {#each $accounts as account (account.id)}
@@ -173,7 +186,8 @@
               </div>
               <p class="account-type">{accountTypeLabels[account.type] ?? account.type}</p>
               <p class="account-balance">
-                {account.currency || 'USD'} {account.balance.toFixed(2)}
+                {account.currency || 'USD'}
+                {account.balance.toFixed(2)}
               </p>
               {#if account.institution}
                 <p class="account-institution">{account.institution}</p>

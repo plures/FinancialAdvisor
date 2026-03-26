@@ -2,7 +2,11 @@
   import { onMount } from 'svelte';
   import { derived } from 'svelte/store';
   import { Badge, Button, Input, Toast, EmptyState } from '@plures/design-dojo';
-  import { merchantMergeStore, seedMerchantMerge, type MerchantMergeItem } from '$lib/stores/review';
+  import {
+    merchantMergeStore,
+    seedMerchantMerge,
+    type MerchantMergeItem,
+  } from '$lib/stores/review';
   import { dojoFade } from '@plures/design-dojo';
 
   let search = $state('');
@@ -13,7 +17,10 @@
   const filteredItems = derived(merchantMergeStore, $s => {
     if (!search.trim()) return $s;
     const q = search.toLowerCase();
-    return $s.filter(i => i.rawDescription.toLowerCase().includes(q) || i.suggestedMerchant.toLowerCase().includes(q));
+    return $s.filter(
+      i =>
+        i.rawDescription.toLowerCase().includes(q) || i.suggestedMerchant.toLowerCase().includes(q)
+    );
   });
 
   const pending = derived(merchantMergeStore, $s => $s.filter(i => i.status === 'pending').length);
@@ -65,7 +72,8 @@
   </header>
 
   <p class="page-description">
-    Review raw transaction descriptions and confirm or correct the suggested merchant name. High-confidence matches can be accepted in bulk.
+    Review raw transaction descriptions and confirm or correct the suggested merchant name.
+    High-confidence matches can be accepted in bulk.
   </p>
 
   <div class="toolbar">
@@ -78,15 +86,21 @@
       variant="secondary"
       size="sm"
       onclick={() => {
-        const allPending = $filteredItems.filter(i => i.status === 'pending' && i.confidence === 'high');
+        const allPending = $filteredItems.filter(
+          i => i.status === 'pending' && i.confidence === 'high'
+        );
         allPending.forEach(i => merchantMergeStore.accept(i.id, i.suggestedMerchant));
         notify(`Accepted ${allPending.length} high-confidence matches.`);
-      }}
-    >Accept all high-confidence</Button>
+      }}>Accept all high-confidence</Button
+    >
   </div>
 
   {#if $filteredItems.length === 0}
-    <EmptyState icon="🏪" title="No items to review" description="All merchants have been resolved." />
+    <EmptyState
+      icon="🏪"
+      title="No items to review"
+      description="All merchants have been resolved."
+    />
   {:else}
     <div class="table-wrap" transition:dojoFade>
       <table class="merchant-table">
@@ -114,7 +128,7 @@
                     type="text"
                     value={item.suggestedMerchant}
                     aria-label="Suggested merchant name"
-                    oninput={(e) => updateSuggestion(item, (e.target as HTMLInputElement).value)}
+                    oninput={e => updateSuggestion(item, (e.target as HTMLInputElement).value)}
                     class="merchant-input-field"
                   />
                 {:else}
@@ -137,7 +151,9 @@
                     <Button size="sm" variant="ghost" onclick={() => reject(item)}>Skip</Button>
                   </div>
                 {:else}
-                  <span class="done-label">{item.status === 'reviewed' ? '✓ Done' : '— Skipped'}</span>
+                  <span class="done-label"
+                    >{item.status === 'reviewed' ? '✓ Done' : '— Skipped'}</span
+                  >
                 {/if}
               </td>
             </tr>
@@ -150,11 +166,7 @@
 
 {#if showToast}
   <div class="toast-region" transition:dojoFade>
-    <Toast
-      message={toastMessage}
-      variant={toastVariant}
-      onclose={() => (showToast = false)}
-    />
+    <Toast message={toastMessage} variant={toastVariant} onclose={() => (showToast = false)} />
   </div>
 {/if}
 
@@ -245,7 +257,9 @@
     background-color: var(--color-bg-subtle);
   }
 
-  .row-done td { opacity: 0.65; }
+  .row-done td {
+    opacity: 0.65;
+  }
 
   .raw-desc {
     font-family: var(--font-family-mono);
@@ -255,8 +269,12 @@
     border-radius: var(--radius-sm);
   }
 
-  .col-merchant { min-width: 12rem; }
-  .col-actions { width: 11rem; }
+  .col-merchant {
+    min-width: 12rem;
+  }
+  .col-actions {
+    width: 11rem;
+  }
 
   :global(.merchant-input-field) {
     margin: 0;
