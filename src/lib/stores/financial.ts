@@ -129,12 +129,17 @@ function createGoalsStore() {
 }
 
 // Export stores
+/** Svelte store for the list of all financial accounts. */
 export const accounts = createAccountsStore();
+/** Svelte store for the list of all transactions. */
 export const transactions = createTransactionsStore();
+/** Svelte store for the list of all budgets. */
 export const budgets = createBudgetsStore();
+/** Svelte store for the list of all financial goals. */
 export const goals = createGoalsStore();
 
 // Derived stores
+/** Derived store: sum of balances across all accounts. */
 export const totalBalance = derived(accounts, $accounts => {
   return $accounts.reduce((sum, account) => {
     if (account.type === 'credit_card') {
@@ -144,6 +149,7 @@ export const totalBalance = derived(accounts, $accounts => {
   }, 0);
 });
 
+/** Derived store: accounts where `isActive` is true. */
 export const activeAccounts = derived(accounts, $accounts => {
   return $accounts.filter(account => account.isActive);
 });

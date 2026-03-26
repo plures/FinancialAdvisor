@@ -30,8 +30,10 @@ export interface EmbeddingResult {
 }
 
 // Re-export schema types for backwards compatibility
+/** Schema types re-exported for backwards compatibility with consumers of this module. */
 export type { Account, Transaction, Budget, Goal };
 
+/** Local-first financial data store backed by localStorage (Tauri: PluresDB backend). */
 export class FinancialDataStore {
   private initialized = false;
   private storage: Storage | null = null;
@@ -256,4 +258,5 @@ export class FinancialDataStore {
 }
 
 // Export singleton instance
+/** Singleton {@link FinancialDataStore} instance for use throughout the application. */
 export const dataStore = new FinancialDataStore();

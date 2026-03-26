@@ -14,6 +14,7 @@
 import type { JournalEntry } from '@financialadvisor/ledger';
 import { type Expectation, type ExpectationResult, passed, failed } from '../engine.js';
 
+/** Input data shape for the ledger-integrity expectation. */
 export interface LedgerIntegrityData {
   readonly entries: readonly JournalEntry[];
   /**
@@ -23,6 +24,7 @@ export interface LedgerIntegrityData {
   readonly knownAccountIds?: ReadonlySet<string>;
 }
 
+/** The named ledger-integrity expectation instance. */
 export const ledgerIntegrityExpectation: Expectation<LedgerIntegrityData> = {
   name: 'ledger.integrity',
   description:

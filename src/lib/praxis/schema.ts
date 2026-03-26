@@ -123,6 +123,7 @@ export const financialAdvisorSchema = {
   },
 };
 
+/** A financial account (checking, savings, credit card, investment, etc.). */
 export type Account = {
   id: string;
   name: string;
@@ -135,6 +136,7 @@ export type Account = {
   updatedAt?: Date;
 };
 
+/** A debit or credit transaction linked to an account. */
 export type Transaction = {
   id: string;
   accountId: string;
@@ -147,6 +149,7 @@ export type Transaction = {
   createdAt?: Date;
 };
 
+/** A spending budget for a category over a defined period. */
 export type Budget = {
   id: string;
   name: string;
@@ -158,6 +161,7 @@ export type Budget = {
   isActive?: boolean;
 };
 
+/** A user-defined savings or spending goal with a target amount and deadline. */
 export type Goal = {
   id: string;
   name: string;

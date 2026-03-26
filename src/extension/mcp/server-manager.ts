@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { spawn, ChildProcess } from 'child_process';
 import { join } from 'path';
 
+/** Manages the lifecycle of the MCP server child process within the VS Code extension. */
 export class MCPServerManager implements vscode.Disposable {
   private serverProcess: ChildProcess | null = null;
   private disposables: vscode.Disposable[] = [];

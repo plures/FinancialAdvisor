@@ -24,6 +24,7 @@ export interface CategorizedTransaction {
   readonly confidence: number;
 }
 
+/** Input data shape for the resolution-confidence expectation. */
 export interface ResolutionConfidenceData {
   readonly categorizedTransactions: readonly CategorizedTransaction[];
   /**
@@ -44,6 +45,7 @@ export interface ResolutionConfidenceData {
   readonly minConfidencePerItem?: number;
 }
 
+/** The named resolution-confidence expectation instance. */
 export const resolutionConfidenceExpectation: Expectation<ResolutionConfidenceData> = {
   name: 'resolution.confidence',
   description:

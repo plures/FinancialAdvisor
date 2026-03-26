@@ -1,7 +1,9 @@
 import { writable } from 'svelte/store';
 
+/** The review lifecycle state of an import item, merchant merge, or category correction. */
 export type ReviewStatus = 'pending' | 'reviewed' | 'skipped';
 
+/** A single row from a CSV/OFX import session awaiting human review. */
 export interface ImportReviewItem {
   rowIndex: number;
   sessionId: string;
@@ -13,6 +15,7 @@ export interface ImportReviewItem {
   isDuplicate?: boolean;
 }
 
+/** A candidate merchant-merge pairing for human confirmation. */
 export interface MerchantMergeItem {
   id: string;
   rawDescription: string;
@@ -22,6 +25,7 @@ export interface MerchantMergeItem {
   finalMerchant?: string;
 }
 
+/** A detected recurring transaction (subscription, bill, income, etc.). */
 export interface RecurringItem {
   id: string;
   merchant: string;
@@ -34,6 +38,7 @@ export interface RecurringItem {
   status: ReviewStatus;
 }
 
+/** A suggested category correction for a transaction, awaiting user approval. */
 export interface CategoryCorrectionItem {
   transactionId: string;
   description: string;
@@ -166,13 +171,18 @@ function createCategoryCorrectionStore() {
 
 // ── Singletons ───────────────────────────────────────────────────────────────
 
+/** Singleton store for import review items. */
 export const importReviewStore = createImportReviewStore();
+/** Singleton store for merchant-merge candidates. */
 export const merchantMergeStore = createMerchantMergeStore();
+/** Singleton store for detected recurring transactions. */
 export const recurringStore = createRecurringStore();
+/** Singleton store for category correction suggestions. */
 export const categoryCorrectionStore = createCategoryCorrectionStore();
 
 // ── Seed helpers (demo data) ─────────────────────────────────────────────────
 
+/** Populate the import review store with representative demo items. */
 export function seedImportReview(): void {
   importReviewStore.setItems([
     {
@@ -268,6 +278,7 @@ export function seedImportReview(): void {
   ]);
 }
 
+/** Populate the merchant-merge store with representative demo items. */
 export function seedMerchantMerge(): void {
   merchantMergeStore.setItems([
     {
@@ -329,6 +340,7 @@ export function seedMerchantMerge(): void {
   ]);
 }
 
+/** Populate the recurring transactions store with representative demo items. */
 export function seedRecurring(): void {
   recurringStore.setItems([
     {
@@ -411,6 +423,7 @@ export function seedRecurring(): void {
   ]);
 }
 
+/** Populate the category correction store with representative demo items. */
 export function seedCategoryCorrections(): void {
   categoryCorrectionStore.setItems([
     {
@@ -487,6 +500,7 @@ export function seedCategoryCorrections(): void {
   ]);
 }
 
+/** Seed all review stores with representative demo data in one call. */
 export function seedAllReviewData(): void {
   seedImportReview();
   seedMerchantMerge();

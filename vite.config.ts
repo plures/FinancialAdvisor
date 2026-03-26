@@ -1,6 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
+/** Vite configuration for the SvelteKit + Tauri desktop application. */
 export default defineConfig({
 	plugins: [sveltekit()],
 	// Vite options for Tauri

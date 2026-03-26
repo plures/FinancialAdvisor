@@ -7,6 +7,7 @@ import type * as vscode from 'vscode';
 let delegate: { activate: (ctx: vscode.ExtensionContext) => void; deactivate?: () => void } | null =
   null;
 
+/** Activate the VS Code extension by delegating to the packaged implementation. */
 export function activate(context: vscode.ExtensionContext): void {
   const impl = require('../packages/vscode-extension/dist/extension.js');
   delegate = impl;
@@ -17,6 +18,7 @@ export function activate(context: vscode.ExtensionContext): void {
   }
 }
 
+/** Deactivate the VS Code extension and clean up the delegate. */
 export function deactivate(): void {
   if (delegate && typeof delegate.deactivate === 'function') {
     try {

@@ -16,6 +16,7 @@ import {
   type DataEventCallbacks,
 } from '@financialadvisor/praxis/lifecycle';
 
+/** PraxisEngine class, re-exported for convenience. */
 export type { PraxisEngine };
 
 /**

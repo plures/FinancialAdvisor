@@ -2,6 +2,7 @@ import * as path from 'path';
 import Mocha from 'mocha';
 const glob = require('glob');
 
+/** Entry point for the VS Code extension test suite; discovered and invoked by the test runner. */
 export function run(): Promise<void> {
   // Create the mocha test
   const mocha = new Mocha({

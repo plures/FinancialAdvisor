@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { MCPServerManager } from '../mcp/server-manager';
 
+/** VS Code provider that surfaces financial advice capabilities via the MCP server. */
 export class FinancialAdvisorProvider implements vscode.Disposable {
   private disposables: vscode.Disposable[] = [];
 

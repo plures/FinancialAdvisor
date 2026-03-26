@@ -1,3 +1,4 @@
+/** Core financial figures: income, expenses, savings, and investments. */
 export interface FinancialData {
   income: number;
   expenses: number;
@@ -5,6 +6,7 @@ export interface FinancialData {
   investments: number;
 }
 
+/** A single budget category with its allocation, spend, and computed percentage. */
 export interface BudgetCategory {
   name: string;
   allocated: number;
@@ -12,6 +14,7 @@ export interface BudgetCategory {
   percentage: number;
 }
 
+/** An AI-generated investment recommendation with risk and return metadata. */
 export interface InvestmentRecommendation {
   type: 'stocks' | 'bonds' | 'etf' | 'crypto' | 'real-estate';
   symbol?: string;
@@ -22,6 +25,7 @@ export interface InvestmentRecommendation {
   reasoning: string;
 }
 
+/** A user-defined financial goal with a target amount, deadline, and priority. */
 export interface FinancialGoal {
   id: string;
   name: string;
