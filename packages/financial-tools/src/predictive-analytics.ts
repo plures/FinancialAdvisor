@@ -6,6 +6,7 @@
 import type { Transaction } from '@financialadvisor/shared';
 import { moneyToDecimal } from '@financialadvisor/shared';
 
+/** Spending trend analysis for a single category, including direction, confidence, and prediction. */
 export interface TrendAnalysis {
   category: string;
   trend: 'increasing' | 'decreasing' | 'stable';
@@ -14,6 +15,7 @@ export interface TrendAnalysis {
   prediction: number;
 }
 
+/** Predicted spending for a future month, including confidence interval and baseline comparison. */
 export interface SpendingForecast {
   month: string;
   predictedSpending: number;
@@ -22,6 +24,7 @@ export interface SpendingForecast {
   variance: number;
 }
 
+/** A transaction flagged as anomalous, with a statistical score and severity rating. */
 export interface AnomalyDetection {
   transaction: Transaction;
   anomalyScore: number;
@@ -29,6 +32,7 @@ export interface AnomalyDetection {
   severity: 'low' | 'medium' | 'high';
 }
 
+/** Predicted budget variance at the end of a billing period, with a risk level assessment. */
 export interface BudgetVariancePrediction {
   category: string;
   currentSpending: number;
