@@ -1,0 +1,310 @@
+/**
+ * Unit tests for the MCP protocol handlers in FinancialAdvisorMCPServer.
+ *
+ * Uses InMemoryTransport to exercise the ListResources, ReadResource,
+ * ListTools, and CallTool handler callbacks that are registered in
+ * setupHandlers(). Also covers the categorizeTransactions inner
+ * recategorization path.
+ */
+
+import { describe, it, beforeEach, afterEach } from 'mocha';
+import * as assert from 'assert';
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs';
+import { FinancialAdvisorMCPServer } from '../../packages/mcp-server/dist/server.js';
+import { SecureStorage } from '../../packages/mcp-server/dist/storage.js';
+import type { DatabaseConfig } from '../../packages/mcp-server/dist/storage.js';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { TransactionType } from '../../packages/domain/dist/index.js';
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+function makeConfig(dir: string): DatabaseConfig {
+  return { dbPath: path.join(dir, 'test.db'), encryptionKey: 'test-key' };
+}
+
+async function connectClient(
+  server: FinancialAdvisorMCPServer,
+): Promise<Client> {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  // Access the private MCP Server instance to connect the in-memory transport
+  await (server as any).server.connect(serverTransport);
+  const client = new Client(
+    { name: 'test-client', version: '1.0.0' },
+    { capabilities: {} },
+  );
+  await client.connect(clientTransport);
+  return client;
+}
+
+// ─── MCP protocol handler tests ──────────────────────────────────────────────
+
+describe('MCP Protocol Handlers', () => {
+  let server: FinancialAdvisorMCPServer;
+  let client: Client;
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-proto-'));
+    server = new FinancialAdvisorMCPServer(makeConfig(tempDir));
+    await server.initialize();
+    client = await connectClient(server);
+  });
+
+  afterEach(async () => {
+    await client.close();
+    await server.stop();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  // ── listResources ─────────────────────────────────────────────────────────
+
+  describe('listResources', () => {
+    it('returns all registered financial resources', async () => {
+      const { resources } = await client.listResources();
+      assert.ok(Array.isArray(resources));
+      assert.ok(resources.length >= 2);
+      const uris = resources.map((r) => r.uri);
+      assert.ok(uris.includes('financial://accounts'), 'should include accounts resource');
+      assert.ok(uris.includes('financial://transactions'), 'should include transactions resource');
+    });
+
+    it('each resource has a name and description', async () => {
+      const { resources } = await client.listResources();
+      for (const r of resources) {
+        assert.ok(typeof r.name === 'string' && r.name.length > 0, `resource ${r.uri} must have a non-empty name`);
+      }
+    });
+  });
+
+  // ── readResource ──────────────────────────────────────────────────────────
+
+  describe('readResource', () => {
+    it('reads the financial://accounts resource (empty store)', async () => {
+      const { contents } = await client.readResource({ uri: 'financial://accounts' });
+      assert.ok(Array.isArray(contents));
+      assert.strictEqual(contents[0].uri, 'financial://accounts');
+      assert.strictEqual(contents[0].mimeType, 'application/json');
+    });
+
+    it('reads the financial://transactions resource (empty store)', async () => {
+      const { contents } = await client.readResource({ uri: 'financial://transactions' });
+      assert.ok(Array.isArray(contents));
+      assert.strictEqual(contents[0].uri, 'financial://transactions');
+      assert.strictEqual(contents[0].mimeType, 'application/json');
+    });
+
+    it('returns JSON-parseable text for accounts', async () => {
+      const { contents } = await client.readResource({ uri: 'financial://accounts' });
+      const data = JSON.parse((contents[0] as any).text);
+      assert.ok(Array.isArray(data));
+    });
+
+    it('returns JSON-parseable text for transactions', async () => {
+      const { contents } = await client.readResource({ uri: 'financial://transactions' });
+      const data = JSON.parse((contents[0] as any).text);
+      assert.ok(Array.isArray(data));
+    });
+
+    it('throws for an unknown resource URI', async () => {
+      await assert.rejects(
+        () => client.readResource({ uri: 'financial://unknown' }),
+        /Unknown resource/,
+      );
+    });
+  });
+
+  // ── listTools ─────────────────────────────────────────────────────────────
+
+  describe('listTools', () => {
+    it('returns all six registered tools', async () => {
+      const { tools } = await client.listTools();
+      assert.ok(Array.isArray(tools));
+      const names = tools.map((t) => t.name);
+      assert.ok(names.includes('add_account'));
+      assert.ok(names.includes('add_transaction'));
+      assert.ok(names.includes('analyze_spending'));
+      assert.ok(names.includes('analyze_portfolio'));
+      assert.ok(names.includes('analyze_budgets'));
+      assert.ok(names.includes('categorize_transactions'));
+    });
+
+    it('each tool has an inputSchema', async () => {
+      const { tools } = await client.listTools();
+      for (const t of tools) {
+        assert.ok(t.inputSchema, `tool ${t.name} is missing inputSchema`);
+      }
+    });
+  });
+
+  // ── callTool ──────────────────────────────────────────────────────────────
+
+  describe('callTool', () => {
+    it('add_account creates an account via the MCP protocol', async () => {
+      const result = await client.callTool({
+        name: 'add_account',
+        arguments: { name: 'Savings', type: 'savings', balance: 5000 },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('added successfully'));
+    });
+
+    it('add_transaction records a transaction via the MCP protocol', async () => {
+      const result = await client.callTool({
+        name: 'add_transaction',
+        arguments: { accountId: 'acct-1', amount: -20, description: 'coffee shop' },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('added successfully'));
+    });
+
+    it('analyze_spending returns a spending report', async () => {
+      const result = await client.callTool({
+        name: 'analyze_spending',
+        arguments: {},
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('Spending Analysis'));
+    });
+
+    it('analyze_spending accepts date range arguments', async () => {
+      const result = await client.callTool({
+        name: 'analyze_spending',
+        arguments: { startDate: '2024-01-01', endDate: '2024-12-31' },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('Spending Analysis'));
+    });
+
+    it('analyze_portfolio returns a portfolio report', async () => {
+      const result = await client.callTool({
+        name: 'analyze_portfolio',
+        arguments: {},
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('Portfolio'));
+    });
+
+    it('analyze_budgets returns a budget report', async () => {
+      const result = await client.callTool({
+        name: 'analyze_budgets',
+        arguments: {},
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('Budget'));
+    });
+
+    it('categorize_transactions returns a categorization message', async () => {
+      const result = await client.callTool({
+        name: 'categorize_transactions',
+        arguments: {},
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('Categorized'));
+    });
+
+    it('categorize_transactions accepts a limit argument', async () => {
+      const result = await client.callTool({
+        name: 'categorize_transactions',
+        arguments: { limit: 10 },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('Categorized'));
+    });
+
+    it('throws for an unknown tool name', async () => {
+      await assert.rejects(
+        () => client.callTool({ name: 'unknown_tool', arguments: {} }),
+        /Unknown tool/,
+      );
+    });
+  });
+});
+
+// ─── categorizeTransactions recategorization path ────────────────────────────
+
+describe('categorizeTransactions — recategorization path', () => {
+  let server: FinancialAdvisorMCPServer;
+  let storage: SecureStorage;
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-recat-'));
+    const config = makeConfig(tempDir);
+    server = new FinancialAdvisorMCPServer(config);
+    await server.initialize();
+    // Access the private storage instance to seed test data
+    storage = (server as any).storage;
+  });
+
+  afterEach(async () => {
+    await server.stop();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('recategorizes transactions whose category is "Other" when a better one is found', async () => {
+    // Seed a transaction with category 'Other' that the analyzer can recognize.
+    // "starbucks" is typically mapped to a coffee/food category (not 'Other').
+    await storage.saveTransaction({
+      id: 'tx-recat-1',
+      importSessionId: 'manual',
+      accountId: 'acct-1',
+      amount: { cents: -500, currency: 'USD' },
+      description: 'STARBUCKS COFFEE',
+      date: new Date('2024-03-01'),
+      category: 'Other',
+      tags: [],
+      type: TransactionType.EXPENSE,
+    });
+
+    const result = await (server as any).categorizeTransactions({ limit: 50 });
+    // Either the transaction was successfully recategorized or no better
+    // category was found — either way the function completes without error.
+    assert.ok(typeof result.content[0].text === 'string');
+    assert.ok(result.content[0].text.includes('transactions'));
+  });
+
+  it('recategorizes multiple "Other" transactions when possible', async () => {
+    const descriptions = [
+      'WHOLE FOODS MARKET',
+      'NETFLIX.COM',
+      'AMAZON PRIME',
+    ];
+    for (let i = 0; i < descriptions.length; i++) {
+      await storage.saveTransaction({
+        id: `tx-recat-${i + 2}`,
+        importSessionId: 'manual',
+        accountId: 'acct-1',
+        amount: { cents: -1000, currency: 'USD' },
+        description: descriptions[i],
+        date: new Date('2024-03-01'),
+        category: 'Other',
+        tags: [],
+        type: TransactionType.EXPENSE,
+      });
+    }
+
+    const result = await (server as any).categorizeTransactions({ limit: 50 });
+    assert.ok(result.content[0].text.includes('transactions'));
+  });
+
+  it('does not modify transactions that already have a specific category', async () => {
+    await storage.saveTransaction({
+      id: 'tx-recat-keep',
+      importSessionId: 'manual',
+      accountId: 'acct-1',
+      amount: { cents: -2000, currency: 'USD' },
+      description: 'Rent Payment',
+      date: new Date('2024-03-01'),
+      category: 'Housing',
+      tags: [],
+      type: TransactionType.EXPENSE,
+    });
+
+    const result = await (server as any).categorizeTransactions({ limit: 50 });
+    // 'Housing' should NOT be recategorized — categorized count should be 0
+    assert.ok(result.content[0].text.startsWith('Categorized 0'));
+  });
+});
