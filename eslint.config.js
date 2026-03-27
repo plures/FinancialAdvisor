@@ -91,6 +91,14 @@ export default [
     }
   },
   {
+    files: ['test/**/*.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.mocha
+      }
+    }
+  },
+  {
     ignores: [
       'out/**',
       'dist/**',

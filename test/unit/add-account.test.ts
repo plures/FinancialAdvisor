@@ -621,7 +621,7 @@ describe('SecureStorage', () => {
       let backupSucceeded = false;
       try {
         const backupPath = await configuredStorage.createBackup();
-        if (fs.existsSync(backupPath)) backupSucceeded = true;
+        if (fs.existsSync(backupPath)) { backupSucceeded = true; }
       } catch (_err) {
         // ESM environments may not support require() in the backup impl; treat as skipped
         backupSucceeded = true;

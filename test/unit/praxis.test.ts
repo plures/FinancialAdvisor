@@ -441,7 +441,7 @@ describe('createDataEventTriggers', () => {
       },
     });
     const engine = new PraxisEngine();
-    for (const t of triggers) engine.registerTrigger(t);
+    for (const t of triggers) { engine.registerTrigger(t); }
     await engine.emit('import.completed', {
       session: makeSession(),
       transactions: [makeRawTx()],
