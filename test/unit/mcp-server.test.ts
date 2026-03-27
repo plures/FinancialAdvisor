@@ -267,6 +267,16 @@ describe('MCP Protocol Handlers', () => {
       assert.ok(typeof data.headline === 'string');
     });
 
+    it('get_financial_summary with llm format returns plain text', async () => {
+      const result = await client.callTool({
+        name: 'get_financial_summary',
+        arguments: { format: 'llm' },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(typeof text === 'string' && text.length > 0);
+      assert.ok(text.includes('Next action:'));
+    });
+
     it('analyze_spending_trend returns a JSON array (empty state)', async () => {
       const result = await client.callTool({
         name: 'analyze_spending_trend',

@@ -244,7 +244,7 @@ export class FinancialAdvisorMCPServer {
               properties: {
                 months: {
                   type: 'number',
-                  description: 'Number of months to analyse (default 3)',
+                  description: 'Number of months to analyze (default 3)',
                 },
               },
             },
@@ -586,6 +586,7 @@ Currently no budget data available. Add budgets to get budget analysis.
 
   /** Build a FinancialStateSnapshot from the current storage contents. */
   private async buildStateSnapshot(accountId?: string): Promise<import('@financialadvisor/advice').FinancialStateSnapshot> {
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
     const accounts = await this.storage.getAccounts();
     const txFilter: { accountId?: string; limit?: number } = { limit: 500 };
     if (accountId) {
@@ -593,25 +594,25 @@ Currently no budget data available. Add budgets to get budget analysis.
     }
     const transactions = await this.storage.getTransactions(txFilter);
 
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - THIRTY_DAYS_MS);
     const recentTxns = transactions.filter(t => new Date(t.date) >= thirtyDaysAgo);
 
     const liquidBalanceCents = accounts
       .filter(a => a.type === AccountType.CHECKING || a.type === AccountType.SAVINGS)
       .reduce((sum, a) => sum + Math.round(a.balance * 100), 0);
 
-    const monthlyIncomeCents = recentTxns
+    const last30DaysIncomeCents = recentTxns
       .filter(t => t.amount.cents > 0)
       .reduce((sum, t) => sum + t.amount.cents, 0);
 
-    const monthlyBurnCents = recentTxns
+    const last30DaysBurnCents = recentTxns
       .filter(t => t.amount.cents < 0)
       .reduce((sum, t) => sum + Math.abs(t.amount.cents), 0);
 
     return buildFinancialStateSnapshot({
       liquidBalanceCents,
-      monthlyIncomeCents,
-      monthlyBurnCents,
+      monthlyIncomeCents: last30DaysIncomeCents,
+      monthlyBurnCents: last30DaysBurnCents,
     });
   }
 
@@ -630,10 +631,26 @@ Currently no budget data available. Add budgets to get budget analysis.
   }
 
   /** Summarize the current financial state in plain language. */
-  async getFinancialSummary(_args: { format?: 'template' | 'llm' }) {
+  async getFinancialSummary(args: { format?: 'template' | 'llm' }) {
     const state = await this.buildStateSnapshot();
     const recommendations = generateAllRecommendations(state);
     const summary = summarizeFinancialState(state, recommendations);
+
+    if (args.format === 'llm') {
+      const text = [
+        summary.headline,
+        '',
+        summary.overview,
+        '',
+        ...summary.highlights.map(h => `- ${h}`),
+        '',
+        `Next action: ${summary.topAction}`,
+      ].join('\n');
+      return {
+        content: [{ type: 'text', text }],
+      };
+    }
+
     return {
       content: [
         {
@@ -647,8 +664,10 @@ Currently no budget data available. Add budgets to get budget analysis.
   /** Analyze spending trends by category over recent months. */
   async analyzeSpendingTrend(args: { months?: number }) {
     const months = args.months ?? 3;
-    const transactions = await this.storage.getTransactions({ limit: 1000 });
-    const trends = PredictiveAnalytics.analyzeSpendingTrends(transactions, months * 30);
+    const periodDays = months * 30;
+    const startDate = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000);
+    const transactions = await this.storage.getTransactions({ startDate });
+    const trends = PredictiveAnalytics.analyzeSpendingTrends(transactions, periodDays);
     return {
       content: [
         {
