@@ -25,6 +25,8 @@
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "dependencies": {
+    "@financialadvisor/advice": "file:../advice",
+    "@financialadvisor/analytics": "file:../analytics",
     "@financialadvisor/domain": "file:../domain",
     "@financialadvisor/resolution": "file:../resolution",
     "@modelcontextprotocol/sdk": "^1.26.0",

@@ -117,7 +117,7 @@ describe('MCP Protocol Handlers', () => {
   // ── listTools ─────────────────────────────────────────────────────────────
 
   describe('listTools', () => {
-    it('returns all six registered tools', async () => {
+    it('returns all ten registered tools', async () => {
       const { tools } = await client.listTools();
       assert.ok(Array.isArray(tools));
       const names = tools.map((t) => t.name);
@@ -127,6 +127,10 @@ describe('MCP Protocol Handlers', () => {
       assert.ok(names.includes('analyze_portfolio'));
       assert.ok(names.includes('analyze_budgets'));
       assert.ok(names.includes('categorize_transactions'));
+      assert.ok(names.includes('get_recommendations'));
+      assert.ok(names.includes('get_financial_summary'));
+      assert.ok(names.includes('analyze_spending_trend'));
+      assert.ok(names.includes('run_scenario'));
     });
 
     it('each tool has an inputSchema', async () => {
@@ -216,6 +220,119 @@ describe('MCP Protocol Handlers', () => {
       await assert.rejects(
         () => client.callTool({ name: 'unknown_tool', arguments: {} }),
         /Unknown tool/,
+      );
+    });
+
+    it('get_recommendations returns a JSON array (empty state)', async () => {
+      const result = await client.callTool({
+        name: 'get_recommendations',
+        arguments: {},
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(Array.isArray(data));
+    });
+
+    it('get_recommendations accepts an optional accountId', async () => {
+      const result = await client.callTool({
+        name: 'get_recommendations',
+        arguments: { accountId: 'acct-1' },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(Array.isArray(data));
+    });
+
+    it('get_financial_summary returns a JSON object with headline and overview', async () => {
+      const result = await client.callTool({
+        name: 'get_financial_summary',
+        arguments: {},
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(typeof data === 'object' && data !== null);
+      assert.ok(typeof data.headline === 'string');
+      assert.ok(typeof data.overview === 'string');
+      assert.ok(Array.isArray(data.highlights));
+      assert.ok(typeof data.topAction === 'string');
+    });
+
+    it('get_financial_summary accepts format parameter', async () => {
+      const result = await client.callTool({
+        name: 'get_financial_summary',
+        arguments: { format: 'template' },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(typeof data.headline === 'string');
+    });
+
+    it('get_financial_summary with llm format returns plain text', async () => {
+      const result = await client.callTool({
+        name: 'get_financial_summary',
+        arguments: { format: 'llm' },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(typeof text === 'string' && text.length > 0);
+      assert.ok(text.includes('Next action:'));
+    });
+
+    it('analyze_spending_trend returns a JSON array (empty state)', async () => {
+      const result = await client.callTool({
+        name: 'analyze_spending_trend',
+        arguments: {},
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(Array.isArray(data));
+    });
+
+    it('analyze_spending_trend accepts a months parameter', async () => {
+      const result = await client.callTool({
+        name: 'analyze_spending_trend',
+        arguments: { months: 6 },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(Array.isArray(data));
+    });
+
+    it('run_scenario returns a JSON result for income_change', async () => {
+      const result = await client.callTool({
+        name: 'run_scenario',
+        arguments: { scenario: 'income_change', params: { monthlyDeltaCents: 50000 } },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(typeof data === 'object' && data !== null);
+      assert.ok(typeof data.name === 'string');
+      assert.ok(typeof data.description === 'string');
+    });
+
+    it('run_scenario returns a JSON result for spending_reduction', async () => {
+      const result = await client.callTool({
+        name: 'run_scenario',
+        arguments: { scenario: 'spending_reduction', params: { category: 'Food', reductionCents: 10000 } },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(typeof data.monthlyDelta === 'object');
+    });
+
+    it('run_scenario returns a JSON result for cancel_subscription', async () => {
+      const result = await client.callTool({
+        name: 'run_scenario',
+        arguments: { scenario: 'cancel_subscription', params: { itemLabels: ['Netflix'] } },
+      });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      const data = JSON.parse(text);
+      assert.ok(typeof data.name === 'string');
+    });
+
+    it('run_scenario throws for an unknown scenario type', async () => {
+      await assert.rejects(
+        () => client.callTool({ name: 'run_scenario', arguments: { scenario: 'unknown', params: {} } }),
+        /Unknown scenario type/,
       );
     });
   });
