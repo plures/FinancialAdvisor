@@ -167,6 +167,8 @@ Each workspace package under `packages/` is published as a scoped npm module wit
 
 See each package's `src/index.ts` for the full list of exported types and functions.
 
+For the Svelte app modules in `src/lib`, see [`docs/API.md`](docs/API.md).
+
 ## Contributing
 
 1. Fork and clone the repository
