@@ -15,7 +15,6 @@ jobs:
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
-    continue-on-error: true  # Non-blocking: lint/format issues are reported but don't fail CI
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,11 +28,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Auto-fix lint issues
-        run: npm run lint -- --fix || true
-
-      - name: Auto-fix formatting
-        run: npm run format -- --write || true
+      - name: Lint
+        run: npm run lint
 
       - name: Check formatting
         run: npm run format:check

@@ -47,13 +47,11 @@ describe('Integration Tests', () => {
     // Try to use the CLI from PATH
     const cmd = 'financial-advisor-mcp';
 
-    let child: ReturnType<typeof spawn> | undefined;
-    child = spawn(cmd, [], { env, stdio: ['pipe', 'pipe', 'pipe'] });
+    const child = spawn(cmd, [], { env, stdio: ['pipe', 'pipe', 'pipe'] });
     let skipped = false;
     child.on('error', (e) => {
       if (!skipped) {
         skipped = true;
-        // eslint-disable-next-line no-console
         console.warn('Skipping MCP smoke test:', e.message || String(e));
         return done();
       }
@@ -80,9 +78,8 @@ describe('Integration Tests', () => {
       } catch (e) {
         if (!skipped) {
           skipped = true;
-          // eslint-disable-next-line no-console
           console.warn('Skipping MCP smoke test: failed to write to stdin');
-          try { child?.kill('SIGKILL'); } catch {}
+          try { child?.kill('SIGKILL'); } catch { /* ignore kill errors */ }
           return done();
         }
       }
@@ -91,9 +88,8 @@ describe('Integration Tests', () => {
         if (skipped) {
           return;
         }
-        try { child?.kill('SIGKILL'); } catch {}
+        try { child?.kill('SIGKILL'); } catch { /* ignore kill errors */ }
         skipped = true;
-        // eslint-disable-next-line no-console
         console.warn('Skipping MCP smoke test: timeout waiting for response');
         done();
       }, 8000);
@@ -107,7 +103,7 @@ describe('Integration Tests', () => {
             if (resp.id === request.id) {
               clearTimeout(timeout);
               child?.stdout?.off('data', onData);
-              try { child?.kill('SIGTERM'); } catch {}
+              try { child?.kill('SIGTERM'); } catch { /* ignore kill errors */ }
               assert.ok(resp.result?.resources && Array.isArray(resp.result.resources), 'resources array present');
               return done();
             }
