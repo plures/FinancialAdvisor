@@ -27,6 +27,7 @@ src/**/*.js.map
 src/**/*.d.ts
 src/**/*.d.ts.map
 !src/**/*.svelte.d.ts
+!src/types/financialadvisor-modules.d.ts
 
 # Tauri
 src-tauri/target/

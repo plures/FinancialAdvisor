@@ -38,7 +38,10 @@ export interface Expectation<T> {
 
 /** Build a passing {@link ExpectationResult} for the given expectation name. */
 export function passed(name: string, metadata?: Record<string, unknown>): ExpectationResult {
-  return { passed: true, expectationName: name, violations: [], metadata };
+  if (metadata) {
+    return { passed: true, expectationName: name, violations: [], metadata };
+  }
+  return { passed: true, expectationName: name, violations: [] };
 }
 
 /** Build a failing {@link ExpectationResult} with one or more violation messages. */
@@ -47,7 +50,10 @@ export function failed(
   violations: string[],
   metadata?: Record<string, unknown>
 ): ExpectationResult {
-  return { passed: false, expectationName: name, violations, metadata };
+  if (metadata) {
+    return { passed: false, expectationName: name, violations, metadata };
+  }
+  return { passed: false, expectationName: name, violations };
 }
 
 // ─── Triggers ────────────────────────────────────────────────────────────────
