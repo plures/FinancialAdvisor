@@ -5,7 +5,7 @@
  * All text is generated deterministically from the supplied data.
  */
 
-import type { FinancialSummary, FinancialStateSnapshot, Recommendation } from './types.js';
+import type { FinancialSummary, FinancialStateSnapshot, Recommendation, SummaryProvider } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -79,6 +79,131 @@ export function summarizeRecommendation(rec: Recommendation): string {
     `${rec.title}: Save $${monthly}/month ($${annual}/year). ` +
     `${confidence} based on transaction history.`
   );
+}
+
+/**
+ * Generate a financial summary, optionally enriched by an LLM provider.
+ *
+ * When a `SummaryProvider` is supplied, the deterministic template-based summary
+ * is first generated, then passed to the provider as context for a
+ * natural-language reformulation.  The LLM **never invents numbers** — all
+ * figures originate from the deterministic summary.
+ *
+ * When no provider is supplied (or the provider call fails), the template-based
+ * summary is returned as-is, ensuring the system always works without AI.
+ *
+ * @param state           - Current financial snapshot.
+ * @param recommendations - Ranked recommendations (may be empty).
+ * @param provider        - Optional LLM provider for natural-language enrichment.
+ */
+export async function summarizeWithProvider(
+  state: FinancialStateSnapshot,
+  recommendations: readonly Recommendation[] = [],
+  provider?: SummaryProvider
+): Promise<FinancialSummary> {
+  // Always compute the deterministic summary first
+  const templateSummary = summarizeFinancialState(state, recommendations);
+
+  if (!provider) {
+    return templateSummary;
+  }
+
+  try {
+    const prompt = _buildLLMPrompt(templateSummary, state, recommendations);
+    const llmResponse = await provider.summarize(prompt);
+    return _parseLLMResponse(llmResponse, templateSummary);
+  } catch {
+    // Fallback to template summary on any LLM failure
+    return templateSummary;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// LLM prompt & response helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a structured prompt for the LLM containing only deterministic data.
+ */
+function _buildLLMPrompt(
+  templateSummary: FinancialSummary,
+  state: FinancialStateSnapshot,
+  recommendations: readonly Recommendation[]
+): string {
+  const lines: string[] = [
+    'You are a financial advisor assistant. Rewrite the following deterministic financial summary',
+    'into clear, friendly natural language. Do NOT invent or change any numbers — only rephrase',
+    'the text below. Return your response in exactly this JSON format:',
+    '{"headline":"...","overview":"...","highlights":["..."],"topAction":"..."}',
+    '',
+    '--- DETERMINISTIC DATA ---',
+    '',
+    `Monthly income: $${_fmt(state.monthlyIncomeCents)}`,
+    `Monthly expenses: $${_fmt(state.monthlyBurnCents)}`,
+    `Liquid balance: $${_fmt(state.liquidBalanceCents)}`,
+    '',
+    `Headline: ${templateSummary.headline}`,
+    `Overview: ${templateSummary.overview}`,
+    `Highlights:`,
+    ...templateSummary.highlights.map(h => `  - ${h}`),
+    `Top action: ${templateSummary.topAction}`,
+  ];
+
+  if (recommendations.length > 0) {
+    lines.push('', 'Recommendations:');
+    for (const rec of recommendations) {
+      lines.push(`  - ${rec.title}: Save $${_fmt(rec.monthlySavings.cents)}/month (${rec.confidence} confidence)`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Parse the LLM response into a FinancialSummary.
+ * Falls back to the template summary if parsing fails.
+ */
+function _parseLLMResponse(
+  response: string,
+  fallback: FinancialSummary
+): FinancialSummary {
+  try {
+    // Try to extract JSON from the response
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return fallback;
+    }
+
+    const parsed: unknown = JSON.parse(jsonMatch[0]);
+
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'headline' in parsed &&
+      'overview' in parsed &&
+      'highlights' in parsed &&
+      'topAction' in parsed
+    ) {
+      const obj = parsed as Record<string, unknown>;
+
+      const headline = typeof obj['headline'] === 'string' ? obj['headline'] : fallback.headline;
+      const overview = typeof obj['overview'] === 'string' ? obj['overview'] : fallback.overview;
+      const topAction = typeof obj['topAction'] === 'string' ? obj['topAction'] : fallback.topAction;
+
+      let highlights: readonly string[];
+      if (Array.isArray(obj['highlights']) && obj['highlights'].every((h: unknown) => typeof h === 'string')) {
+        highlights = obj['highlights'] as string[];
+      } else {
+        highlights = fallback.highlights;
+      }
+
+      return { headline, overview, highlights, topAction };
+    }
+
+    return fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 // ---------------------------------------------------------------------------
