@@ -12,6 +12,8 @@ import type {
   RecommendationLineItem,
   RecurringCommitmentSnapshot,
   CategorySpendSnapshot,
+  DebtSnapshot,
+  FinancialStateSnapshot,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -215,9 +217,284 @@ export function rankRecommendations(recommendations: readonly Recommendation[]):
   });
 }
 
+/**
+ * Generate debt-optimisation recommendations.
+ *
+ * Analyses each debt's interest rate and balance to suggest extra payments
+ * on high-interest debts (avalanche strategy).  Debts are flagged when their
+ * annual interest rate exceeds `highInterestThreshold` (default 10%).
+ *
+ * @param debts                  - Outstanding debt snapshots.
+ * @param highInterestThreshold  - Minimum rate to flag as "high interest" (default 0.10).
+ * @param currency               - Currency for Money values (default 'USD').
+ */
+export function generateDebtRecommendations(
+  debts: readonly DebtSnapshot[],
+  highInterestThreshold: number = 0.10,
+  currency: Currency = 'USD'
+): Recommendation[] {
+  if (debts.length === 0) {
+    return [];
+  }
+
+  const recs: Recommendation[] = [];
+
+  // High-interest debts — prioritise extra payments
+  const highInterest = [...debts]
+    .filter(d => d.annualInterestRate >= highInterestThreshold && d.balanceCents > 0)
+    .sort((a, b) => b.annualInterestRate - a.annualInterestRate);
+
+  for (const debt of highInterest) {
+    // Suggest paying 20% more than the minimum as a conservative starting point
+    const extraCents = Math.round(debt.minimumPaymentCents * 0.20);
+    if (extraCents <= 0) {
+      continue;
+    }
+
+    // Rough approximation of annual interest saved by paying extra.
+    // Uses simple interest on the extra principal reduction rather than full
+    // amortisation — intentionally conservative for recommendation purposes.
+    // Exact calculations are handled by computeDebtPayoff in the analytics package.
+    const annualInterestOnExtra = Math.round(extraCents * 12 * debt.annualInterestRate);
+    const monthly = createMoney(annualInterestOnExtra > 0 ? Math.round(annualInterestOnExtra / 12) : extraCents, currency);
+    const annual = multiplyMoney(monthly, 12);
+    const ratePct = (debt.annualInterestRate * 100).toFixed(1);
+
+    recs.push({
+      id: nextId('rec-debt'),
+      title: `Pay extra on ${debt.name}`,
+      description:
+        `Your ${debt.name} carries a ${ratePct}% interest rate with a ` +
+        `$${_fmt(debt.balanceCents)} balance. Adding $${_fmt(extraCents)}/month ` +
+        `to your payment could save approximately $${_fmt(annual.cents)}/year in interest.`,
+      category: 'debt_payoff',
+      monthlySavings: monthly,
+      annualSavings: annual,
+      confidence: 'high',
+      sourceTransactionIds: [],
+    });
+  }
+
+  return recs;
+}
+
+/**
+ * Generate savings-opportunity recommendations based on financial state.
+ *
+ * Examines the user's savings rate and emergency runway to suggest concrete
+ * savings actions.
+ *
+ * @param state    - Current financial state snapshot.
+ * @param currency - Currency for Money values (default 'USD').
+ */
+export function generateSavingsRecommendations(
+  state: FinancialStateSnapshot,
+  currency: Currency = 'USD'
+): Recommendation[] {
+  const recs: Recommendation[] = [];
+  const { monthlyIncomeCents, monthlyBurnCents, liquidBalanceCents } = state;
+
+  const monthlySurplusCents = monthlyIncomeCents - monthlyBurnCents;
+  const savingsRatePct = monthlyIncomeCents > 0 ? (monthlySurplusCents / monthlyIncomeCents) * 100 : 0;
+  const runway = monthlyBurnCents > 0 ? liquidBalanceCents / monthlyBurnCents : Infinity;
+
+  // Emergency fund recommendation — runway < 3 months
+  if (isFinite(runway) && runway < 3) {
+    const targetCents = monthlyBurnCents * 3;
+    const shortfallCents = Math.max(0, targetCents - liquidBalanceCents);
+    const monthlySavingsSuggestion = monthlySurplusCents > 0
+      ? Math.min(monthlySurplusCents, shortfallCents)
+      : Math.round(monthlyBurnCents * 0.10); // suggest saving 10% of expenses if no surplus
+
+    const monthly = createMoney(monthlySavingsSuggestion, currency);
+    const annual = multiplyMoney(monthly, 12);
+
+    recs.push({
+      id: nextId('rec-savings'),
+      title: 'Build an emergency fund',
+      description:
+        `Your liquid savings ($${_fmt(liquidBalanceCents)}) cover only ` +
+        `${runway.toFixed(1)} months of expenses. Aim for at least 3 months ` +
+        `($${_fmt(targetCents)}). Setting aside $${_fmt(monthlySavingsSuggestion)}/month ` +
+        `would close the $${_fmt(shortfallCents)} gap.`,
+      category: 'savings_increase',
+      monthlySavings: monthly,
+      annualSavings: annual,
+      confidence: 'high',
+      sourceTransactionIds: [],
+    });
+  }
+
+  // Savings rate improvement — below 20% target
+  if (savingsRatePct >= 0 && savingsRatePct < 20 && monthlyIncomeCents > 0) {
+    const targetSavingsCents = Math.round(monthlyIncomeCents * 0.20);
+    const currentSavingsCents = Math.max(0, monthlySurplusCents);
+    const additionalCents = Math.max(0, targetSavingsCents - currentSavingsCents);
+
+    if (additionalCents > 0) {
+      const monthly = createMoney(additionalCents, currency);
+      const annual = multiplyMoney(monthly, 12);
+
+      recs.push({
+        id: nextId('rec-savings'),
+        title: 'Increase your savings rate to 20%',
+        description:
+          `Your current savings rate is ${savingsRatePct.toFixed(0)}%. ` +
+          `Increasing it to the recommended 20% would mean saving an extra ` +
+          `$${_fmt(additionalCents)}/month ($${_fmt(annual.cents)}/year).`,
+        category: 'savings_increase',
+        monthlySavings: monthly,
+        annualSavings: annual,
+        confidence: 'medium',
+        sourceTransactionIds: [],
+      });
+    }
+  }
+
+  return recs;
+}
+
+/**
+ * Generate income-optimisation recommendations based on financial state.
+ *
+ * Examines the gap between income and expenses and recurring commitments
+ * relative to income to suggest income-related improvements.
+ *
+ * @param state    - Current financial state snapshot.
+ * @param currency - Currency for Money values (default 'USD').
+ */
+export function generateIncomeRecommendations(
+  state: FinancialStateSnapshot,
+  currency: Currency = 'USD'
+): Recommendation[] {
+  const recs: Recommendation[] = [];
+  const { monthlyIncomeCents, monthlyBurnCents } = state;
+
+  // Spending exceeds income — income increase needed
+  if (monthlyBurnCents > monthlyIncomeCents && monthlyIncomeCents > 0) {
+    const deficitCents = monthlyBurnCents - monthlyIncomeCents;
+    const monthly = createMoney(deficitCents, currency);
+    const annual = multiplyMoney(monthly, 12);
+
+    recs.push({
+      id: nextId('rec-income'),
+      title: 'Close the income gap',
+      description:
+        `Your monthly expenses ($${_fmt(monthlyBurnCents)}) exceed your income ` +
+        `($${_fmt(monthlyIncomeCents)}) by $${_fmt(deficitCents)}. Consider ` +
+        `ways to increase income or reduce spending to close this gap.`,
+      category: 'income_optimization',
+      monthlySavings: monthly,
+      annualSavings: annual,
+      confidence: 'medium',
+      sourceTransactionIds: [],
+    });
+  }
+
+  // Recurring commitments eat > 50% of income
+  const totalRecurring = state.recurringCommitments.reduce(
+    (s, c) => s + c.monthlyAmountCents, 0
+  );
+
+  if (monthlyIncomeCents > 0 && totalRecurring > monthlyIncomeCents * 0.5) {
+    const overCommitCents = totalRecurring - Math.round(monthlyIncomeCents * 0.5);
+    const monthly = createMoney(overCommitCents, currency);
+    const annual = multiplyMoney(monthly, 12);
+    const recurringPct = ((totalRecurring / monthlyIncomeCents) * 100).toFixed(0);
+
+    recs.push({
+      id: nextId('rec-income'),
+      title: 'Reduce fixed-cost burden',
+      description:
+        `Recurring commitments ($${_fmt(totalRecurring)}/month) represent ` +
+        `${recurringPct}% of your income, above the recommended 50%. ` +
+        `Reducing fixed costs by $${_fmt(overCommitCents)}/month would free up ` +
+        `$${_fmt(annual.cents)}/year.`,
+      category: 'income_optimization',
+      monthlySavings: monthly,
+      annualSavings: annual,
+      confidence: 'low',
+      sourceTransactionIds: [],
+    });
+  }
+
+  return recs;
+}
+
+/**
+ * Generate all recommendation categories from a financial state snapshot.
+ *
+ * Combines subscription, spending, debt, savings, and income recommendations
+ * into a single ranked list ordered by impact × feasibility.
+ *
+ * @param state    - Complete financial state snapshot.
+ * @param currency - Currency for Money values (default 'USD').
+ */
+export function generateAllRecommendations(
+  state: FinancialStateSnapshot,
+  currency: Currency = 'USD'
+): Recommendation[] {
+  const all: Recommendation[] = [
+    ...generateSubscriptionRecommendations(state.recurringCommitments, 90, 100, currency),
+    ...generateSpendingRecommendations(state.categorySpend, 3, currency),
+    ...generateDebtRecommendations(state.debts ?? [], 0.10, currency),
+    ...generateSavingsRecommendations(state, currency),
+    ...generateIncomeRecommendations(state, currency),
+  ];
+
+  return rankByImpactFeasibility(all);
+}
+
+/**
+ * Rank recommendations by impact × feasibility score, descending.
+ *
+ * - **Impact** is the estimated monthly savings in cents.
+ * - **Feasibility** is a multiplier (0 – 1) derived from the recommendation
+ *   category and confidence level.
+ *
+ * Higher-feasibility actions (e.g. cancelling a subscription) are promoted
+ * relative to lower-feasibility actions (e.g. income optimisation) even when
+ * the raw savings amount is lower.
+ */
+export function rankByImpactFeasibility(recommendations: readonly Recommendation[]): Recommendation[] {
+  return [...recommendations].sort((a, b) => {
+    const scoreA = _impactFeasibilityScore(a);
+    const scoreB = _impactFeasibilityScore(b);
+    return scoreB - scoreA;
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
+
+/** Compute a composite impact × feasibility score for ranking. */
+function _impactFeasibilityScore(rec: Recommendation): number {
+  return rec.monthlySavings.cents * _feasibilityMultiplier(rec);
+}
+
+/** Category-based feasibility multiplier (0 – 1). */
+function _feasibilityMultiplier(rec: Recommendation): number {
+  const categoryWeights: Record<string, number> = {
+    subscription_cancellation: 1.0,
+    budget_rebalance: 0.8,
+    spending_reduction: 0.7,
+    debt_payoff: 0.6,
+    savings_increase: 0.5,
+    income_optimization: 0.3,
+  };
+
+  const confidenceWeights: Record<string, number> = {
+    high: 1.0,
+    medium: 0.7,
+    low: 0.4,
+  };
+
+  const catWeight = categoryWeights[rec.category] ?? 0.5;
+  const confWeight = confidenceWeights[rec.confidence] ?? 0.5;
+
+  return catWeight * confWeight;
+}
 
 /** Format cents as a dollars string with 2 decimal places. */
 function _fmt(cents: number): string {

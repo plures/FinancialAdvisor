@@ -20,7 +20,8 @@ export type RecommendationCategory =
   | 'spending_reduction'
   | 'debt_payoff'
   | 'savings_increase'
-  | 'budget_rebalance';
+  | 'budget_rebalance'
+  | 'income_optimization';
 
 /** A single actionable financial recommendation. */
 export interface Recommendation {
@@ -220,4 +221,38 @@ export interface FinancialStateSnapshot {
   readonly currency: string;
   readonly recurringCommitments: readonly RecurringCommitmentSnapshot[];
   readonly categorySpend: readonly CategorySpendSnapshot[];
+  /** Outstanding debts for debt-optimisation recommendations. */
+  readonly debts?: readonly DebtSnapshot[];
+}
+
+// ---------------------------------------------------------------------------
+// Debt snapshot
+// ---------------------------------------------------------------------------
+
+/** Snapshot of a single debt for recommendation generation. */
+export interface DebtSnapshot {
+  /** Display name for the debt (e.g. "Chase Visa"). */
+  readonly name: string;
+  /** Current outstanding balance in cents. */
+  readonly balanceCents: number;
+  /** Annual interest rate as a decimal (e.g. 0.20 for 20%). */
+  readonly annualInterestRate: number;
+  /** Current minimum monthly payment in cents. */
+  readonly minimumPaymentCents: number;
+}
+
+// ---------------------------------------------------------------------------
+// LLM summarisation provider
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimal interface for an LLM provider used to enrich deterministic summaries.
+ *
+ * The provider receives a prompt containing **only** pre-computed, deterministic
+ * data and returns a natural-language reformulation.  It must **never** invent
+ * numbers — all figures come from the prompt context.
+ */
+export interface SummaryProvider {
+  /** Send a prompt and receive a natural-language response. */
+  summarize(prompt: string): Promise<string>;
 }
