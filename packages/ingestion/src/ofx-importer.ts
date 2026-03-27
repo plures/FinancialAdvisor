@@ -18,8 +18,10 @@ import type {
   OFXTransaction,
   PrivacyLevel,
 } from '@financialadvisor/ledger';
+import type { TransactionHashStore } from '@financialadvisor/storage';
 import { ImportSessionStore } from './import-session-store.js';
 import { RawTransactionStore } from './raw-transaction.js';
+import { computeOFXTransactionHash } from './dedup.js';
 
 /** Options controlling how an OFX/QFX file is imported (account mapping, dedup behaviour). */
 export interface OFXImportOptions {
@@ -30,14 +32,16 @@ export interface OFXImportOptions {
 
 /**
  * Imports OFX and QFX bank export files into the raw-transaction store.
- * Deduplicates by file hash before parsing.
+ * Deduplicates by file hash before parsing, and by FITID (scoped to account)
+ * within a file.
  */
 export class OFXImporter implements IFileImporter {
   private readonly maxFileSizeDefault = 10 * 1024 * 1024; // 10 MB
 
   constructor(
     private readonly sessionStore: ImportSessionStore = new ImportSessionStore(),
-    private readonly txStore: RawTransactionStore = new RawTransactionStore()
+    private readonly txStore: RawTransactionStore = new RawTransactionStore(),
+    private readonly hashStore?: TransactionHashStore
   ) {}
 
   getSupportedExtensions(): string[] {
@@ -83,6 +87,7 @@ export class OFXImporter implements IFileImporter {
       duration: 0,
       timestamp: new Date(),
       privacyLevel: 'local' as PrivacyLevel,
+      duplicates: [],
     };
 
     try {
@@ -126,23 +131,51 @@ export class OFXImporter implements IFileImporter {
       this.sessionStore.save(session);
       result.importSessionId = sessionId;
 
-      // 6. Persist raw transactions
+      // 6. Persist raw transactions (with transaction-level deduplication)
       for (const [index, transaction] of transactions.entries()) {
         try {
-          this.txStore.save({
-            id: generateId(),
-            importSessionId: sessionId,
-            sourceId: transaction.id, // FITID
-            date: transaction.date,
-            description: transaction.name,
-            amount: transaction.amount,
-            type: transaction.type,
-            memo: transaction.memo,
-            metadata: {
-              ...(transaction.checkNum ? { checkNum: transaction.checkNum } : {}),
-            },
-          });
-          result.transactionsImported++;
+          // Transaction-level dedup: use FITID scoped to accountId as the
+          // unique key so that the same FITID from different institutions/
+          // accounts is never mis-identified as a duplicate.
+          if (this.hashStore && options.skipDuplicates !== false) {
+            const txHash = computeOFXTransactionHash(transaction.id, accountId);
+            if (this.hashStore.has(txHash)) {
+              result.transactionsSkipped++;
+              result.duplicates!.push(txHash);
+              continue;
+            }
+            const txId = generateId();
+            this.txStore.save({
+              id: txId,
+              importSessionId: sessionId,
+              sourceId: transaction.id, // FITID
+              date: transaction.date,
+              description: transaction.name,
+              amount: transaction.amount,
+              type: transaction.type,
+              memo: transaction.memo,
+              metadata: {
+                ...(transaction.checkNum ? { checkNum: transaction.checkNum } : {}),
+              },
+            });
+            this.hashStore.add(txHash, txId);
+            result.transactionsImported++;
+          } else {
+            this.txStore.save({
+              id: generateId(),
+              importSessionId: sessionId,
+              sourceId: transaction.id, // FITID
+              date: transaction.date,
+              description: transaction.name,
+              amount: transaction.amount,
+              type: transaction.type,
+              memo: transaction.memo,
+              metadata: {
+                ...(transaction.checkNum ? { checkNum: transaction.checkNum } : {}),
+              },
+            });
+            result.transactionsImported++;
+          }
         } catch (err) {
           result.transactionsFailed++;
           result.errors.push({

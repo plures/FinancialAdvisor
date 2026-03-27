@@ -21,6 +21,7 @@
   "dependencies": {
     "@financialadvisor/domain": "file:../domain",
     "@financialadvisor/ledger": "file:../ledger",
+    "@financialadvisor/storage": "file:../storage",
     "csv-parse": "^5.5.3"
   },
   "devDependencies": {

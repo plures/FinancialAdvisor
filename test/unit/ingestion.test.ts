@@ -15,6 +15,12 @@ import { RawTransactionStore } from '../../packages/ingestion/dist/raw-transacti
 import { CSVImporter, createCommonBankTemplates } from '../../packages/ingestion/dist/csv-importer.js';
 import { OFXImporter } from '../../packages/ingestion/dist/ofx-importer.js';
 import { createAccountIntegrationService } from '../../packages/ingestion/dist/index.js';
+import {
+  computeTransactionHash,
+  computeOFXTransactionHash,
+  isDuplicate,
+} from '../../packages/ingestion/dist/dedup.js';
+import { TransactionHashStore } from '../../packages/storage/dist/transaction-hash-store.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -617,5 +623,312 @@ describe('createAccountIntegrationService', () => {
     const service = createAccountIntegrationService();
     const templates = service.listCSVTemplates();
     assert.ok(templates.length >= 4);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// computeTransactionHash
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('computeTransactionHash', () => {
+  it('should return a 64-character hex SHA-256 string', () => {
+    const hash = computeTransactionHash(
+      { date: '2024-01-15', amount: -45, description: 'Grocery Store' },
+      'acct-1'
+    );
+    assert.strictEqual(typeof hash, 'string');
+    assert.strictEqual(hash.length, 64);
+    assert.ok(/^[0-9a-f]{64}$/.test(hash), 'should be lowercase hex');
+  });
+
+  it('should produce the same hash for identical inputs', () => {
+    const tx = { date: '2024-01-15', amount: -45.0, description: 'Grocery Store' };
+    const h1 = computeTransactionHash(tx, 'acct-1');
+    const h2 = computeTransactionHash(tx, 'acct-1');
+    assert.strictEqual(h1, h2);
+  });
+
+  it('should produce different hashes for different descriptions (same date+amount)', () => {
+    const h1 = computeTransactionHash(
+      { date: '2024-01-15', amount: -5.0, description: 'Coffee Shop A' },
+      'acct-1'
+    );
+    const h2 = computeTransactionHash(
+      { date: '2024-01-15', amount: -5.0, description: 'Coffee Shop B' },
+      'acct-1'
+    );
+    assert.notStrictEqual(h1, h2, 'different merchants must not produce the same hash');
+  });
+
+  it('should produce different hashes for different accounts (same tx fields)', () => {
+    const tx = { date: '2024-01-15', amount: -45, description: 'Grocery Store' };
+    const h1 = computeTransactionHash(tx, 'acct-1');
+    const h2 = computeTransactionHash(tx, 'acct-2');
+    assert.notStrictEqual(h1, h2, 'same tx in different accounts must not be treated as duplicate');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// computeOFXTransactionHash
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('computeOFXTransactionHash', () => {
+  it('should return a 64-character hex SHA-256 string', () => {
+    const hash = computeOFXTransactionHash('TXN001', 'acct-1');
+    assert.strictEqual(hash.length, 64);
+    assert.ok(/^[0-9a-f]{64}$/.test(hash));
+  });
+
+  it('should be stable across calls with the same inputs', () => {
+    assert.strictEqual(
+      computeOFXTransactionHash('TXN001', 'acct-1'),
+      computeOFXTransactionHash('TXN001', 'acct-1')
+    );
+  });
+
+  it('should differ for the same FITID on different accounts', () => {
+    const h1 = computeOFXTransactionHash('TXN001', 'acct-1');
+    const h2 = computeOFXTransactionHash('TXN001', 'acct-2');
+    assert.notStrictEqual(h1, h2, 'same FITID in different accounts must not collide');
+  });
+
+  it('should differ for different FITIDs on the same account', () => {
+    const h1 = computeOFXTransactionHash('TXN001', 'acct-1');
+    const h2 = computeOFXTransactionHash('TXN002', 'acct-1');
+    assert.notStrictEqual(h1, h2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// isDuplicate
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('isDuplicate', () => {
+  it('should return false when hash is not in store', async () => {
+    const store = new TransactionHashStore();
+    assert.strictEqual(await isDuplicate('abc', store), false);
+  });
+
+  it('should return true after hash is added', async () => {
+    const store = new TransactionHashStore();
+    store.add('abc123', 'tx-1');
+    assert.strictEqual(await isDuplicate('abc123', store), true);
+  });
+
+  it('should return false after hash is removed', async () => {
+    const store = new TransactionHashStore();
+    store.add('abc123', 'tx-1');
+    store.remove('abc123');
+    assert.strictEqual(await isDuplicate('abc123', store), false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TransactionHashStore
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('TransactionHashStore', () => {
+  it('should start empty', () => {
+    const store = new TransactionHashStore();
+    assert.strictEqual(store.size, 0);
+  });
+
+  it('should track added hashes', () => {
+    const store = new TransactionHashStore();
+    store.add('hash1', 'tx-1');
+    assert.strictEqual(store.has('hash1'), true);
+    assert.strictEqual(store.size, 1);
+  });
+
+  it('should return stored transactionId via getTransactionId', () => {
+    const store = new TransactionHashStore();
+    store.add('hash1', 'tx-42');
+    assert.strictEqual(store.getTransactionId('hash1'), 'tx-42');
+  });
+
+  it('should return undefined for unknown hash', () => {
+    const store = new TransactionHashStore();
+    assert.strictEqual(store.getTransactionId('nope'), undefined);
+  });
+
+  it('should remove hashes and return true', () => {
+    const store = new TransactionHashStore();
+    store.add('hash1', 'tx-1');
+    assert.strictEqual(store.remove('hash1'), true);
+    assert.strictEqual(store.has('hash1'), false);
+    assert.strictEqual(store.size, 0);
+  });
+
+  it('remove should return false for non-existent hash', () => {
+    const store = new TransactionHashStore();
+    assert.strictEqual(store.remove('nope'), false);
+  });
+
+  it('should overwrite transactionId on duplicate add', () => {
+    const store = new TransactionHashStore();
+    store.add('hash1', 'tx-1');
+    store.add('hash1', 'tx-2');
+    assert.strictEqual(store.getTransactionId('hash1'), 'tx-2');
+    assert.strictEqual(store.size, 1);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSVImporter — transaction-level deduplication
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('CSVImporter — transaction-level deduplication', () => {
+  it('should skip duplicate transactions on re-import of different file with same rows', async () => {
+    const content = `2024-01-15,Grocery Store,-45.00
+2024-01-16,Coffee Shop,-5.50
+2024-01-17,Salary,2500.00
+`;
+    const p1 = writeTmpFile('dedup-csv-1.csv', content);
+    // Slightly different filename / file hash but identical rows
+    const p2 = writeTmpFile('dedup-csv-2.csv', content + ' ');
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+
+    const first = await new CSVImporter(sessionStore, txStore, hashStore).import(p1, {
+      accountId: 'acct-csv-dedup',
+    });
+    assert.strictEqual(first.transactionsImported, 3);
+    assert.strictEqual(first.transactionsSkipped, 0);
+    assert.deepStrictEqual(first.duplicates, []);
+
+    // Re-import same rows from a different file
+    const second = await new CSVImporter(sessionStore, txStore, hashStore).import(p2, {
+      accountId: 'acct-csv-dedup',
+    });
+    assert.strictEqual(second.transactionsImported, 0);
+    assert.strictEqual(second.transactionsSkipped, 3);
+    assert.strictEqual(second.duplicates!.length, 3);
+  });
+
+  it('should not flag same rows for different accounts as duplicates', async () => {
+    const content = `2024-01-15,Grocery Store,-45.00\n`;
+    const p1 = writeTmpFile('dedup-acct-1.csv', content);
+    const p2 = writeTmpFile('dedup-acct-2.csv', content + ' ');
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+
+    const r1 = await new CSVImporter(sessionStore, txStore, hashStore).import(p1, {
+      accountId: 'acct-A',
+    });
+    assert.strictEqual(r1.transactionsImported, 1);
+
+    // Same content but different accountId — must NOT be flagged as duplicate
+    const r2 = await new CSVImporter(sessionStore, txStore, hashStore).import(p2, {
+      accountId: 'acct-B',
+    });
+    assert.strictEqual(r2.transactionsImported, 1);
+    assert.strictEqual(r2.transactionsSkipped, 0);
+  });
+
+  it('should allow skipDuplicates:false to bypass transaction-level dedup', async () => {
+    const content = `2024-01-15,Grocery Store,-45.00\n`;
+    const p1 = writeTmpFile('dedup-off-1.csv', content);
+    const p2 = writeTmpFile('dedup-off-2.csv', content + ' ');
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+
+    await new CSVImporter(sessionStore, txStore, hashStore).import(p1, {
+      accountId: 'acct-off',
+    });
+
+    // skipDuplicates: false should bypass both file-level and transaction-level dedup
+    const r2 = await new CSVImporter(sessionStore, txStore, hashStore).import(p2, {
+      accountId: 'acct-off',
+      skipDuplicates: false,
+    });
+    assert.strictEqual(r2.transactionsImported, 1);
+    assert.strictEqual(r2.transactionsSkipped, 0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OFXImporter — transaction-level deduplication (FITID-based)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('OFXImporter — transaction-level deduplication (FITID)', () => {
+  it('should skip duplicate OFX transactions on re-import from a different file', async () => {
+    // Two files with the same transactions but different file hashes
+    const p1 = writeTmpFile('dedup-ofx-1.ofx', SIMPLE_OFX);
+    const p2 = writeTmpFile('dedup-ofx-2.qfx', SIMPLE_OFX + ' ');
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+
+    const first = await new OFXImporter(sessionStore, txStore, hashStore).import(p1, {
+      accountId: 'acct-ofx-dedup',
+    });
+    assert.strictEqual(first.transactionsImported, 2);
+    assert.strictEqual(first.transactionsSkipped, 0);
+    assert.deepStrictEqual(first.duplicates, []);
+
+    // Re-import same FITIDs from a different file
+    const second = await new OFXImporter(sessionStore, txStore, hashStore).import(p2, {
+      accountId: 'acct-ofx-dedup',
+    });
+    assert.strictEqual(second.transactionsImported, 0);
+    assert.strictEqual(second.transactionsSkipped, 2);
+    assert.strictEqual(second.duplicates!.length, 2);
+  });
+
+  it('should not flag same FITID across different accounts as duplicate', async () => {
+    const p1 = writeTmpFile('fitid-acct-a.ofx', SIMPLE_OFX);
+    const p2 = writeTmpFile('fitid-acct-b.qfx', SIMPLE_OFX + ' ');
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+
+    const r1 = await new OFXImporter(sessionStore, txStore, hashStore).import(p1, {
+      accountId: 'bank-acct-1',
+    });
+    assert.strictEqual(r1.transactionsImported, 2);
+
+    // Same FITIDs, but different accountId — must NOT be treated as duplicates
+    const r2 = await new OFXImporter(sessionStore, txStore, hashStore).import(p2, {
+      accountId: 'bank-acct-2',
+    });
+    assert.strictEqual(r2.transactionsImported, 2);
+    assert.strictEqual(r2.transactionsSkipped, 0);
+  });
+
+  it('should allow re-import after hash is removed (simulating deletion)', async () => {
+    const p1 = writeTmpFile('dedup-del-1.ofx', SIMPLE_OFX);
+    const p2 = writeTmpFile('dedup-del-2.qfx', SIMPLE_OFX + ' ');
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+
+    await new OFXImporter(sessionStore, txStore, hashStore).import(p1, {
+      accountId: 'acct-del',
+    });
+    assert.strictEqual(hashStore.size, 2);
+
+    // Simulate deletion: remove hashes so re-import is allowed
+    const hashes = ['TXN001', 'TXN002'].map(fitid =>
+      computeOFXTransactionHash(fitid, 'acct-del')
+    );
+    for (const h of hashes) {
+      hashStore.remove(h);
+    }
+    assert.strictEqual(hashStore.size, 0);
+
+    const r2 = await new OFXImporter(sessionStore, txStore, hashStore).import(p2, {
+      accountId: 'acct-del',
+    });
+    assert.strictEqual(r2.transactionsImported, 2);
+    assert.strictEqual(r2.transactionsSkipped, 0);
   });
 });
