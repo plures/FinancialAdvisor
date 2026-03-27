@@ -14,7 +14,7 @@
   "exclude": ["dist", "node_modules"],
   "references": [
     { "path": "../domain" },
-    { "path": "../ai-providers" },
+    { "path": "../ai-integration" },
     { "path": "../analytics" }
   ]
 }

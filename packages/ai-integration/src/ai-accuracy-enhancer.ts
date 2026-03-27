@@ -4,9 +4,9 @@
  */
 
 import { AIResponse } from './base-provider.js';
-import type { FinancialContext, Account } from '@financialadvisor/shared';
+import type { FinancialContext, Account } from '@financialadvisor/domain';
 
-/** Represents the computed confidence of an AI-generated response. */
+/** Multi-factor confidence score indicating the quality of an AI response. */
 export interface ConfidenceScore {
   overall: number;
   factors: {
@@ -17,7 +17,7 @@ export interface ConfidenceScore {
   };
 }
 
-/** Result of validating the quality and correctness of an AI response. */
+/** Result of validating an AI response for quality, completeness, and consistency. */
 export interface ValidationResult {
   isValid: boolean;
   confidence: number;
@@ -25,7 +25,7 @@ export interface ValidationResult {
   suggestions: string[];
 }
 
-/** Measures how closely a transaction description matches a known spending category. */
+/** Spending category with similarity score used for transaction classification fallback. */
 export interface CategorySimilarity {
   category: string;
   similarity: number;

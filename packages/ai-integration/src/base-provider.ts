@@ -9,9 +9,9 @@ import {
   AIQuery,
   FinancialContext,
   moneyToDecimal,
-} from '@financialadvisor/shared';
+} from '@financialadvisor/domain';
 
-/** Represents a response returned by an AI provider. */
+/** Response object returned by any AI provider after processing a query. */
 export interface AIResponse {
   content: string;
   usage?: {
@@ -23,7 +23,7 @@ export interface AIResponse {
   timestamp: Date;
 }
 
-/** Describes the capabilities supported by an AI provider. */
+/** Feature flags and constraints declared by a concrete AI provider. */
 export interface AIProviderCapabilities {
   supportsStreaming: boolean;
   supportsFunction: boolean;
@@ -31,7 +31,10 @@ export interface AIProviderCapabilities {
   supportedFormats: string[];
 }
 
-/** Abstract base class that all AI provider implementations must extend. */
+/**
+ * Abstract base class for all AI provider implementations.
+ * Provides shared utilities for formatting financial context and building prompts.
+ */
 export abstract class BaseAIProvider {
   protected config: AIProviderConfig;
   protected name: string;
@@ -48,6 +51,11 @@ export abstract class BaseAIProvider {
   abstract generateReport(context: FinancialContext, reportType: string): Promise<string>;
 
   /**
+   * The provider's type — must be implemented by each concrete provider
+   */
+  abstract get providerType(): AIProviderType;
+
+  /**
    * Test the connection to the AI provider
    */
   abstract testConnection(): Promise<boolean>;
@@ -58,11 +66,7 @@ export abstract class BaseAIProvider {
   getInfo(): AIProvider {
     return {
       name: this.name,
-      type: this.config.model.includes('gpt')
-        ? AIProviderType.OPENAI
-        : this.config.model.includes('claude')
-          ? AIProviderType.ANTHROPIC
-          : AIProviderType.CUSTOM,
+      type: this.providerType,
       config: this.config,
     };
   }

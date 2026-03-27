@@ -1,9 +1,16 @@
 {
   "name": "@financialadvisor/ai-integration",
   "version": "1.0.0",
-  "description": "AI provider integration for financial analysis and advice — deprecated, use ai-providers",
+  "description": "AI provider integration for financial analysis and advice",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -21,11 +28,11 @@
   "author": "FinancialAdvisor Team",
   "license": "MIT",
   "dependencies": {
-    "@financialadvisor/ai-providers": "file:../ai-providers",
-    "axios": "^1.6.0"
+    "@financialadvisor/domain": "file:../domain",
+    "axios": "^1.13.5"
   },
   "devDependencies": {
-    "@types/node": "^20.19.30",
+    "@types/node": "^25.0.10",
     "typescript": "^5.0.0"
   },
   "files": [
