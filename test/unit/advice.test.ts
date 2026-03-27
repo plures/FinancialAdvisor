@@ -18,6 +18,11 @@
  *  14. summarizeWithProvider               — LLM enrichment + template fallback
  *  15. createSummaryProvider               — factory function for SummaryProvider
  *  16. buildSummaryPrompt                  — public prompt builder for audit/inspection
+ *  17. recurringItemsToCommitmentSnapshots — analytics RecurringItem → advice snapshot
+ *  18. subscriptionItemsToCommitmentSnapshots — analytics SubscriptionItem → advice snapshot
+ *  19. categoryVariancesToSpendSnapshots   — analytics CategoryVariance → advice snapshot
+ *  20. debtAccountsToSnapshots             — analytics DebtAccount → advice snapshot
+ *  21. buildFinancialStateSnapshot          — composite analytics → advice bridge
  */
 
 import { describe, it } from 'mocha';
@@ -49,6 +54,13 @@ import {
   createSummaryProvider,
   buildSummaryPrompt,
 } from '../../packages/advice/dist/summarizer.js';
+import {
+  recurringItemsToCommitmentSnapshots,
+  subscriptionItemsToCommitmentSnapshots,
+  categoryVariancesToSpendSnapshots,
+  debtAccountsToSnapshots,
+  buildFinancialStateSnapshot,
+} from '../../packages/advice/dist/analytics-bridge.js';
 
 // ─── Domain imports ──────────────────────────────────────────────────────────
 import { createMoney } from '../../packages/domain/dist/money.js';
@@ -1277,5 +1289,492 @@ describe('buildSummaryPrompt', () => {
     const prompt = buildSummaryPrompt(state, recs);
     assert.ok(prompt.toLowerCase().includes('do not invent') || prompt.toLowerCase().includes('do not change'),
       'Prompt should instruct the LLM not to invent numbers');
+  });
+});
+
+// ─── Analytics bridge — recurringItemsToCommitmentSnapshots ──────────────────
+
+describe('recurringItemsToCommitmentSnapshots', () => {
+  it('returns empty array for empty input', () => {
+    assert.deepStrictEqual(recurringItemsToCommitmentSnapshots([]), []);
+  });
+
+  it('maps label, monthlyAmount, category, and sourceTransactionIds', () => {
+    const items = [
+      {
+        label: 'Netflix',
+        category: 'Entertainment',
+        monthlyAmount: createMoney(1599, 'USD'),
+        annualAmount: createMoney(19188, 'USD'),
+        sourceTransactionIds: ['t-1', 't-2'],
+      },
+    ];
+    const snapshots = recurringItemsToCommitmentSnapshots(items);
+    assert.strictEqual(snapshots.length, 1);
+    assert.strictEqual(snapshots[0].label, 'Netflix');
+    assert.strictEqual(snapshots[0].monthlyAmountCents, 1599);
+    assert.strictEqual(snapshots[0].category, 'Entertainment');
+    assert.deepStrictEqual(snapshots[0].sourceTransactionIds, ['t-1', 't-2']);
+  });
+
+  it('sets daysSinceLastTransaction to undefined (not available from RecurringItem)', () => {
+    const items = [
+      {
+        label: 'Spotify',
+        category: 'Music',
+        monthlyAmount: createMoney(999, 'USD'),
+        annualAmount: createMoney(11988, 'USD'),
+        sourceTransactionIds: ['t-3'],
+      },
+    ];
+    const snapshots = recurringItemsToCommitmentSnapshots(items);
+    assert.strictEqual(snapshots[0].daysSinceLastTransaction, undefined);
+  });
+
+  it('converts multiple items', () => {
+    const items = [
+      {
+        label: 'A',
+        category: 'Cat1',
+        monthlyAmount: createMoney(100, 'USD'),
+        annualAmount: createMoney(1200, 'USD'),
+        sourceTransactionIds: [],
+      },
+      {
+        label: 'B',
+        category: 'Cat2',
+        monthlyAmount: createMoney(200, 'EUR'),
+        annualAmount: createMoney(2400, 'EUR'),
+        sourceTransactionIds: ['t-b'],
+      },
+    ];
+    const snapshots = recurringItemsToCommitmentSnapshots(items);
+    assert.strictEqual(snapshots.length, 2);
+    assert.strictEqual(snapshots[0].label, 'A');
+    assert.strictEqual(snapshots[1].label, 'B');
+    assert.strictEqual(snapshots[1].monthlyAmountCents, 200);
+  });
+});
+
+// ─── Analytics bridge — subscriptionItemsToCommitmentSnapshots ───────────────
+
+describe('subscriptionItemsToCommitmentSnapshots', () => {
+  it('returns empty array for empty input', () => {
+    assert.deepStrictEqual(subscriptionItemsToCommitmentSnapshots([]), []);
+  });
+
+  it('maps label, monthlyCost, category, and sourceTransactionIds', () => {
+    const items = [
+      {
+        label: 'Netflix',
+        category: 'Entertainment',
+        monthlyCost: createMoney(1599, 'USD'),
+        annualCost: createMoney(19188, 'USD'),
+        status: 'active' as const,
+        lastTransactionDate: new Date('2026-03-01'),
+        priceAlert: undefined,
+        sourceTransactionIds: ['t-1'],
+      },
+    ];
+    const ref = new Date('2026-03-27');
+    const snapshots = subscriptionItemsToCommitmentSnapshots(items, ref);
+    assert.strictEqual(snapshots.length, 1);
+    assert.strictEqual(snapshots[0].label, 'Netflix');
+    assert.strictEqual(snapshots[0].monthlyAmountCents, 1599);
+    assert.strictEqual(snapshots[0].category, 'Entertainment');
+    assert.deepStrictEqual(snapshots[0].sourceTransactionIds, ['t-1']);
+  });
+
+  it('computes daysSinceLastTransaction from lastTransactionDate', () => {
+    const lastDate = new Date('2026-01-01');
+    const refDate = new Date('2026-03-27');
+    const expectedDays = Math.floor((refDate.getTime() - lastDate.getTime()) / 86_400_000);
+
+    const items = [
+      {
+        label: 'Hulu',
+        category: 'Streaming',
+        monthlyCost: createMoney(1800, 'USD'),
+        annualCost: createMoney(21600, 'USD'),
+        status: 'unused' as const,
+        lastTransactionDate: lastDate,
+        priceAlert: undefined,
+        sourceTransactionIds: [],
+      },
+    ];
+    const snapshots = subscriptionItemsToCommitmentSnapshots(items, refDate);
+    assert.strictEqual(snapshots[0].daysSinceLastTransaction, expectedDays);
+    assert.ok(expectedDays > 0, 'Should be a positive number of days');
+  });
+
+  it('sets daysSinceLastTransaction to undefined when lastTransactionDate is undefined', () => {
+    const items = [
+      {
+        label: 'Unknown Sub',
+        category: 'Other',
+        monthlyCost: createMoney(500, 'USD'),
+        annualCost: createMoney(6000, 'USD'),
+        status: 'active' as const,
+        lastTransactionDate: undefined,
+        priceAlert: undefined,
+        sourceTransactionIds: [],
+      },
+    ];
+    const snapshots = subscriptionItemsToCommitmentSnapshots(items);
+    assert.strictEqual(snapshots[0].daysSinceLastTransaction, undefined);
+  });
+
+  it('clamps daysSinceLastTransaction to 0 when last transaction is in the future', () => {
+    const futureDate = new Date('2030-01-01');
+    const refDate = new Date('2026-03-27');
+
+    const items = [
+      {
+        label: 'Future Sub',
+        category: 'Test',
+        monthlyCost: createMoney(100, 'USD'),
+        annualCost: createMoney(1200, 'USD'),
+        status: 'active' as const,
+        lastTransactionDate: futureDate,
+        priceAlert: undefined,
+        sourceTransactionIds: [],
+      },
+    ];
+    const snapshots = subscriptionItemsToCommitmentSnapshots(items, refDate);
+    assert.strictEqual(snapshots[0].daysSinceLastTransaction, 0);
+  });
+
+  it('handles same-day transaction (0 days)', () => {
+    const refDate = new Date('2026-03-27');
+
+    const items = [
+      {
+        label: 'Today Sub',
+        category: 'Test',
+        monthlyCost: createMoney(100, 'USD'),
+        annualCost: createMoney(1200, 'USD'),
+        status: 'active' as const,
+        lastTransactionDate: refDate,
+        priceAlert: undefined,
+        sourceTransactionIds: [],
+      },
+    ];
+    const snapshots = subscriptionItemsToCommitmentSnapshots(items, refDate);
+    assert.strictEqual(snapshots[0].daysSinceLastTransaction, 0);
+  });
+});
+
+// ─── Analytics bridge — categoryVariancesToSpendSnapshots ─────────────────────
+
+describe('categoryVariancesToSpendSnapshots', () => {
+  it('returns empty array for empty input', () => {
+    assert.deepStrictEqual(categoryVariancesToSpendSnapshots([]), []);
+  });
+
+  it('maps category, actual, budgeted, and sourceTransactionIds', () => {
+    const variances = [
+      {
+        category: 'Dining',
+        budgeted: createMoney(25000, 'USD'),
+        actual: createMoney(40000, 'USD'),
+        variance: createMoney(15000, 'USD'),
+        variancePct: 60,
+        sourceTransactionIds: ['t-d1', 't-d2'],
+      },
+    ];
+    const snapshots = categoryVariancesToSpendSnapshots(variances);
+    assert.strictEqual(snapshots.length, 1);
+    assert.strictEqual(snapshots[0].category, 'Dining');
+    assert.strictEqual(snapshots[0].actualCents, 40000);
+    assert.strictEqual(snapshots[0].budgetedCents, 25000);
+    assert.deepStrictEqual(snapshots[0].sourceTransactionIds, ['t-d1', 't-d2']);
+  });
+
+  it('converts multiple variances', () => {
+    const variances = [
+      {
+        category: 'Groceries',
+        budgeted: createMoney(50000, 'USD'),
+        actual: createMoney(45000, 'USD'),
+        variance: createMoney(-5000, 'USD'),
+        variancePct: -10,
+        sourceTransactionIds: [],
+      },
+      {
+        category: 'Entertainment',
+        budgeted: createMoney(20000, 'USD'),
+        actual: createMoney(30000, 'USD'),
+        variance: createMoney(10000, 'USD'),
+        variancePct: 50,
+        sourceTransactionIds: ['t-e1'],
+      },
+    ];
+    const snapshots = categoryVariancesToSpendSnapshots(variances);
+    assert.strictEqual(snapshots.length, 2);
+    assert.strictEqual(snapshots[0].category, 'Groceries');
+    assert.strictEqual(snapshots[0].actualCents, 45000);
+    assert.strictEqual(snapshots[1].category, 'Entertainment');
+    assert.strictEqual(snapshots[1].actualCents, 30000);
+  });
+});
+
+// ─── Analytics bridge — debtAccountsToSnapshots ──────────────────────────────
+
+describe('debtAccountsToSnapshots', () => {
+  it('returns empty array for empty input', () => {
+    assert.deepStrictEqual(debtAccountsToSnapshots([]), []);
+  });
+
+  it('maps name, balance, rate, and minimumPayment', () => {
+    const debts = [
+      {
+        id: 'debt-1',
+        name: 'Chase Visa',
+        balance: createMoney(500000, 'USD'),
+        annualInterestRate: 0.22,
+        minimumPayment: createMoney(10000, 'USD'),
+      },
+    ];
+    const snapshots = debtAccountsToSnapshots(debts);
+    assert.strictEqual(snapshots.length, 1);
+    assert.strictEqual(snapshots[0].name, 'Chase Visa');
+    assert.strictEqual(snapshots[0].balanceCents, 500000);
+    assert.strictEqual(snapshots[0].annualInterestRate, 0.22);
+    assert.strictEqual(snapshots[0].minimumPaymentCents, 10000);
+  });
+
+  it('converts multiple debts preserving order', () => {
+    const debts = [
+      {
+        id: 'd1',
+        name: 'Card A',
+        balance: createMoney(100000, 'USD'),
+        annualInterestRate: 0.18,
+        minimumPayment: createMoney(5000, 'USD'),
+      },
+      {
+        id: 'd2',
+        name: 'Card B',
+        balance: createMoney(300000, 'USD'),
+        annualInterestRate: 0.25,
+        minimumPayment: createMoney(8000, 'USD'),
+      },
+    ];
+    const snapshots = debtAccountsToSnapshots(debts);
+    assert.strictEqual(snapshots.length, 2);
+    assert.strictEqual(snapshots[0].name, 'Card A');
+    assert.strictEqual(snapshots[1].name, 'Card B');
+  });
+});
+
+// ─── Analytics bridge — buildFinancialStateSnapshot ──────────────────────────
+
+describe('buildFinancialStateSnapshot', () => {
+  it('builds a minimal state with only scalar fields', () => {
+    const state = buildFinancialStateSnapshot({
+      liquidBalanceCents: 2000000,
+      monthlyIncomeCents: 600000,
+      monthlyBurnCents: 400000,
+    });
+    assert.strictEqual(state.liquidBalanceCents, 2000000);
+    assert.strictEqual(state.monthlyIncomeCents, 600000);
+    assert.strictEqual(state.monthlyBurnCents, 400000);
+    assert.strictEqual(state.currency, 'USD');
+    assert.strictEqual(state.recurringCommitments.length, 0);
+    assert.strictEqual(state.categorySpend.length, 0);
+    assert.strictEqual(state.debts?.length, 0);
+  });
+
+  it('uses the specified currency', () => {
+    const state = buildFinancialStateSnapshot({
+      liquidBalanceCents: 100000,
+      monthlyIncomeCents: 50000,
+      monthlyBurnCents: 40000,
+      currency: 'EUR',
+    });
+    assert.strictEqual(state.currency, 'EUR');
+  });
+
+  it('converts recurringItems to recurringCommitments', () => {
+    const state = buildFinancialStateSnapshot({
+      liquidBalanceCents: 100000,
+      monthlyIncomeCents: 50000,
+      monthlyBurnCents: 40000,
+      recurringItems: [
+        {
+          label: 'Netflix',
+          category: 'Streaming',
+          monthlyAmount: createMoney(1599, 'USD'),
+          annualAmount: createMoney(19188, 'USD'),
+          sourceTransactionIds: ['t-1'],
+        },
+      ],
+    });
+    assert.strictEqual(state.recurringCommitments.length, 1);
+    assert.strictEqual(state.recurringCommitments[0].label, 'Netflix');
+    assert.strictEqual(state.recurringCommitments[0].monthlyAmountCents, 1599);
+  });
+
+  it('prefers subscriptionItems over recurringItems', () => {
+    const refDate = new Date('2026-03-27');
+    const state = buildFinancialStateSnapshot({
+      liquidBalanceCents: 100000,
+      monthlyIncomeCents: 50000,
+      monthlyBurnCents: 40000,
+      recurringItems: [
+        {
+          label: 'Recurring Item',
+          category: 'Cat',
+          monthlyAmount: createMoney(500, 'USD'),
+          annualAmount: createMoney(6000, 'USD'),
+          sourceTransactionIds: [],
+        },
+      ],
+      subscriptionItems: [
+        {
+          label: 'Subscription Item',
+          category: 'Sub',
+          monthlyCost: createMoney(999, 'USD'),
+          annualCost: createMoney(11988, 'USD'),
+          status: 'active' as const,
+          lastTransactionDate: new Date('2026-03-01'),
+          priceAlert: undefined,
+          sourceTransactionIds: ['t-sub'],
+        },
+      ],
+      referenceDate: refDate,
+    });
+    // Should use subscription items, not recurring items
+    assert.strictEqual(state.recurringCommitments.length, 1);
+    assert.strictEqual(state.recurringCommitments[0].label, 'Subscription Item');
+    assert.ok(state.recurringCommitments[0].daysSinceLastTransaction !== undefined,
+      'Should have daysSinceLastTransaction from subscription data');
+  });
+
+  it('converts categoryVariances to categorySpend', () => {
+    const state = buildFinancialStateSnapshot({
+      liquidBalanceCents: 100000,
+      monthlyIncomeCents: 50000,
+      monthlyBurnCents: 40000,
+      categoryVariances: [
+        {
+          category: 'Dining',
+          budgeted: createMoney(25000, 'USD'),
+          actual: createMoney(40000, 'USD'),
+          variance: createMoney(15000, 'USD'),
+          variancePct: 60,
+          sourceTransactionIds: ['t-d1'],
+        },
+      ],
+    });
+    assert.strictEqual(state.categorySpend.length, 1);
+    assert.strictEqual(state.categorySpend[0].category, 'Dining');
+    assert.strictEqual(state.categorySpend[0].actualCents, 40000);
+    assert.strictEqual(state.categorySpend[0].budgetedCents, 25000);
+  });
+
+  it('converts debts to DebtSnapshot[]', () => {
+    const state = buildFinancialStateSnapshot({
+      liquidBalanceCents: 100000,
+      monthlyIncomeCents: 50000,
+      monthlyBurnCents: 40000,
+      debts: [
+        {
+          id: 'd-1',
+          name: 'Visa',
+          balance: createMoney(500000, 'USD'),
+          annualInterestRate: 0.22,
+          minimumPayment: createMoney(10000, 'USD'),
+        },
+      ],
+    });
+    assert.strictEqual(state.debts?.length, 1);
+    assert.strictEqual(state.debts?.[0].name, 'Visa');
+    assert.strictEqual(state.debts?.[0].balanceCents, 500000);
+    assert.strictEqual(state.debts?.[0].annualInterestRate, 0.22);
+    assert.strictEqual(state.debts?.[0].minimumPaymentCents, 10000);
+  });
+
+  it('produces a snapshot usable by generateAllRecommendations', () => {
+    const state = buildFinancialStateSnapshot({
+      liquidBalanceCents: 100000,
+      monthlyIncomeCents: 300000,
+      monthlyBurnCents: 400000,
+      subscriptionItems: [
+        {
+          label: 'Hulu',
+          category: 'Streaming',
+          monthlyCost: createMoney(1800, 'USD'),
+          annualCost: createMoney(21600, 'USD'),
+          status: 'unused' as const,
+          lastTransactionDate: new Date('2025-12-01'),
+          priceAlert: undefined,
+          sourceTransactionIds: ['t-hulu'],
+        },
+      ],
+      categoryVariances: [
+        {
+          category: 'Dining',
+          budgeted: createMoney(25000, 'USD'),
+          actual: createMoney(40000, 'USD'),
+          variance: createMoney(15000, 'USD'),
+          variancePct: 60,
+          sourceTransactionIds: ['t-d1'],
+        },
+      ],
+      debts: [
+        {
+          id: 'd-1',
+          name: 'Visa',
+          balance: createMoney(500000, 'USD'),
+          annualInterestRate: 0.22,
+          minimumPayment: createMoney(10000, 'USD'),
+        },
+      ],
+      referenceDate: new Date('2026-03-27'),
+    });
+
+    // The snapshot should be directly consumable by the advice engine
+    const recs = generateAllRecommendations(state);
+    assert.ok(recs.length > 0, 'Should generate recommendations from analytics-derived snapshot');
+
+    // Verify multiple recommendation categories appear
+    const categories = new Set(recs.map(r => r.category));
+    assert.ok(categories.size >= 2, 'Should have recommendations from multiple categories');
+  });
+
+  it('end-to-end: analytics bridge → recommendations → summary', () => {
+    const state = buildFinancialStateSnapshot({
+      liquidBalanceCents: 2000000,
+      monthlyIncomeCents: 600000,
+      monthlyBurnCents: 400000,
+      recurringItems: [
+        {
+          label: 'Netflix',
+          category: 'Streaming',
+          monthlyAmount: createMoney(1599, 'USD'),
+          annualAmount: createMoney(19188, 'USD'),
+          sourceTransactionIds: ['t-netflix'],
+        },
+      ],
+      categoryVariances: [
+        {
+          category: 'Dining',
+          budgeted: createMoney(20000, 'USD'),
+          actual: createMoney(35000, 'USD'),
+          variance: createMoney(15000, 'USD'),
+          variancePct: 75,
+          sourceTransactionIds: ['t-dining'],
+        },
+      ],
+    });
+
+    const recs = generateAllRecommendations(state);
+    const summary = summarizeFinancialState(state, recs);
+
+    assert.ok(typeof summary.headline === 'string' && summary.headline.length > 0);
+    assert.ok(typeof summary.overview === 'string' && summary.overview.length > 0);
+    assert.ok(Array.isArray(summary.highlights));
+    assert.ok(typeof summary.topAction === 'string' && summary.topAction.length > 0);
   });
 });
