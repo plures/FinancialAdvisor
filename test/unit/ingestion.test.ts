@@ -1155,3 +1155,49 @@ describe('DirectoryWatcher — file import via polling', () => {
     assert.strictEqual(watcher.directory, watchDir);
   });
 });
+
+describe('DirectoryWatcher — archive collision handling', () => {
+  it('should use a timestamped name when archive already has a file with the same name', async function () {
+    this.timeout(10000);
+    const watchDir = path.join(tmpDir, 'archive-collision-watch');
+    const archivedDir = path.join(watchDir, 'archived');
+    fs.mkdirSync(archivedDir, { recursive: true });
+
+    // Pre-populate the archive with a file of the same name
+    fs.writeFileSync(path.join(archivedDir, 'collision.csv'), SIMPLE_CSV, 'utf8');
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+    const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
+
+    const { AccountIntegrationService } = await import(
+      '../../packages/ledger/dist/account-integration-service.js'
+    );
+    const service = new AccountIntegrationService();
+    service.registerImporter(['csv', 'txt'], csvImporter);
+
+    const watcher = new DirectoryWatcher(
+      { watchDir, autoArchive: true, pollInterval: 200 },
+      service
+    );
+    watcher.start();
+
+    // Write the new file — it will collide with the pre-existing archive entry
+    fs.writeFileSync(path.join(watchDir, 'collision.csv'), SIMPLE_CSV, 'utf8');
+
+    await new Promise<void>(resolve => setTimeout(resolve, 800));
+    watcher.stop();
+
+    // The original archive entry must remain unchanged
+    assert.ok(
+      fs.existsSync(path.join(archivedDir, 'collision.csv')),
+      'Original archived file should still exist'
+    );
+
+    // A timestamped copy should also be present
+    const archivedFiles = fs.readdirSync(archivedDir);
+    const timestampedEntries = archivedFiles.filter(f => f.startsWith('collision-') && f.endsWith('.csv'));
+    assert.ok(timestampedEntries.length > 0, 'A timestamped archived file should have been created');
+  });
+});
