@@ -5,9 +5,9 @@
     "rootDir": "./src",
     "types": ["node"]
   },
-  "include": ["src/index.ts"],
+  "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"],
   "references": [
-    { "path": "../ai-providers" }
+    { "path": "../domain" }
   ]
 }

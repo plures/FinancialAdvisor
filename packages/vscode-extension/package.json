@@ -162,7 +162,7 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@financialadvisor/ai-providers": "file:../ai-providers",
+    "@financialadvisor/ai-integration": "file:../ai-integration",
     "@financialadvisor/analytics": "file:../analytics",
     "@financialadvisor/domain": "file:../domain"
   },

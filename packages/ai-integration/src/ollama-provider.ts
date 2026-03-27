@@ -4,7 +4,12 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { BaseAIProvider, AIResponse, AIProviderCapabilities } from './base-provider.js';
-import { AIProviderConfig, AIQuery, FinancialContext } from '@financialadvisor/shared';
+import {
+  AIProviderConfig,
+  AIProviderType,
+  AIQuery,
+  FinancialContext,
+} from '@financialadvisor/domain';
 
 /** A single model entry returned by the Ollama /api/tags endpoint. */
 interface OllamaModel {
@@ -12,7 +17,7 @@ interface OllamaModel {
   [key: string]: unknown;
 }
 
-/** AI provider implementation that connects to a locally-running Ollama LLM server. */
+/** AI provider implementation that sends queries to a locally-running Ollama server. */
 export class OllamaProvider extends BaseAIProvider {
   private client: AxiosInstance;
 
@@ -26,6 +31,10 @@ export class OllamaProvider extends BaseAIProvider {
       },
       timeout: 60000, // Longer timeout for local processing
     });
+  }
+
+  get providerType(): AIProviderType {
+    return AIProviderType.OLLAMA;
   }
 
   getCapabilities(): AIProviderCapabilities {

@@ -15,7 +15,7 @@ export interface HealthCheckResult {
   uptime: number;
 }
 
-/** Status of an individual health check component (database, AI provider, memory, disk). */
+/** Status of a single subsystem health check (database, AI provider, memory, or disk). */
 export interface HealthStatus {
   status: 'ok' | 'warning' | 'error';
   message: string;
@@ -23,7 +23,7 @@ export interface HealthStatus {
   details?: Record<string, unknown>;
 }
 
-/** A single named, time-stamped measurement emitted by the monitoring system. */
+/** A single named metric data point with value, unit, and optional tags. */
 export interface MetricData {
   name: string;
   value: number;
@@ -32,7 +32,7 @@ export interface MetricData {
   tags?: Record<string, string>;
 }
 
-/** Aggregated performance statistics for a monitoring window. */
+/** Aggregated performance metrics for the AI provider (request counts, response times, cache). */
 export interface PerformanceMetrics {
   requestCount: number;
   errorCount: number;

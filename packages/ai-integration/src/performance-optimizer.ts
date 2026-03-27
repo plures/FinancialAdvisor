@@ -3,7 +3,7 @@
  * Provides caching, batching, and rate limiting for AI operations
  */
 
-import type { Transaction } from '@financialadvisor/shared';
+import type { Transaction } from '@financialadvisor/domain';
 
 /** Minimal account summary kept after context optimization. */
 interface AccountSummary {
@@ -20,7 +20,7 @@ export interface AIOptimizableContext {
   [key: string]: unknown;
 }
 
-/** Options that control batch-processing behaviour for AI operations. */
+/** Configuration for batch-processing AI requests (batch size, delay, progress callbacks). */
 export interface BatchProcessingOptions {
   batchSize: number;
   delayBetweenBatches: number;
@@ -28,14 +28,14 @@ export interface BatchProcessingOptions {
   onError?: (error: Error, item: unknown) => void;
 }
 
-/** Configuration for per-minute and per-hour request rate limiting. */
+/** Rate-limit constraints applied to outbound AI provider requests. */
 export interface RateLimitConfig {
   requestsPerMinute: number;
   requestsPerHour: number;
   burstSize?: number;
 }
 
-/** Snapshot statistics for an in-memory response cache. */
+/** Cache hit/miss statistics for the response cache. */
 export interface CacheStats {
   hits: number;
   misses: number;
@@ -87,16 +87,18 @@ export class PerformanceOptimizer {
       const batch = batches[i];
       const batchResults = await Promise.allSettled(batch.map(item => processor(item)));
 
-      for (const result of batchResults) {
+      for (let j = 0; j < batchResults.length; j++) {
+        const result = batchResults[j];
         if (result.status === 'fulfilled') {
           results.push(result.value);
         } else if (options.onError) {
-          options.onError(result.reason, batch);
+          options.onError(result.reason, batch[j]);
         }
       }
 
       if (options.onProgress) {
-        options.onProgress((i + 1) * options.batchSize, items.length);
+        const processed = Math.min((i + 1) * options.batchSize, items.length);
+        options.onProgress(processed, items.length);
       }
 
       // Delay between batches to respect rate limits
