@@ -10,6 +10,7 @@ import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 
 import type { DatabaseConfig } from './storage.js';
 import { SecureStorage } from './storage.js';
@@ -258,7 +259,7 @@ export class FinancialAdvisorMCPServer {
     });
   }
 
-  private async addAccount(args: {
+  async addAccount(args: {
     name: string;
     type: string;
     balance: number;
@@ -318,7 +319,7 @@ export class FinancialAdvisorMCPServer {
     };
   }
 
-  private async addTransaction(args: {
+  async addTransaction(args: {
     accountId: string;
     amount: number;
     description: string;
@@ -363,7 +364,7 @@ export class FinancialAdvisorMCPServer {
     };
   }
 
-  private async analyzeSpending(args: {
+  async analyzeSpending(args: {
     startDate?: string;
     endDate?: string;
     accountId?: string;
@@ -432,7 +433,7 @@ ${insights.recurringPatterns
     };
   }
 
-  private async analyzePortfolio(_args: { accountId?: string }) {
+  async analyzePortfolio(_args: { accountId?: string }) {
     // For now, return a placeholder since we need investment data
     const report = `
 # Investment Portfolio Analysis
@@ -456,7 +457,7 @@ Currently no investment data available. Add investments to get portfolio analysi
     };
   }
 
-  private async analyzeBudgets() {
+  async analyzeBudgets() {
     const report = `
 # Budget Analysis Report
 
@@ -479,7 +480,7 @@ Currently no budget data available. Add budgets to get budget analysis.
     };
   }
 
-  private async categorizeTransactions(args: { limit?: number }) {
+  async categorizeTransactions(args: { limit?: number }) {
     const limit = args.limit || 50;
     const transactions = await this.storage.getTransactions({ limit });
 
@@ -509,6 +510,11 @@ Currently no budget data available. Add budgets to get budget analysis.
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
     console.error('Financial Advisor MCP Server running on stdio');
+  }
+
+  /** Connect the underlying MCP server to an arbitrary transport (useful for testing). */
+  async connect(transport: Transport): Promise<void> {
+    await this.server.connect(transport);
   }
 
   async stop() {
