@@ -10,6 +10,10 @@ on:
 env:
   NODE_VERSION_MATRIX: "[22]"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Lint and format check
   lint:
