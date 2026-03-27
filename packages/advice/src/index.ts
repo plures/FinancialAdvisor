@@ -8,3 +8,5 @@ export * from './scenarios.js';
 export * from './planner.js';
 /** Re-exports financial state, recommendation, and LLM-enriched summarizers. */
 export * from './summarizer.js';
+/** Re-exports analytics-to-advice bridge adapters (buildFinancialStateSnapshot, converters). */
+export * from './analytics-bridge.js';
