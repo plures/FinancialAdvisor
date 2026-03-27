@@ -6,6 +6,20 @@ A local-first personal finance library and MCP server — the backend domain log
 [![Security Scan](https://github.com/plures/FinancialAdvisor/workflows/Security%20Scanning/badge.svg)](https://github.com/plures/FinancialAdvisor/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## Table of Contents
+
+- [What Works Today](#what-works-today)
+- [What's In Progress](#whats-in-progress)
+- [What's Planned](#whats-planned)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [Development](#development)
+- [API Reference](#api-reference)
+- [Contributing](#contributing)
+- [Security](#security)
+- [Changelog](#changelog)
+- [License](#license)
+
 ## What Works Today
 
 - **Domain models** — `Money` (cent-based integer arithmetic), `Account`, `Transaction`, `Budget`, `Goal`, `Period`/`DateRange`, `MerchantEntity`, `ImportSession`, `Posting`, `CanonicalTransaction` (`packages/domain`)
@@ -16,7 +30,9 @@ A local-first personal finance library and MCP server — the backend domain log
 - **AI provider integrations** — `OpenAIProvider`, `OllamaProvider`, `CopilotProvider`, `ProviderManager` with retry, rate limiting, accuracy scoring, and performance optimization (`packages/ai-providers`)
 - **MCP server** — full Model Context Protocol implementation with tools: `add_account`, `add_transaction`, `analyze_spending`, `analyze_portfolio`, `analyze_budgets`, `categorize_transactions`; backed by SQLite with optional AES-256 encryption (`packages/mcp-server`)
 - **Praxis declarative engine** — expectation/trigger framework for validating import quality, ledger integrity, resolution confidence, and budget compliance (`.praxis/`)
-- **Unit tests** — passing suite covering domain, ledger, ingestion, praxis, analytics, AI accuracy, and MCP account creation (`test/unit/`)
+- **Advice engine** — deterministic recommendation engine with six categories (subscription cancellation, spending reduction, debt payoff, savings increase, budget rebalance, income optimization), what-if scenario analysis, financial plan generation, and optional LLM-enriched summaries (`packages/advice`)
+- **Storage abstraction** — persistence layer for accounts, transactions, merchants, import sessions, journal postings, recurring series, and review decisions with integer-cent monetary storage (`packages/storage`)
+- **Unit tests** — passing suite covering domain, ledger, ingestion, praxis, analytics, advice, AI accuracy, and MCP account creation (`test/unit/`)
 
 ## What's In Progress
 
@@ -25,7 +41,6 @@ A local-first personal finance library and MCP server — the backend domain log
 
 ## What's Planned
 
-- **Advice engine** — `packages/advice` compiles and exports `AdviceService`, but `getAdvice()` returns a hardcoded stub; real implementation not started
 - **Frontend ↔ backend data wiring** — connecting SvelteKit pages to ledger, ingestion, and analytics packages
 - **Tauri IPC layer** — exposing backend operations as Tauri commands in Rust
 - **P2P sync** — Hyperswarm-based sync mentioned in the roadmap; not implemented
@@ -35,19 +50,23 @@ A local-first personal finance library and MCP server — the backend domain log
 ```text
 FinancialAdvisor/
 ├── packages/
-│   ├── domain/           # Core value objects and types (Money, Account, Transaction, …)
-│   ├── ledger/           # Double-entry journal, balances, reconciliation
-│   ├── ingestion/        # CSV + OFX/QFX file import, deduplication
-│   ├── resolution/       # Keyword-based transaction categorization
-│   ├── analytics/        # Budget, investment, and predictive analytics
-│   ├── advice/           # Advice service (stub — not yet implemented)
-│   ├── ai-providers/     # OpenAI / Ollama / Copilot provider abstractions
-│   ├── mcp-server/       # MCP server + SQLite/AES-256 secure storage
+│   ├── domain/                    # Core value objects and types (Money, Account, Transaction, …)
+│   ├── storage/                   # Data persistence abstraction (accounts, transactions, postings, …)
+│   ├── ledger/                    # Double-entry journal, balances, reconciliation
+│   ├── ingestion/                 # CSV + OFX/QFX file import, deduplication
+│   ├── resolution/                # Keyword-based transaction categorization
+│   ├── analytics/                 # Budget, investment, and predictive analytics
+│   ├── advice/                    # Recommendation engine, scenario analysis, plan generation
+│   ├── ai-providers/              # OpenAI / Ollama / Copilot provider abstractions
+│   ├── mcp-server/                # MCP server + SQLite/AES-256 secure storage
+│   ├── design-dojo/               # Svelte 5 UI component library (Plures design system)
+│   ├── eslint-plugin-design-dojo/ # ESLint rules enforcing design-dojo component adoption
+│   ├── vscode-extension/          # VS Code extension for financial management
 │   │
 │   │   # Legacy backward-compat re-export stubs (deprecated):
-│   ├── shared/           # → re-exports domain, ledger, ingestion
-│   ├── financial-tools/  # → re-exports analytics, resolution, ledger
-│   └── ai-integration/   # → re-exports ai-providers
+│   ├── shared/                    # → re-exports domain, ledger, ingestion
+│   ├── financial-tools/           # → re-exports analytics, resolution, ledger
+│   └── ai-integration/            # → re-exports ai-providers
 │
 ├── .praxis/              # Declarative expectations + triggers engine
 ├── src/                  # SvelteKit frontend (scaffold — in progress)
@@ -130,6 +149,24 @@ npm run dev
 
 All packages use **ES2020 modules** (`"type": "module"`, explicit `.js` import extensions, Node.js 22+).
 
+## API Reference
+
+Each workspace package under `packages/` is published as a scoped npm module with full TypeScript declarations. All public exports have JSDoc documentation.
+
+| Package | Scope | Description |
+|---------|-------|-------------|
+| `domain` | `@financialadvisor/domain` | Core value objects: `Money`, `Account`, `Transaction`, `Budget`, `Goal`, `Period` |
+| `storage` | `@financialadvisor/storage` | Persistence layer for accounts, transactions, postings, merchants |
+| `ledger` | `@financialadvisor/ledger` | Double-entry journal, balances, reconciliation |
+| `ingestion` | `@financialadvisor/ingestion` | CSV + OFX/QFX file import and deduplication |
+| `resolution` | `@financialadvisor/resolution` | Keyword-based transaction categorization |
+| `analytics` | `@financialadvisor/analytics` | Budget, investment, and predictive analytics |
+| `advice` | `@financialadvisor/advice` | Recommendation engine, scenarios, plan generation |
+| `ai-providers` | `@financialadvisor/ai-providers` | OpenAI, Ollama, and Copilot provider abstractions |
+| `mcp-server` | `@financialadvisor/mcp-server` | Model Context Protocol server with secure storage |
+
+See each package's `src/index.ts` for the full list of exported types and functions.
+
 ## Contributing
 
 1. Fork and clone the repository
@@ -138,6 +175,25 @@ All packages use **ES2020 modules** (`"type": "module"`, explicit `.js` import e
 4. Run `npm run lint && npm run test:unit`
 5. Commit with conventional commits: `feat:`, `fix:`, `chore:`, etc.
 6. Open a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide including coding standards, testing guidelines, and the pull request process.
+
+## Security
+
+If you discover a security vulnerability, **do not** open a public issue.
+
+Instead, report it through one of these channels:
+
+1. [GitHub private security advisory](https://github.com/plures/FinancialAdvisor/security/advisories/new)
+2. Email [security@financial-advisor.dev](mailto:security@financial-advisor.dev)
+
+Please include detailed information about the vulnerability. We aim to acknowledge reports within 48 hours.
+
+See the [Security section of CONTRIBUTING.md](CONTRIBUTING.md#security) for additional security guidelines.
+
+## Changelog
+
+All notable changes are documented in [CHANGELOG.md](CHANGELOG.md). This project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/).
 
 ## License
 
