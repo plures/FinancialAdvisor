@@ -23,6 +23,14 @@ import {
   moneyFromDecimal,
   moneyToDecimal,
 } from '@financialadvisor/domain';
+import {
+  generateAllRecommendations,
+  summarizeFinancialState,
+  buildFinancialStateSnapshot,
+  runScenario,
+} from '@financialadvisor/advice';
+import type { ScenarioInput } from '@financialadvisor/advice';
+import { PredictiveAnalytics } from '@financialadvisor/analytics';
 
 /** MCP server that exposes financial advisor tools and resources via the Model Context Protocol. */
 export class FinancialAdvisorMCPServer {
@@ -204,6 +212,62 @@ export class FinancialAdvisorMCPServer {
               },
             },
           },
+          {
+            name: 'get_recommendations',
+            description: 'Generate ranked financial recommendations from current account and transaction data',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                accountId: { type: 'string', description: 'Optional account ID to filter transactions' },
+              },
+            },
+          },
+          {
+            name: 'get_financial_summary',
+            description: 'Summarize the current financial state in plain language',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                format: {
+                  type: 'string',
+                  enum: ['template', 'llm'],
+                  description: 'Output format: template (default) or llm',
+                },
+              },
+            },
+          },
+          {
+            name: 'analyze_spending_trend',
+            description: 'Analyze spending trends by category over recent months',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                months: {
+                  type: 'number',
+                  description: 'Number of months to analyse (default 3)',
+                },
+              },
+            },
+          },
+          {
+            name: 'run_scenario',
+            description: 'Run a what-if financial scenario and return the projected impact',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                scenario: {
+                  type: 'string',
+                  enum: ['cancel_subscription', 'extra_debt_payment', 'spending_reduction', 'income_change'],
+                  description: 'Scenario type to model',
+                },
+                params: {
+                  type: 'object',
+                  description: 'Scenario-specific parameters',
+                },
+              },
+              required: ['scenario', 'params'],
+            },
+          },
         ],
       };
     });
@@ -252,6 +316,20 @@ export class FinancialAdvisorMCPServer {
 
         case 'categorize_transactions':
           return await this.categorizeTransactions(args as { limit?: number });
+
+        case 'get_recommendations':
+          return await this.getRecommendations(args as { accountId?: string });
+
+        case 'get_financial_summary':
+          return await this.getFinancialSummary(args as { format?: 'template' | 'llm' });
+
+        case 'analyze_spending_trend':
+          return await this.analyzeSpendingTrend(args as { months?: number });
+
+        case 'run_scenario':
+          return await this.runScenarioTool(
+            args as { scenario: string; params: Record<string, unknown> }
+          );
 
         default:
           throw new Error(`Unknown tool: ${name}`);
@@ -501,6 +579,139 @@ Currently no budget data available. Add budgets to get budget analysis.
         {
           type: 'text',
           text: `Categorized ${categorized} transactions out of ${transactions.length} reviewed.`,
+        },
+      ],
+    };
+  }
+
+  /** Build a FinancialStateSnapshot from the current storage contents. */
+  private async buildStateSnapshot(accountId?: string): Promise<import('@financialadvisor/advice').FinancialStateSnapshot> {
+    const accounts = await this.storage.getAccounts();
+    const txFilter: { accountId?: string; limit?: number } = { limit: 500 };
+    if (accountId) {
+      txFilter.accountId = accountId;
+    }
+    const transactions = await this.storage.getTransactions(txFilter);
+
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const recentTxns = transactions.filter(t => new Date(t.date) >= thirtyDaysAgo);
+
+    const liquidBalanceCents = accounts
+      .filter(a => a.type === AccountType.CHECKING || a.type === AccountType.SAVINGS)
+      .reduce((sum, a) => sum + Math.round(a.balance * 100), 0);
+
+    const monthlyIncomeCents = recentTxns
+      .filter(t => t.amount.cents > 0)
+      .reduce((sum, t) => sum + t.amount.cents, 0);
+
+    const monthlyBurnCents = recentTxns
+      .filter(t => t.amount.cents < 0)
+      .reduce((sum, t) => sum + Math.abs(t.amount.cents), 0);
+
+    return buildFinancialStateSnapshot({
+      liquidBalanceCents,
+      monthlyIncomeCents,
+      monthlyBurnCents,
+    });
+  }
+
+  /** Get ranked financial recommendations from current account and transaction data. */
+  async getRecommendations(args: { accountId?: string }) {
+    const state = await this.buildStateSnapshot(args.accountId);
+    const recommendations = generateAllRecommendations(state);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(recommendations, null, 2),
+        },
+      ],
+    };
+  }
+
+  /** Summarize the current financial state in plain language. */
+  async getFinancialSummary(_args: { format?: 'template' | 'llm' }) {
+    const state = await this.buildStateSnapshot();
+    const recommendations = generateAllRecommendations(state);
+    const summary = summarizeFinancialState(state, recommendations);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(summary, null, 2),
+        },
+      ],
+    };
+  }
+
+  /** Analyze spending trends by category over recent months. */
+  async analyzeSpendingTrend(args: { months?: number }) {
+    const months = args.months ?? 3;
+    const transactions = await this.storage.getTransactions({ limit: 1000 });
+    const trends = PredictiveAnalytics.analyzeSpendingTrends(transactions, months * 30);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(trends, null, 2),
+        },
+      ],
+    };
+  }
+
+  /** Run a what-if financial scenario and return the projected impact. */
+  async runScenarioTool(args: { scenario: string; params: Record<string, unknown> }) {
+    const { scenario, params } = args;
+    let input: ScenarioInput;
+
+    switch (scenario) {
+      case 'cancel_subscription':
+        input = {
+          type: 'cancel_subscription',
+          itemLabels: Array.isArray(params.itemLabels)
+            ? (params.itemLabels as string[])
+            : [],
+        };
+        break;
+      case 'extra_debt_payment':
+        input = {
+          type: 'extra_debt_payment',
+          debtName: String(params.debtName ?? ''),
+          balanceCents: Number(params.balanceCents ?? 0),
+          annualInterestRate: Number(params.annualInterestRate ?? 0),
+          minimumPaymentCents: Number(params.minimumPaymentCents ?? 0),
+          extraPaymentCents: Number(params.extraPaymentCents ?? 0),
+          currency: params.currency !== undefined ? String(params.currency) : undefined,
+        };
+        break;
+      case 'spending_reduction':
+        input = {
+          type: 'spending_reduction',
+          category: String(params.category ?? ''),
+          reductionCents: Number(params.reductionCents ?? 0),
+          currency: params.currency !== undefined ? String(params.currency) : undefined,
+        };
+        break;
+      case 'income_change':
+        input = {
+          type: 'income_change',
+          monthlyDeltaCents: Number(params.monthlyDeltaCents ?? 0),
+          currency: params.currency !== undefined ? String(params.currency) : undefined,
+        };
+        break;
+      default:
+        throw new Error(
+          `Unknown scenario type: ${scenario}. Must be one of: cancel_subscription, extra_debt_payment, spending_reduction, income_change`
+        );
+    }
+
+    const state = await this.buildStateSnapshot();
+    const result = runScenario(input, state.recurringCommitments);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
         },
       ],
     };
