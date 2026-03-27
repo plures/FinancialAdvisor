@@ -124,8 +124,8 @@ describe('BudgetCalculator.analyzeBudget', () => {
   it('computes daysRemaining from the period', () => {
     const result = BudgetCalculator.analyzeBudget(budget, [], makeDate(2024, 1, 15));
 
-    // Monthly budget (30 days), 14 days passed → ~16 remaining
-    assert.ok(result.daysRemaining >= 0);
+    // Monthly budget (30 days), 14 days elapsed → 16 remaining
+    assert.strictEqual(result.daysRemaining, 16);
   });
 
   it('sets isOnTrack to true when spending is proportional to elapsed time', () => {
