@@ -251,7 +251,10 @@ export function generateDebtRecommendations(
       continue;
     }
 
-    // Estimated annual interest saved by paying extra (rough estimate)
+    // Rough approximation of annual interest saved by paying extra.
+    // Uses simple interest on the extra principal reduction rather than full
+    // amortisation — intentionally conservative for recommendation purposes.
+    // Exact calculations are handled by computeDebtPayoff in the analytics package.
     const annualInterestOnExtra = Math.round(extraCents * 12 * debt.annualInterestRate);
     const monthly = createMoney(annualInterestOnExtra > 0 ? Math.round(annualInterestOnExtra / 12) : extraCents, currency);
     const annual = multiplyMoney(monthly, 12);

@@ -191,7 +191,7 @@ function _parseLLMResponse(
       const topAction = typeof obj['topAction'] === 'string' ? obj['topAction'] : fallback.topAction;
 
       let highlights: readonly string[];
-      if (Array.isArray(obj['highlights']) && obj['highlights'].every((h: unknown) => typeof h === 'string')) {
+      if (Array.isArray(obj['highlights']) && obj['highlights'].every(h => typeof h === 'string')) {
         highlights = obj['highlights'] as string[];
       } else {
         highlights = fallback.highlights;
