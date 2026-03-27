@@ -222,19 +222,33 @@ describe('comparePayoffStrategies', () => {
     assert.ok(result.avalanche.months > 0, 'avalanche should take positive months');
   });
 
-  it('avalanche saves at least as much interest as snowball', () => {
+  it('avalanche does not cost more interest than snowball', () => {
     const result = comparePayoffStrategies(debts, budget);
 
+    // Avalanche should never result in more total interest than snowball.
+    assert.ok(
+      result.avalanche.totalInterest.cents <= result.snowball.totalInterest.cents,
+      'avalanche total interest should be less than or equal to snowball',
+    );
+
+    // Derived summary field should be non-negative (implementation clamps it).
     assert.ok(
       result.interestSavedByAvalanche.cents >= 0,
-      'avalanche should never cost more interest than snowball',
+      'interestSavedByAvalanche should be non-negative',
     );
   });
 
-  it('monthsSavedByAvalanche is non-negative', () => {
+  it('avalanche does not take longer than snowball', () => {
     const result = comparePayoffStrategies(debts, budget);
 
-    assert.ok(result.monthsSavedByAvalanche >= 0);
+    // Avalanche should never take more months than snowball.
+    assert.ok(
+      result.avalanche.months <= result.snowball.months,
+      'avalanche should complete in no more months than snowball',
+    );
+
+    // Derived summary field should be non-negative (implementation clamps it).
+    assert.ok(result.monthsSavedByAvalanche >= 0, 'monthsSavedByAvalanche should be non-negative');
   });
 
   it('snowball and avalanche have same total principal paid (only interest differs)', () => {
