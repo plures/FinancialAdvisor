@@ -20,3 +20,5 @@ export * from './review-decision-store.js';
 export * from './migrations.js';
 /** Re-exports the storage schema used for schema-version management. */
 export * from './storage-schema.js';
+/** Re-exports the transaction-hash store used for import-time deduplication. */
+export * from './transaction-hash-store.js';

@@ -150,6 +150,13 @@ export interface ImportResult {
   /** The ImportSession id created for this import (undefined when skipped as duplicate). */
   importSessionId?: string;
   privacyLevel: PrivacyLevel;
+  /**
+   * SHA-256 hashes of transactions that were detected as duplicates and
+   * skipped during the import.  Each entry corresponds to one skipped
+   * transaction.  Only populated when transaction-level deduplication is
+   * active (i.e. a `TransactionHashStore` is provided to the importer).
+   */
+  duplicates?: string[];
 }
 
 /**

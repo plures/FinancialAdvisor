@@ -9,6 +9,7 @@
   "exclude": ["dist", "node_modules"],
   "references": [
     { "path": "../domain" },
-    { "path": "../ledger" }
+    { "path": "../ledger" },
+    { "path": "../storage" }
   ]
 }

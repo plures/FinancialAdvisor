@@ -21,8 +21,10 @@ import type {
   ParsedCSVTransaction,
   PrivacyLevel,
 } from '@financialadvisor/ledger';
+import type { TransactionHashStore } from '@financialadvisor/storage';
 import { ImportSessionStore } from './import-session-store.js';
 import { RawTransactionStore } from './raw-transaction.js';
+import { computeTransactionHash } from './dedup.js';
 
 /** Options controlling how a CSV file is imported (account mapping, template, dedup behaviour). */
 export interface CSVImportOptions {
@@ -34,14 +36,16 @@ export interface CSVImportOptions {
 
 /**
  * Imports bank CSV files (including custom column-mapping templates) into the
- * raw-transaction store.  Deduplicates by file hash before parsing.
+ * raw-transaction store.  Deduplicates by file hash before parsing, and by
+ * transaction hash (date + amount + description + accountId) within a file.
  */
 export class CSVImporter implements IFileImporter {
   private readonly maxFileSizeDefault = 50 * 1024 * 1024; // 50 MB
 
   constructor(
     private readonly sessionStore: ImportSessionStore = new ImportSessionStore(),
-    private readonly txStore: RawTransactionStore = new RawTransactionStore()
+    private readonly txStore: RawTransactionStore = new RawTransactionStore(),
+    private readonly hashStore?: TransactionHashStore
   ) {}
 
   getSupportedExtensions(): string[] {
@@ -82,6 +86,7 @@ export class CSVImporter implements IFileImporter {
       duration: 0,
       timestamp: new Date(),
       privacyLevel: 'local' as PrivacyLevel,
+      duplicates: [],
     };
 
     try {
@@ -128,21 +133,49 @@ export class CSVImporter implements IFileImporter {
       this.sessionStore.save(session);
       result.importSessionId = sessionId;
 
-      // 6. Persist raw transactions
+      // 6. Persist raw transactions (with transaction-level deduplication)
       for (const [index, row] of rows.entries()) {
         try {
-          this.txStore.save({
-            id: generateId(),
-            importSessionId: sessionId,
-            sourceId: String(index + 1),
-            date: row.date,
-            description: row.description,
-            amount: row.amount,
-            metadata: {
-              ...(row.metadata as Record<string, string>),
-            },
-          });
-          result.transactionsImported++;
+          // Transaction-level dedup: skip rows whose (date, amount, description,
+          // accountId) tuple was already imported into this account.
+          if (this.hashStore && options.skipDuplicates !== false) {
+            const txHash = computeTransactionHash(
+              { date: row.date, amount: row.amount, description: row.description },
+              accountId
+            );
+            if (this.hashStore.has(txHash)) {
+              result.transactionsSkipped++;
+              result.duplicates!.push(txHash);
+              continue;
+            }
+            const txId = generateId();
+            this.txStore.save({
+              id: txId,
+              importSessionId: sessionId,
+              sourceId: String(index + 1),
+              date: row.date,
+              description: row.description,
+              amount: row.amount,
+              metadata: {
+                ...(row.metadata as Record<string, string>),
+              },
+            });
+            this.hashStore.add(txHash, txId);
+            result.transactionsImported++;
+          } else {
+            this.txStore.save({
+              id: generateId(),
+              importSessionId: sessionId,
+              sourceId: String(index + 1),
+              date: row.date,
+              description: row.description,
+              amount: row.amount,
+              metadata: {
+                ...(row.metadata as Record<string, string>),
+              },
+            });
+            result.transactionsImported++;
+          }
         } catch (err) {
           result.transactionsFailed++;
           result.errors.push({
