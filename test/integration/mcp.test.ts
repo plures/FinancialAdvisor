@@ -54,7 +54,7 @@ describe('Integration Tests', () => {
       if (!skipped) {
         skipped = true;
         // eslint-disable-next-line no-console
-        console.warn('Skipping MCP smoke test:', (e as any)?.message || e);
+        console.warn('Skipping MCP smoke test:', e.message || String(e));
         return done();
       }
     });

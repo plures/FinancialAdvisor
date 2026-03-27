@@ -44,7 +44,7 @@ describe('Add Account Tool Tests', () => {
       };
 
       // Access the private method for testing
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       
       assert.ok(result.content);
       assert.strictEqual(result.content.length, 1);
@@ -59,7 +59,7 @@ describe('Add Account Tool Tests', () => {
         balance: 0
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Minimal Account'));
@@ -73,7 +73,7 @@ describe('Add Account Tool Tests', () => {
         balance: -500.75
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Credit Card'));
@@ -87,7 +87,7 @@ describe('Add Account Tool Tests', () => {
         institution: '  Test Bank  '
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Test Account'));
@@ -100,7 +100,7 @@ describe('Add Account Tool Tests', () => {
         balance: 500
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('USD Default'));
@@ -116,7 +116,7 @@ describe('Add Account Tool Tests', () => {
       };
 
       await assert.rejects(
-        async () => await (server as any).addAccount(args),
+        async () => await server.addAccount(args),
         /Account name is required and cannot be empty/
       );
     });
@@ -129,20 +129,20 @@ describe('Add Account Tool Tests', () => {
       };
 
       await assert.rejects(
-        async () => await (server as any).addAccount(args),
+        async () => await server.addAccount(args),
         /Account name is required and cannot be empty/
       );
     });
 
     it('should reject missing account name', async () => {
       const args = {
-        name: undefined as any,
+        name: undefined as unknown as string,
         type: 'checking',
         balance: 1000
       };
 
       await assert.rejects(
-        async () => await (server as any).addAccount(args),
+        async () => await server.addAccount(args),
         /Account name is required and cannot be empty/
       );
     });
@@ -155,7 +155,7 @@ describe('Add Account Tool Tests', () => {
       };
 
       await assert.rejects(
-        async () => await (server as any).addAccount(args),
+        async () => await server.addAccount(args),
         /Account type is required and cannot be empty/
       );
     });
@@ -168,7 +168,7 @@ describe('Add Account Tool Tests', () => {
       };
 
       await assert.rejects(
-        async () => await (server as any).addAccount(args),
+        async () => await server.addAccount(args),
         /Invalid account type/
       );
     });
@@ -177,11 +177,11 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Test Account',
         type: 'checking',
-        balance: 'not a number' as any
+        balance: 'not a number' as unknown as number
       };
 
       await assert.rejects(
-        async () => await (server as any).addAccount(args),
+        async () => await server.addAccount(args),
         /Balance must be a valid number/
       );
     });
@@ -194,7 +194,7 @@ describe('Add Account Tool Tests', () => {
       };
 
       await assert.rejects(
-        async () => await (server as any).addAccount(args),
+        async () => await server.addAccount(args),
         /Balance must be a valid number/
       );
     });
@@ -209,11 +209,11 @@ describe('Add Account Tool Tests', () => {
       };
 
       // Create first account
-      await (server as any).addAccount(args);
+      await server.addAccount(args);
 
       // Try to create second account with same name
       await assert.rejects(
-        async () => await (server as any).addAccount(args),
+        async () => await server.addAccount(args),
         /An account with the name "Duplicate Account" already exists/
       );
     });
@@ -232,11 +232,11 @@ describe('Add Account Tool Tests', () => {
       };
 
       // Create first account
-      await (server as any).addAccount(firstArgs);
+      await server.addAccount(firstArgs);
 
       // This should fail because names should be case-insensitive
       // But our current implementation is case-sensitive, so let's test the actual behavior
-      const result = await (server as any).addAccount(secondArgs);
+      const result = await server.addAccount(secondArgs);
       assert.ok(result.content);
       
       // Note: This test shows that we might want case-insensitive duplicate checking
@@ -256,8 +256,8 @@ describe('Add Account Tool Tests', () => {
         balance: 500
       };
 
-      const result1 = await (server as any).addAccount(firstArgs);
-      const result2 = await (server as any).addAccount(secondArgs);
+      const result1 = await server.addAccount(firstArgs);
+      const result2 = await server.addAccount(secondArgs);
 
       assert.ok(result1.content);
       assert.ok(result2.content);
@@ -277,7 +277,7 @@ describe('Add Account Tool Tests', () => {
           balance: 1000
         };
 
-        const result = await (server as any).addAccount(args);
+        const result = await server.addAccount(args);
         assert.ok(result.content);
         assert.ok(result.content[0].text.includes(`Test ${type} Account`));
       });
@@ -290,7 +290,7 @@ describe('Add Account Tool Tests', () => {
         balance: 1000
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Upper Case Type'));
     });
@@ -302,7 +302,7 @@ describe('Add Account Tool Tests', () => {
         balance: 1000
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Mixed Case Type'));
     });
@@ -316,7 +316,7 @@ describe('Add Account Tool Tests', () => {
         balance: 0
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Zero Balance'));
     });
@@ -328,7 +328,7 @@ describe('Add Account Tool Tests', () => {
         balance: 999999999.99
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Large Balance'));
     });
@@ -340,7 +340,7 @@ describe('Add Account Tool Tests', () => {
         balance: 0.01
       };
 
-      const result = await (server as any).addAccount(args);
+      const result = await server.addAccount(args);
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Small Balance'));
     });
@@ -657,7 +657,7 @@ describe('MCP Server Additional Tools', () => {
 
   describe('addTransaction', () => {
     it('adds an expense transaction successfully', async () => {
-      const result = await (server as any).addTransaction({
+      const result = await server.addTransaction({
         accountId: 'acct-1',
         amount: -45.00,
         description: 'Grocery Store',
@@ -667,7 +667,7 @@ describe('MCP Server Additional Tools', () => {
     });
 
     it('adds an income transaction successfully', async () => {
-      const result = await (server as any).addTransaction({
+      const result = await server.addTransaction({
         accountId: 'acct-1',
         amount: 3000.00,
         description: 'Salary',
@@ -676,7 +676,7 @@ describe('MCP Server Additional Tools', () => {
     });
 
     it('auto-categorizes transactions without a category', async () => {
-      const result = await (server as any).addTransaction({
+      const result = await server.addTransaction({
         accountId: 'acct-1',
         amount: -15.00,
         description: 'starbucks coffee',
@@ -685,7 +685,7 @@ describe('MCP Server Additional Tools', () => {
     });
 
     it('accepts a transaction with date and merchant', async () => {
-      const result = await (server as any).addTransaction({
+      const result = await server.addTransaction({
         accountId: 'acct-1',
         amount: -25.00,
         description: 'Netflix subscription',
@@ -698,18 +698,18 @@ describe('MCP Server Additional Tools', () => {
 
   describe('analyzeSpending', () => {
     it('returns an analysis report even with no transactions', async () => {
-      const result = await (server as any).analyzeSpending({});
+      const result = await server.analyzeSpending({});
       assert.ok(result.content[0].text.includes('Spending Analysis'));
     });
 
     it('includes summary sections in the report', async () => {
-      const result = await (server as any).analyzeSpending({});
+      const result = await server.analyzeSpending({});
       assert.ok(result.content[0].text.includes('Total Income'));
       assert.ok(result.content[0].text.includes('Total Expenses'));
     });
 
     it('accepts date range filters', async () => {
-      const result = await (server as any).analyzeSpending({
+      const result = await server.analyzeSpending({
         startDate: '2024-01-01',
         endDate: '2024-12-31',
       });
@@ -717,44 +717,44 @@ describe('MCP Server Additional Tools', () => {
     });
 
     it('accepts accountId filter', async () => {
-      const result = await (server as any).analyzeSpending({ accountId: 'acct-1' });
+      const result = await server.analyzeSpending({ accountId: 'acct-1' });
       assert.ok(result.content[0].text.includes('Spending Analysis'));
     });
   });
 
   describe('analyzePortfolio', () => {
     it('returns a portfolio analysis report', async () => {
-      const result = await (server as any).analyzePortfolio({});
+      const result = await server.analyzePortfolio({});
       assert.ok(result.content[0].text.includes('Portfolio'));
     });
   });
 
   describe('analyzeBudgets', () => {
     it('returns a budget analysis report', async () => {
-      const result = await (server as any).analyzeBudgets();
+      const result = await server.analyzeBudgets();
       assert.ok(result.content[0].text.includes('Budget'));
     });
   });
 
   describe('categorizeTransactions', () => {
     it('returns a categorization result message', async () => {
-      const result = await (server as any).categorizeTransactions({});
+      const result = await server.categorizeTransactions({});
       assert.ok(result.content[0].text.includes('Categorized'));
     });
 
     it('categorizes existing uncategorized transactions', async () => {
       // Add some transactions without categories
-      await (server as any).addTransaction({
+      await server.addTransaction({
         accountId: 'acct-1',
         amount: -15.00,
         description: 'starbucks',
       });
-      await (server as any).addTransaction({
+      await server.addTransaction({
         accountId: 'acct-1',
         amount: -60.00,
         description: 'whole foods',
       });
-      const result = await (server as any).categorizeTransactions({ limit: 10 });
+      const result = await server.categorizeTransactions({ limit: 10 });
       assert.ok(result.content[0].text.includes('transactions'));
     });
   });

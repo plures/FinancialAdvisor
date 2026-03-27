@@ -13,11 +13,10 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { FinancialAdvisorMCPServer } from '../../packages/mcp-server/dist/server.js';
-import { SecureStorage } from '../../packages/mcp-server/dist/storage.js';
 import type { DatabaseConfig } from '../../packages/mcp-server/dist/storage.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { TransactionType } from '../../packages/domain/dist/index.js';
+import type { TextResourceContents } from '@modelcontextprotocol/sdk/types.js';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -29,8 +28,7 @@ async function connectClient(
   server: FinancialAdvisorMCPServer,
 ): Promise<Client> {
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-  // Access the private MCP Server instance to connect the in-memory transport
-  await (server as any).server.connect(serverTransport);
+  await server.connect(serverTransport);
   const client = new Client(
     { name: 'test-client', version: '1.0.0' },
     { capabilities: {} },
@@ -98,13 +96,13 @@ describe('MCP Protocol Handlers', () => {
 
     it('returns JSON-parseable text for accounts', async () => {
       const { contents } = await client.readResource({ uri: 'financial://accounts' });
-      const data = JSON.parse((contents[0] as any).text);
+      const data = JSON.parse((contents[0] as TextResourceContents).text);
       assert.ok(Array.isArray(data));
     });
 
     it('returns JSON-parseable text for transactions', async () => {
       const { contents } = await client.readResource({ uri: 'financial://transactions' });
-      const data = JSON.parse((contents[0] as any).text);
+      const data = JSON.parse((contents[0] as TextResourceContents).text);
       assert.ok(Array.isArray(data));
     });
 
@@ -227,7 +225,6 @@ describe('MCP Protocol Handlers', () => {
 
 describe('categorizeTransactions — recategorization path', () => {
   let server: FinancialAdvisorMCPServer;
-  let storage: SecureStorage;
   let tempDir: string;
 
   beforeEach(async () => {
@@ -235,8 +232,6 @@ describe('categorizeTransactions — recategorization path', () => {
     const config = makeConfig(tempDir);
     server = new FinancialAdvisorMCPServer(config);
     await server.initialize();
-    // Access the private storage instance to seed test data
-    storage = (server as any).storage;
   });
 
   afterEach(async () => {
@@ -247,19 +242,15 @@ describe('categorizeTransactions — recategorization path', () => {
   it('recategorizes transactions whose category is "Other" when a better one is found', async () => {
     // Seed a transaction with category 'Other' that the analyzer can recognize.
     // "starbucks" is typically mapped to a coffee/food category (not 'Other').
-    await storage.saveTransaction({
-      id: 'tx-recat-1',
-      importSessionId: 'manual',
+    await server.addTransaction({
       accountId: 'acct-1',
-      amount: { cents: -500, currency: 'USD' },
+      amount: -5.00,
       description: 'STARBUCKS COFFEE',
-      date: new Date('2024-03-01'),
       category: 'Other',
-      tags: [],
-      type: TransactionType.EXPENSE,
+      date: '2024-03-01',
     });
 
-    const result = await (server as any).categorizeTransactions({ limit: 50 });
+    const result = await server.categorizeTransactions({ limit: 50 });
     // Either the transaction was successfully recategorized or no better
     // category was found — either way the function completes without error.
     assert.ok(typeof result.content[0].text === 'string');
@@ -272,38 +263,30 @@ describe('categorizeTransactions — recategorization path', () => {
       'NETFLIX.COM',
       'AMAZON PRIME',
     ];
-    for (let i = 0; i < descriptions.length; i++) {
-      await storage.saveTransaction({
-        id: `tx-recat-${i + 2}`,
-        importSessionId: 'manual',
+    for (const description of descriptions) {
+      await server.addTransaction({
         accountId: 'acct-1',
-        amount: { cents: -1000, currency: 'USD' },
-        description: descriptions[i],
-        date: new Date('2024-03-01'),
+        amount: -10.00,
+        description,
         category: 'Other',
-        tags: [],
-        type: TransactionType.EXPENSE,
+        date: '2024-03-01',
       });
     }
 
-    const result = await (server as any).categorizeTransactions({ limit: 50 });
+    const result = await server.categorizeTransactions({ limit: 50 });
     assert.ok(result.content[0].text.includes('transactions'));
   });
 
   it('does not modify transactions that already have a specific category', async () => {
-    await storage.saveTransaction({
-      id: 'tx-recat-keep',
-      importSessionId: 'manual',
+    await server.addTransaction({
       accountId: 'acct-1',
-      amount: { cents: -2000, currency: 'USD' },
+      amount: -20.00,
       description: 'Rent Payment',
-      date: new Date('2024-03-01'),
       category: 'Housing',
-      tags: [],
-      type: TransactionType.EXPENSE,
+      date: '2024-03-01',
     });
 
-    const result = await (server as any).categorizeTransactions({ limit: 50 });
+    const result = await server.categorizeTransactions({ limit: 50 });
     // 'Housing' should NOT be recategorized — categorized count should be 0
     assert.ok(result.content[0].text.startsWith('Categorized 0'));
   });
