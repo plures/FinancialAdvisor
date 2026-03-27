@@ -16,6 +16,8 @@
  *  12. generateAllRecommendations          — combined generator + ranking
  *  13. rankByImpactFeasibility             — impact × feasibility scoring
  *  14. summarizeWithProvider               — LLM enrichment + template fallback
+ *  15. createSummaryProvider               — factory function for SummaryProvider
+ *  16. buildSummaryPrompt                  — public prompt builder for audit/inspection
  */
 
 import { describe, it } from 'mocha';
@@ -44,6 +46,8 @@ import {
   summarizeFinancialState,
   summarizeRecommendation,
   summarizeWithProvider,
+  createSummaryProvider,
+  buildSummaryPrompt,
 } from '../../packages/advice/dist/summarizer.js';
 
 // ─── Domain imports ──────────────────────────────────────────────────────────
@@ -1151,5 +1155,127 @@ describe('summarizeWithProvider', () => {
       'Prompt should include expense figure');
     assert.ok(capturedPrompt.includes('Cancel unused subscriptions'),
       'Prompt should include recommendation titles');
+  });
+});
+
+// ─── createSummaryProvider ───────────────────────────────────────────────────
+
+describe('createSummaryProvider', () => {
+  it('wraps an async function into a SummaryProvider', async () => {
+    const provider = createSummaryProvider(async (prompt: string) => `echo: ${prompt}`);
+    const result = await provider.summarize('hello');
+    assert.strictEqual(result, 'echo: hello');
+  });
+
+  it('created provider works with summarizeWithProvider', async () => {
+    const provider = createSummaryProvider(async (_prompt: string) =>
+      JSON.stringify({
+        headline: 'Factory headline',
+        overview: 'Factory overview.',
+        highlights: ['Factory h1'],
+        topAction: 'Factory action',
+      })
+    );
+
+    const state = {
+      liquidBalanceCents: 2000000,
+      monthlyIncomeCents: 600000,
+      monthlyBurnCents: 400000,
+      currency: 'USD',
+      recurringCommitments: [],
+      categorySpend: [],
+    };
+
+    const summary = await summarizeWithProvider(state, [], provider);
+    assert.strictEqual(summary.headline, 'Factory headline');
+    assert.strictEqual(summary.topAction, 'Factory action');
+  });
+
+  it('falls back to template when created provider throws', async () => {
+    const provider = createSummaryProvider(async () => { throw new Error('boom'); });
+
+    const state = {
+      liquidBalanceCents: 2000000,
+      monthlyIncomeCents: 600000,
+      monthlyBurnCents: 400000,
+      currency: 'USD',
+      recurringCommitments: [],
+      categorySpend: [],
+    };
+
+    const summary = await summarizeWithProvider(state, [], provider);
+    const template = summarizeFinancialState(state, []);
+    assert.strictEqual(summary.headline, template.headline);
+  });
+});
+
+// ─── buildSummaryPrompt ──────────────────────────────────────────────────────
+
+describe('buildSummaryPrompt', () => {
+  const state = {
+    liquidBalanceCents: 500000,
+    monthlyIncomeCents: 400000,
+    monthlyBurnCents: 350000,
+    currency: 'USD',
+    recurringCommitments: [makeCommitment('Spotify', 999)],
+    categorySpend: [makeCategorySpend('Groceries', 60000, 50000)],
+  };
+
+  const recs = [
+    {
+      id: 'r1', title: 'Reduce Groceries spending', description: 'Over budget.',
+      category: 'spending_reduction' as const,
+      monthlySavings: createMoney(10000, 'USD'), annualSavings: createMoney(120000, 'USD'),
+      confidence: 'high' as const, sourceTransactionIds: [] as string[],
+    },
+  ];
+
+  it('returns a non-empty string', () => {
+    const prompt = buildSummaryPrompt(state, recs);
+    assert.ok(typeof prompt === 'string' && prompt.length > 0);
+  });
+
+  it('contains financial figures from the state', () => {
+    const prompt = buildSummaryPrompt(state, recs);
+    assert.ok(prompt.includes('4,000') || prompt.includes('4000'),
+      'Prompt should include income figure');
+    assert.ok(prompt.includes('3,500') || prompt.includes('3500'),
+      'Prompt should include expense figure');
+    assert.ok(prompt.includes('5,000') || prompt.includes('5000'),
+      'Prompt should include liquid balance');
+  });
+
+  it('contains recommendation details when supplied', () => {
+    const prompt = buildSummaryPrompt(state, recs);
+    assert.ok(prompt.includes('Reduce Groceries spending'),
+      'Prompt should include recommendation title');
+  });
+
+  it('works with empty recommendations', () => {
+    const prompt = buildSummaryPrompt(state, []);
+    assert.ok(typeof prompt === 'string' && prompt.length > 0);
+    assert.ok(!prompt.includes('Recommendations:'),
+      'Prompt should not include Recommendations section when none supplied');
+  });
+
+  it('matches the prompt that summarizeWithProvider sends to the LLM', async () => {
+    let capturedPrompt = '';
+    const capturingProvider = createSummaryProvider(async (prompt: string) => {
+      capturedPrompt = prompt;
+      return JSON.stringify({
+        headline: 'T', overview: 'T', highlights: ['T'], topAction: 'T',
+      });
+    });
+
+    await summarizeWithProvider(state, recs, capturingProvider);
+    const publicPrompt = buildSummaryPrompt(state, recs);
+    assert.strictEqual(capturedPrompt, publicPrompt,
+      'buildSummaryPrompt output should match what the LLM provider receives');
+  });
+
+  it('instructs the LLM not to invent numbers', () => {
+    const prompt = buildSummaryPrompt(state, recs);
+    assert.ok(prompt.toLowerCase().includes('do not invent') || prompt.toLowerCase().includes('do not change'),
+      'Prompt should instruct the LLM not to invent numbers');
   });
 });

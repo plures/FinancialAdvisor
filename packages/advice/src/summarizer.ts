@@ -8,6 +8,35 @@
 import type { FinancialSummary, FinancialStateSnapshot, Recommendation, SummaryProvider } from './types.js';
 
 // ---------------------------------------------------------------------------
+// Factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a {@link SummaryProvider} from an async function.
+ *
+ * This is a convenience wrapper so callers don't have to construct an object
+ * literal matching the interface.
+ *
+ * @example
+ * ```ts
+ * const provider = createSummaryProvider(async (prompt) => {
+ *   const res = await openai.chat.completions.create({
+ *     model: 'gpt-4o',
+ *     messages: [{ role: 'user', content: prompt }],
+ *   });
+ *   return res.choices[0].message.content ?? '';
+ * });
+ *
+ * const summary = await summarizeWithProvider(state, recs, provider);
+ * ```
+ */
+export function createSummaryProvider(
+  fn: (prompt: string) => Promise<string>
+): SummaryProvider {
+  return { summarize: fn };
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -116,6 +145,23 @@ export async function summarizeWithProvider(
     // Fallback to template summary on any LLM failure
     return templateSummary;
   }
+}
+
+/**
+ * Build the structured prompt that {@link summarizeWithProvider} sends to the
+ * LLM.  Exposed publicly so callers can inspect, log, or audit the prompt
+ * before it reaches the provider — supporting the principle that the LLM
+ * **never invents numbers**.
+ *
+ * @param state           - Current financial snapshot.
+ * @param recommendations - Ranked recommendations (may be empty).
+ */
+export function buildSummaryPrompt(
+  state: FinancialStateSnapshot,
+  recommendations: readonly Recommendation[] = []
+): string {
+  const templateSummary = summarizeFinancialState(state, recommendations);
+  return _buildLLMPrompt(templateSummary, state, recommendations);
 }
 
 // ---------------------------------------------------------------------------
