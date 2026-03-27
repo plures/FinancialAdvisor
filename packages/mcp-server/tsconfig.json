@@ -13,6 +13,7 @@
     { "path": "../advice" },
     { "path": "../analytics" },
     { "path": "../domain" },
+    { "path": "../ingestion" },
     { "path": "../resolution" }
   ]
 }
