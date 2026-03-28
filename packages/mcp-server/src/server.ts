@@ -31,11 +31,14 @@ import {
 } from '@financialadvisor/advice';
 import type { ScenarioInput } from '@financialadvisor/advice';
 import { PredictiveAnalytics } from '@financialadvisor/analytics';
+import { DirectoryWatcher } from '@financialadvisor/ingestion';
+import type { WatcherConfig } from '@financialadvisor/ingestion';
 
 /** MCP server that exposes financial advisor tools and resources via the Model Context Protocol. */
 export class FinancialAdvisorMCPServer {
   private server: Server;
   private storage: SecureStorage;
+  private watcher: DirectoryWatcher | null = null;
 
   constructor(storageConfig: DatabaseConfig) {
     this.storage = new SecureStorage(storageConfig);
@@ -268,6 +271,40 @@ export class FinancialAdvisorMCPServer {
               required: ['scenario', 'params'],
             },
           },
+          {
+            name: 'start_import_watcher',
+            description: 'Start watching a directory for new financial statement files (.csv, .ofx, .qfx) and auto-import them',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                watchDir: {
+                  type: 'string',
+                  description: 'Directory to watch (default: ~/financial-imports/)',
+                },
+                filePatterns: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'File extensions to watch (default: [".csv", ".ofx", ".qfx"])',
+                },
+                autoArchive: {
+                  type: 'boolean',
+                  description: 'Move imported files to <watchDir>/archived/ (default: true)',
+                },
+                pollInterval: {
+                  type: 'number',
+                  description: 'Polling interval in milliseconds; 0 disables polling (default: 2000)',
+                },
+              },
+            },
+          },
+          {
+            name: 'stop_import_watcher',
+            description: 'Stop the currently active directory watcher',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+            },
+          },
         ],
       };
     });
@@ -330,6 +367,19 @@ export class FinancialAdvisorMCPServer {
           return await this.runScenarioTool(
             args as { scenario: string; params: Record<string, unknown> }
           );
+
+        case 'start_import_watcher':
+          return await this.startImportWatcher(
+            args as {
+              watchDir?: string;
+              filePatterns?: string[];
+              autoArchive?: boolean;
+              pollInterval?: number;
+            }
+          );
+
+        case 'stop_import_watcher':
+          return await this.stopImportWatcher();
 
         default:
           throw new Error(`Unknown tool: ${name}`);
@@ -736,6 +786,52 @@ Currently no budget data available. Add budgets to get budget analysis.
     };
   }
 
+  /** Start a directory watcher for auto-importing financial statement files. */
+  async startImportWatcher(config: WatcherConfig) {
+    if (this.watcher?.isRunning) {
+      this.watcher.stop();
+    }
+
+    this.watcher = new DirectoryWatcher(config);
+    this.watcher.start();
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Import watcher started — monitoring "${this.watcher.directory}" for .csv, .ofx, and .qfx files`,
+        },
+      ],
+    };
+  }
+
+  /** Stop the currently active directory watcher. */
+  async stopImportWatcher() {
+    if (!this.watcher?.isRunning) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'No import watcher is currently running',
+          },
+        ],
+      };
+    }
+
+    const dir = this.watcher.directory;
+    this.watcher.stop();
+    this.watcher = null;
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Import watcher stopped — was monitoring "${dir}"`,
+        },
+      ],
+    };
+  }
+
   async run() {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
@@ -748,6 +844,7 @@ Currently no budget data available. Add budgets to get budget analysis.
   }
 
   async stop() {
+    this.watcher?.stop();
     await this.storage.close();
   }
 }

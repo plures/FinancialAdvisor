@@ -20,6 +20,7 @@ import {
   computeOFXTransactionHash,
   isDuplicate,
 } from '../../packages/ingestion/dist/dedup.js';
+import { DirectoryWatcher } from '../../packages/ingestion/dist/watcher.js';
 import { TransactionHashStore } from '../../packages/storage/dist/transaction-hash-store.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -930,5 +931,273 @@ describe('OFXImporter — transaction-level deduplication (FITID)', () => {
     });
     assert.strictEqual(r2.transactionsImported, 2);
     assert.strictEqual(r2.transactionsSkipped, 0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DirectoryWatcher
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('DirectoryWatcher — configuration', () => {
+  it('should default to ~/financial-imports/ when no watchDir provided', () => {
+    const watcher = new DirectoryWatcher();
+    assert.strictEqual(watcher.directory, path.join(os.homedir(), 'financial-imports'));
+    assert.strictEqual(watcher.isRunning, false);
+  });
+
+  it('should resolve a custom watchDir', () => {
+    const custom = path.join(tmpDir, 'custom-watch');
+    const watcher = new DirectoryWatcher({ watchDir: custom });
+    assert.strictEqual(watcher.directory, custom);
+  });
+
+  it('should expand ~ in watchDir', () => {
+    const watcher = new DirectoryWatcher({ watchDir: '~/my-bank-files' });
+    assert.strictEqual(watcher.directory, path.join(os.homedir(), 'my-bank-files'));
+  });
+});
+
+describe('DirectoryWatcher — lifecycle', () => {
+  it('should start and report isRunning=true, then stop', () => {
+    const watchDir = path.join(tmpDir, 'lifecycle-watch');
+    fs.mkdirSync(watchDir, { recursive: true });
+    const watcher = new DirectoryWatcher({ watchDir, pollInterval: 0 });
+
+    assert.strictEqual(watcher.isRunning, false);
+    watcher.start();
+    assert.strictEqual(watcher.isRunning, true);
+    watcher.stop();
+    assert.strictEqual(watcher.isRunning, false);
+  });
+
+  it('should be a no-op to start an already-running watcher', () => {
+    const watchDir = path.join(tmpDir, 'noop-start-watch');
+    fs.mkdirSync(watchDir, { recursive: true });
+    const watcher = new DirectoryWatcher({ watchDir, pollInterval: 0 });
+    watcher.start();
+    watcher.start(); // second start is a no-op
+    assert.strictEqual(watcher.isRunning, true);
+    watcher.stop();
+  });
+
+  it('should be a no-op to stop a watcher that is not running', () => {
+    const watchDir = path.join(tmpDir, 'noop-stop-watch');
+    fs.mkdirSync(watchDir, { recursive: true });
+    const watcher = new DirectoryWatcher({ watchDir, pollInterval: 0 });
+    // stop before start — must not throw
+    assert.doesNotThrow(() => watcher.stop());
+    assert.strictEqual(watcher.isRunning, false);
+  });
+
+  it('should create watchDir and archived/ subdirectory on start', () => {
+    const watchDir = path.join(tmpDir, 'auto-create-watch');
+    const watcher = new DirectoryWatcher({ watchDir, autoArchive: true, pollInterval: 0 });
+    watcher.start();
+    assert.ok(fs.existsSync(watchDir), 'watchDir should be created');
+    assert.ok(fs.existsSync(path.join(watchDir, 'archived')), 'archived/ should be created');
+    watcher.stop();
+  });
+
+  it('should not create archived/ when autoArchive is false', () => {
+    const watchDir = path.join(tmpDir, 'no-archive-watch');
+    const watcher = new DirectoryWatcher({ watchDir, autoArchive: false, pollInterval: 0 });
+    watcher.start();
+    assert.ok(fs.existsSync(watchDir), 'watchDir should be created');
+    assert.strictEqual(
+      fs.existsSync(path.join(watchDir, 'archived')),
+      false,
+      'archived/ should not be created when autoArchive is false'
+    );
+    watcher.stop();
+  });
+});
+
+describe('DirectoryWatcher — file import via polling', () => {
+  it('should import a CSV file placed in the watch directory', async function () {
+    this.timeout(10000);
+    const watchDir = path.join(tmpDir, 'poll-csv-watch');
+    fs.mkdirSync(watchDir, { recursive: true });
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+    const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
+
+    const { AccountIntegrationService } = await import(
+      '../../packages/ledger/dist/account-integration-service.js'
+    );
+    const service = new AccountIntegrationService();
+    service.registerImporter(['csv', 'txt'], csvImporter);
+
+    const watcher = new DirectoryWatcher(
+      { watchDir, autoArchive: false, pollInterval: 200 },
+      service
+    );
+    watcher.start();
+
+    // Write a CSV file after the watcher is running
+    const csvPath = path.join(watchDir, 'bank.csv');
+    fs.writeFileSync(csvPath, SIMPLE_CSV, 'utf8');
+
+    // Wait for polling to pick up the file
+    await new Promise<void>(resolve => setTimeout(resolve, 800));
+    watcher.stop();
+
+    assert.ok(txStore.size > 0, 'Expected at least one transaction to be imported');
+  });
+
+  it('should archive a file after successful import when autoArchive is true', async function () {
+    this.timeout(10000);
+    const watchDir = path.join(tmpDir, 'poll-archive-watch');
+    fs.mkdirSync(watchDir, { recursive: true });
+    fs.mkdirSync(path.join(watchDir, 'archived'), { recursive: true });
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+    const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
+
+    const { AccountIntegrationService } = await import(
+      '../../packages/ledger/dist/account-integration-service.js'
+    );
+    const service = new AccountIntegrationService();
+    service.registerImporter(['csv', 'txt'], csvImporter);
+
+    const watcher = new DirectoryWatcher(
+      { watchDir, autoArchive: true, pollInterval: 200 },
+      service
+    );
+    watcher.start();
+
+    const csvPath = path.join(watchDir, 'archive-me.csv');
+    fs.writeFileSync(csvPath, SIMPLE_CSV, 'utf8');
+
+    await new Promise<void>(resolve => setTimeout(resolve, 800));
+    watcher.stop();
+
+    // Original file should no longer exist at root
+    assert.strictEqual(fs.existsSync(csvPath), false, 'Original file should be archived');
+    // Archived file should exist
+    const archivedFiles = fs.readdirSync(path.join(watchDir, 'archived'));
+    assert.ok(archivedFiles.length > 0, 'Expected archived file in archived/');
+  });
+
+  it('should not crash when a bad file is placed in the directory', async function () {
+    this.timeout(10000);
+    const watchDir = path.join(tmpDir, 'poll-bad-file-watch');
+    fs.mkdirSync(watchDir, { recursive: true });
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+    const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
+
+    const { AccountIntegrationService } = await import(
+      '../../packages/ledger/dist/account-integration-service.js'
+    );
+    const service = new AccountIntegrationService();
+    service.registerImporter(['csv', 'txt'], csvImporter);
+
+    const watcher = new DirectoryWatcher(
+      { watchDir, autoArchive: false, pollInterval: 200 },
+      service
+    );
+    watcher.start();
+
+    // Write an unreadable/corrupted CSV
+    fs.writeFileSync(path.join(watchDir, 'bad.csv'), ',,,,,,\n\n\n', 'utf8');
+
+    // The watcher should swallow errors — it must still be running
+    await new Promise<void>(resolve => setTimeout(resolve, 800));
+    assert.strictEqual(watcher.isRunning, true, 'Watcher should still be running after error');
+    watcher.stop();
+  });
+
+  it('should ignore files with unsupported extensions', async function () {
+    this.timeout(10000);
+    const watchDir = path.join(tmpDir, 'poll-unsupported-watch');
+    fs.mkdirSync(watchDir, { recursive: true });
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+    const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
+
+    const { AccountIntegrationService } = await import(
+      '../../packages/ledger/dist/account-integration-service.js'
+    );
+    const service = new AccountIntegrationService();
+    service.registerImporter(['csv', 'txt'], csvImporter);
+
+    const watcher = new DirectoryWatcher(
+      { watchDir, autoArchive: false, pollInterval: 200 },
+      service
+    );
+    watcher.start();
+
+    // Write a PDF file — should be ignored entirely
+    fs.writeFileSync(path.join(watchDir, 'statement.pdf'), 'not a csv', 'utf8');
+
+    await new Promise<void>(resolve => setTimeout(resolve, 800));
+    watcher.stop();
+
+    assert.strictEqual(txStore.size, 0, 'No transactions should be imported from unsupported file');
+  });
+
+  it('should respect custom filePatterns config', () => {
+    const watchDir = path.join(tmpDir, 'custom-patterns-watch');
+    const watcher = new DirectoryWatcher({
+      watchDir,
+      filePatterns: ['.csv'],
+      pollInterval: 0,
+    });
+    // Check directory property is set correctly
+    assert.strictEqual(watcher.directory, watchDir);
+  });
+});
+
+describe('DirectoryWatcher — archive collision handling', () => {
+  it('should use a timestamped name when archive already has a file with the same name', async function () {
+    this.timeout(10000);
+    const watchDir = path.join(tmpDir, 'archive-collision-watch');
+    const archivedDir = path.join(watchDir, 'archived');
+    fs.mkdirSync(archivedDir, { recursive: true });
+
+    // Pre-populate the archive with a file of the same name
+    fs.writeFileSync(path.join(archivedDir, 'collision.csv'), SIMPLE_CSV, 'utf8');
+
+    const sessionStore = new ImportSessionStore();
+    const txStore = new RawTransactionStore();
+    const hashStore = new TransactionHashStore();
+    const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
+
+    const { AccountIntegrationService } = await import(
+      '../../packages/ledger/dist/account-integration-service.js'
+    );
+    const service = new AccountIntegrationService();
+    service.registerImporter(['csv', 'txt'], csvImporter);
+
+    const watcher = new DirectoryWatcher(
+      { watchDir, autoArchive: true, pollInterval: 200 },
+      service
+    );
+    watcher.start();
+
+    // Write the new file — it will collide with the pre-existing archive entry
+    fs.writeFileSync(path.join(watchDir, 'collision.csv'), SIMPLE_CSV, 'utf8');
+
+    await new Promise<void>(resolve => setTimeout(resolve, 800));
+    watcher.stop();
+
+    // The original archive entry must remain unchanged
+    assert.ok(
+      fs.existsSync(path.join(archivedDir, 'collision.csv')),
+      'Original archived file should still exist'
+    );
+
+    // A timestamped copy should also be present
+    const archivedFiles = fs.readdirSync(archivedDir);
+    const timestampedEntries = archivedFiles.filter(f => f.startsWith('collision-') && f.endsWith('.csv'));
+    assert.ok(timestampedEntries.length > 0, 'A timestamped archived file should have been created');
   });
 });

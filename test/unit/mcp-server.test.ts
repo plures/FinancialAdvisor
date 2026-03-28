@@ -117,7 +117,7 @@ describe('MCP Protocol Handlers', () => {
   // ── listTools ─────────────────────────────────────────────────────────────
 
   describe('listTools', () => {
-    it('returns all ten registered tools', async () => {
+    it('returns all twelve registered tools', async () => {
       const { tools } = await client.listTools();
       assert.ok(Array.isArray(tools));
       const names = tools.map((t) => t.name);
@@ -131,6 +131,8 @@ describe('MCP Protocol Handlers', () => {
       assert.ok(names.includes('get_financial_summary'));
       assert.ok(names.includes('analyze_spending_trend'));
       assert.ok(names.includes('run_scenario'));
+      assert.ok(names.includes('start_import_watcher'));
+      assert.ok(names.includes('stop_import_watcher'));
     });
 
     it('each tool has an inputSchema', async () => {
@@ -334,6 +336,59 @@ describe('MCP Protocol Handlers', () => {
         () => client.callTool({ name: 'run_scenario', arguments: { scenario: 'unknown', params: {} } }),
         /Unknown scenario type/,
       );
+    });
+
+    it('start_import_watcher starts a watcher and returns a confirmation message', async () => {
+      const watchDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-watcher-start-'));
+      try {
+        const result = await client.callTool({
+          name: 'start_import_watcher',
+          arguments: { watchDir, pollInterval: 0 },
+        });
+        const text = (result.content[0] as { type: 'text'; text: string }).text;
+        assert.ok(text.includes('Import watcher started'));
+        assert.ok(text.includes(watchDir));
+      } finally {
+        // Stop the watcher via the server to avoid leaking handles
+        await client.callTool({ name: 'stop_import_watcher', arguments: {} });
+        fs.rmSync(watchDir, { recursive: true, force: true });
+      }
+    });
+
+    it('start_import_watcher restarts an already-running watcher', async () => {
+      const watchDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-watcher-restart-'));
+      try {
+        await client.callTool({ name: 'start_import_watcher', arguments: { watchDir, pollInterval: 0 } });
+        const result = await client.callTool({
+          name: 'start_import_watcher',
+          arguments: { watchDir, pollInterval: 0 },
+        });
+        const text = (result.content[0] as { type: 'text'; text: string }).text;
+        assert.ok(text.includes('Import watcher started'));
+      } finally {
+        await client.callTool({ name: 'stop_import_watcher', arguments: {} });
+        fs.rmSync(watchDir, { recursive: true, force: true });
+      }
+    });
+
+    it('stop_import_watcher stops the watcher and returns a confirmation message', async () => {
+      const watchDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-watcher-stop-'));
+      try {
+        await client.callTool({ name: 'start_import_watcher', arguments: { watchDir, pollInterval: 0 } });
+        const result = await client.callTool({ name: 'stop_import_watcher', arguments: {} });
+        const text = (result.content[0] as { type: 'text'; text: string }).text;
+        assert.ok(text.includes('Import watcher stopped'));
+        assert.ok(text.includes(watchDir));
+      } finally {
+        fs.rmSync(watchDir, { recursive: true, force: true });
+      }
+    });
+
+    it('stop_import_watcher returns a message when no watcher is running', async () => {
+      // Ensure no watcher is running (call stop even if nothing is running)
+      const result = await client.callTool({ name: 'stop_import_watcher', arguments: {} });
+      const text = (result.content[0] as { type: 'text'; text: string }).text;
+      assert.ok(text.includes('No import watcher is currently running'));
     });
   });
 });

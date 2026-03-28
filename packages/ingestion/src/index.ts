@@ -8,6 +8,8 @@ export * from './import-session-store.js';
 export * from './raw-transaction.js';
 /** Re-exports the transaction-level deduplication helpers. */
 export * from './dedup.js';
+/** Re-exports the directory watcher for auto-import. */
+export * from './watcher.js';
 
 import { AccountIntegrationService } from '@financialadvisor/ledger';
 import { TransactionHashStore } from '@financialadvisor/storage';
