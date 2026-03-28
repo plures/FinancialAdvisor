@@ -20,11 +20,11 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `financial-advisor-export-${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `financial-advisor-export-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showExportSuccess = true;
-      setTimeout(() => showExportSuccess = false, 3000);
+      setTimeout(() => (showExportSuccess = false), 3000);
     } catch (e) {
       console.error('Export failed:', e);
     }
@@ -40,9 +40,14 @@
 
   function saveSettings() {
     if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem('fa-settings', JSON.stringify({
-        currency, aiProvider, darkMode,
-      }));
+      window.localStorage.setItem(
+        'fa-settings',
+        JSON.stringify({
+          currency,
+          aiProvider,
+          darkMode,
+        })
+      );
     }
   }
 </script>
@@ -85,7 +90,10 @@
     <!-- AI Integration -->
     <Card elevated>
       <h2 class="section-title">🤖 AI Integration</h2>
-      <p class="section-desc">Connect an AI provider for smart categorization, summaries, and recommendations. Optional — the app works fully without it.</p>
+      <p class="section-desc">
+        Connect an AI provider for smart categorization, summaries, and recommendations. Optional —
+        the app works fully without it.
+      </p>
 
       <div class="setting-row">
         <div class="setting-info">
@@ -105,9 +113,17 @@
         <div class="setting-row">
           <div class="setting-info">
             <h3>API Key</h3>
-            <p>Your API key for the selected provider. Stored locally, never transmitted except to the provider.</p>
+            <p>
+              Your API key for the selected provider. Stored locally, never transmitted except to
+              the provider.
+            </p>
           </div>
-          <Input type="password" bind:value={aiApiKey} placeholder="sk-..." onchange={saveSettings} />
+          <Input
+            type="password"
+            bind:value={aiApiKey}
+            placeholder="sk-..."
+            onchange={saveSettings}
+          />
         </div>
       {/if}
     </Card>
@@ -115,7 +131,9 @@
     <!-- Data Management -->
     <Card elevated>
       <h2 class="section-title">💾 Data Management</h2>
-      <p class="section-desc">Your data is stored locally using PluresDB. Nothing leaves your device unless you export it.</p>
+      <p class="section-desc">
+        Your data is stored locally using PluresDB. Nothing leaves your device unless you export it.
+      </p>
 
       <div class="data-actions">
         <div class="action-row">
@@ -131,15 +149,19 @@
             <h3>Import Data</h3>
             <p>Restore from a previous export file.</p>
           </div>
-          <Button variant="secondary" onclick={() => showImportDialog = true}>📤 Import</Button>
+          <Button variant="secondary" onclick={() => (showImportDialog = true)}>📤 Import</Button>
         </div>
 
         <div class="action-row danger">
           <div class="setting-info">
             <h3>Clear All Data</h3>
-            <p>Permanently delete all accounts, transactions, budgets, and goals. This cannot be undone.</p>
+            <p>
+              Permanently delete all accounts, transactions, budgets, and goals. This cannot be
+              undone.
+            </p>
           </div>
-          <Button variant="secondary" onclick={() => showClearDialog = true}>🗑️ Clear Data</Button>
+          <Button variant="secondary" onclick={() => (showClearDialog = true)}>🗑️ Clear Data</Button
+          >
         </div>
       </div>
 
@@ -175,7 +197,7 @@
     </ul>
     <p><strong>This cannot be undone.</strong> Consider exporting your data first.</p>
     <div class="dialog-actions">
-      <Button variant="secondary" onclick={() => showClearDialog = false}>Cancel</Button>
+      <Button variant="secondary" onclick={() => (showClearDialog = false)}>Cancel</Button>
       <Button variant="primary" onclick={clearAllData}>Yes, Delete Everything</Button>
     </div>
   </div>
@@ -188,7 +210,7 @@
     <p>Select a Financial Advisor export file (.json) to restore your data.</p>
     <Input type="file" accept=".json" />
     <div class="dialog-actions">
-      <Button variant="secondary" onclick={() => showImportDialog = false}>Cancel</Button>
+      <Button variant="secondary" onclick={() => (showImportDialog = false)}>Cancel</Button>
       <Button variant="primary">Import</Button>
     </div>
   </div>

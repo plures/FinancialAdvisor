@@ -30,7 +30,12 @@
 <div class="app-shell" class:sidebar-collapsed={!sidebarOpen}>
   <!-- Mobile header -->
   <header class="mobile-header">
-    <Button variant="ghost" class="menu-toggle" onclick={() => mobileMenuOpen = !mobileMenuOpen} aria-label="Toggle menu">
+    <Button
+      variant="ghost"
+      class="menu-toggle"
+      onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+      aria-label="Toggle menu"
+    >
       <span class="menu-icon">{mobileMenuOpen ? '✕' : '☰'}</span>
     </Button>
     <span class="mobile-title">Financial Advisor</span>
@@ -45,7 +50,12 @@
           <span class="brand-text">Financial Advisor</span>
         {/if}
       </h2>
-      <Button variant="ghost" class="sidebar-toggle desktop-only" onclick={() => sidebarOpen = !sidebarOpen} aria-label="Toggle sidebar">
+      <Button
+        variant="ghost"
+        class="sidebar-toggle desktop-only"
+        onclick={() => (sidebarOpen = !sidebarOpen)}
+        aria-label="Toggle sidebar"
+      >
         {sidebarOpen ? '◀' : '▶'}
       </Button>
     </div>
@@ -56,7 +66,7 @@
           href={item.href}
           class="nav-item"
           class:active={isActive(item.href, $page.url.pathname)}
-          onclick={() => mobileMenuOpen = false}
+          onclick={() => (mobileMenuOpen = false)}
         >
           <span class="nav-icon">{item.icon}</span>
           {#if sidebarOpen}
@@ -78,7 +88,7 @@
 
   <!-- Mobile overlay -->
   {#if mobileMenuOpen}
-    <div class="mobile-overlay" onclick={() => mobileMenuOpen = false} role="presentation"></div>
+    <div class="mobile-overlay" onclick={() => (mobileMenuOpen = false)} role="presentation"></div>
   {/if}
 
   <!-- Main content -->
@@ -167,13 +177,13 @@
   }
 
   .nav-item:hover {
-    background: var(--color-bg-hover, rgba(255,255,255,0.08));
+    background: var(--color-bg-hover, rgba(255, 255, 255, 0.08));
     color: var(--color-text-primary, #fff);
     text-decoration: none;
   }
 
   .nav-item.active {
-    background: var(--color-bg-active, rgba(99,102,241,0.15));
+    background: var(--color-bg-active, rgba(99, 102, 241, 0.15));
     color: var(--color-text-link, #818cf8);
     font-weight: var(--font-weight-medium, 500);
   }
@@ -237,15 +247,21 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 99;
   }
 
-  .desktop-only { display: inline-block; }
+  .desktop-only {
+    display: inline-block;
+  }
 
   @media (max-width: 768px) {
-    .mobile-header { display: flex; }
-    .desktop-only { display: none; }
+    .mobile-header {
+      display: flex;
+    }
+    .desktop-only {
+      display: none;
+    }
 
     .sidebar {
       transform: translateX(-100%);

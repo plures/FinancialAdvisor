@@ -15,19 +15,25 @@
       <h2>🚀 Getting Started</h2>
       <ol class="guide-steps">
         <li>
-          <strong>Create an account</strong> — Go to <a href="/accounts">Accounts</a> and click "Add Account." Enter your bank name, account type (checking, savings, credit card), and starting balance.
+          <strong>Create an account</strong> — Go to <a href="/accounts">Accounts</a> and click "Add Account."
+          Enter your bank name, account type (checking, savings, credit card), and starting balance.
         </li>
         <li>
-          <strong>Import transactions</strong> — Go to <a href="/review/import">Review → Import</a>. Download a CSV or OFX/QFX file from your bank's website and upload it here. We support Chase, Bank of America, Wells Fargo, and most institutions that export OFX.
+          <strong>Import transactions</strong> — Go to <a href="/review/import">Review → Import</a>.
+          Download a CSV or OFX/QFX file from your bank's website and upload it here. We support
+          Chase, Bank of America, Wells Fargo, and most institutions that export OFX.
         </li>
         <li>
-          <strong>Review categorization</strong> — After import, transactions are auto-categorized. Visit <a href="/review/categories">Review → Categories</a> to fix any miscategorized items.
+          <strong>Review categorization</strong> — After import, transactions are auto-categorized.
+          Visit <a href="/review/categories">Review → Categories</a> to fix any miscategorized items.
         </li>
         <li>
-          <strong>Set budgets</strong> — Go to <a href="/budgets">Budgets</a> to set monthly spending limits by category. The app tracks actual vs. budgeted spending.
+          <strong>Set budgets</strong> — Go to <a href="/budgets">Budgets</a> to set monthly spending
+          limits by category. The app tracks actual vs. budgeted spending.
         </li>
         <li>
-          <strong>Track goals</strong> — Go to <a href="/goals">Goals</a> to create savings targets (emergency fund, vacation, etc.) and track progress.
+          <strong>Track goals</strong> — Go to <a href="/goals">Goals</a> to create savings targets (emergency
+          fund, vacation, etc.) and track progress.
         </li>
       </ol>
     </Card>
@@ -37,8 +43,14 @@
       <div class="guide-content">
         <h3>Supported formats</h3>
         <ul>
-          <li><strong>CSV</strong> — Most banks let you download transactions as CSV. We auto-detect column layouts for major banks.</li>
-          <li><strong>OFX / QFX</strong> — Open Financial Exchange format. Quicken-compatible. Most complete data (includes transaction IDs for deduplication).</li>
+          <li>
+            <strong>CSV</strong> — Most banks let you download transactions as CSV. We auto-detect column
+            layouts for major banks.
+          </li>
+          <li>
+            <strong>OFX / QFX</strong> — Open Financial Exchange format. Quicken-compatible. Most complete
+            data (includes transaction IDs for deduplication).
+          </li>
         </ul>
         <h3>How to download from your bank</h3>
         <ol>
@@ -49,7 +61,10 @@
           <li>Upload the file in <a href="/review/import">Review → Import</a></li>
         </ol>
         <h3>Duplicate detection</h3>
-        <p>Re-importing the same file won't create duplicates. OFX files use transaction IDs; CSV files use a hash of date + amount + description.</p>
+        <p>
+          Re-importing the same file won't create duplicates. OFX files use transaction IDs; CSV
+          files use a hash of date + amount + description.
+        </p>
       </div>
     </Card>
 
@@ -58,13 +73,28 @@
       <div class="guide-content">
         <p>Financial Advisor uses AI to:</p>
         <ul>
-          <li><strong>Categorize transactions</strong> — Automatically assigns categories (groceries, dining, utilities, etc.)</li>
-          <li><strong>Generate summaries</strong> — Natural language overview of your financial health</li>
-          <li><strong>Recommend actions</strong> — Personalized tips to save money, pay off debt, or optimize spending</li>
-          <li><strong>Predict trends</strong> — Forecasts future spending based on historical patterns</li>
+          <li>
+            <strong>Categorize transactions</strong> — Automatically assigns categories (groceries, dining,
+            utilities, etc.)
+          </li>
+          <li>
+            <strong>Generate summaries</strong> — Natural language overview of your financial health
+          </li>
+          <li>
+            <strong>Recommend actions</strong> — Personalized tips to save money, pay off debt, or optimize
+            spending
+          </li>
+          <li>
+            <strong>Predict trends</strong> — Forecasts future spending based on historical patterns
+          </li>
         </ul>
         <h3>Privacy</h3>
-        <p>AI is optional. Without an AI provider configured, the app works fully — categorization uses rule-based matching, and summaries use templates. Configure an AI provider in <a href="/settings">Settings</a> for enhanced intelligence.</p>
+        <p>
+          AI is optional. Without an AI provider configured, the app works fully — categorization
+          uses rule-based matching, and summaries use templates. Configure an AI provider in <a
+            href="/settings">Settings</a
+          > for enhanced intelligence.
+        </p>
       </div>
     </Card>
 
@@ -72,11 +102,24 @@
       <h2>📊 Understanding Reports</h2>
       <div class="guide-content">
         <ul>
-          <li><strong>Spending Trends</strong> — Are you spending more or less over time? Broken down by category.</li>
-          <li><strong>Budget Variance</strong> — How close are you to your budget limits? Risk levels flagged.</li>
-          <li><strong>Debt Analysis</strong> — Payoff projections using avalanche (highest interest first) or snowball (lowest balance first) strategies.</li>
-          <li><strong>Cash Flow</strong> — Monthly income vs. expenses. Identifies recurring charges.</li>
-          <li><strong>Anomaly Detection</strong> — Flags unusual transactions that deviate from your normal patterns.</li>
+          <li>
+            <strong>Spending Trends</strong> — Are you spending more or less over time? Broken down by
+            category.
+          </li>
+          <li>
+            <strong>Budget Variance</strong> — How close are you to your budget limits? Risk levels flagged.
+          </li>
+          <li>
+            <strong>Debt Analysis</strong> — Payoff projections using avalanche (highest interest first)
+            or snowball (lowest balance first) strategies.
+          </li>
+          <li>
+            <strong>Cash Flow</strong> — Monthly income vs. expenses. Identifies recurring charges.
+          </li>
+          <li>
+            <strong>Anomaly Detection</strong> — Flags unusual transactions that deviate from your normal
+            patterns.
+          </li>
         </ul>
       </div>
     </Card>
@@ -89,10 +132,17 @@
           <li>All data stored locally on your device using PluresDB</li>
           <li>No cloud sync unless you explicitly enable it</li>
           <li>No data shared with third parties</li>
-          <li>AI provider calls are optional and minimal (only transaction descriptions, never account numbers)</li>
+          <li>
+            AI provider calls are optional and minimal (only transaction descriptions, never account
+            numbers)
+          </li>
         </ul>
         <h3>Backup</h3>
-        <p>Your data lives in the app's local storage. To back up, export your data from <a href="/settings">Settings</a>.</p>
+        <p>
+          Your data lives in the app's local storage. To back up, export your data from <a
+            href="/settings">Settings</a
+          >.
+        </p>
       </div>
     </Card>
 
@@ -157,7 +207,8 @@
     line-height: 1.6;
   }
 
-  .guide-content ul, .guide-content ol {
+  .guide-content ul,
+  .guide-content ol {
     padding-left: var(--space-6, 24px);
   }
 
@@ -175,7 +226,7 @@
   }
 
   kbd {
-    background: var(--color-bg-subtle, rgba(255,255,255,0.08));
+    background: var(--color-bg-subtle, rgba(255, 255, 255, 0.08));
     border: 1px solid var(--color-border-subtle, #2a2a4a);
     border-radius: 4px;
     padding: 2px 6px;

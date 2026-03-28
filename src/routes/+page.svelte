@@ -22,10 +22,34 @@
   });
 
   const steps = [
-    { icon: '🏦', title: 'Add an Account', description: 'Create your first bank account, credit card, or investment account.', href: '/accounts', action: 'Add Account' },
-    { icon: '📥', title: 'Import Transactions', description: 'Import your bank statements (CSV, OFX, QFX) or add transactions manually.', href: '/review/import', action: 'Import Data' },
-    { icon: '📊', title: 'Set a Budget', description: 'Create spending limits by category to track where your money goes.', href: '/budgets', action: 'Create Budget' },
-    { icon: '🎯', title: 'Define Goals', description: 'Set savings goals — emergency fund, vacation, debt payoff.', href: '/goals', action: 'Set Goals' },
+    {
+      icon: '🏦',
+      title: 'Add an Account',
+      description: 'Create your first bank account, credit card, or investment account.',
+      href: '/accounts',
+      action: 'Add Account',
+    },
+    {
+      icon: '📥',
+      title: 'Import Transactions',
+      description: 'Import your bank statements (CSV, OFX, QFX) or add transactions manually.',
+      href: '/review/import',
+      action: 'Import Data',
+    },
+    {
+      icon: '📊',
+      title: 'Set a Budget',
+      description: 'Create spending limits by category to track where your money goes.',
+      href: '/budgets',
+      action: 'Create Budget',
+    },
+    {
+      icon: '🎯',
+      title: 'Define Goals',
+      description: 'Set savings goals — emergency fund, vacation, debt payoff.',
+      href: '/goals',
+      action: 'Set Goals',
+    },
   ];
 </script>
 
@@ -130,7 +154,7 @@
 
   <!-- Help section (always visible) -->
   <section class="help-section">
-    <Button variant="ghost" class="help-toggle" onclick={() => showHelp = !showHelp}>
+    <Button variant="ghost" class="help-toggle" onclick={() => (showHelp = !showHelp)}>
       {showHelp ? '▼' : '▶'} Quick Help
     </Button>
 
@@ -139,19 +163,32 @@
         <div class="help-content">
           <div class="help-item">
             <h4>📥 How do I import data?</h4>
-            <p>Go to <a href="/review/import">Review → Import</a>. You can upload CSV files from your bank (Chase, Bank of America, Wells Fargo formats supported) or OFX/QFX files from most financial institutions.</p>
+            <p>
+              Go to <a href="/review/import">Review → Import</a>. You can upload CSV files from your
+              bank (Chase, Bank of America, Wells Fargo formats supported) or OFX/QFX files from
+              most financial institutions.
+            </p>
           </div>
           <div class="help-item">
             <h4>🤖 How does AI help?</h4>
-            <p>When configured in <a href="/settings">Settings</a>, AI automatically categorizes transactions, generates spending summaries, and provides personalized recommendations.</p>
+            <p>
+              When configured in <a href="/settings">Settings</a>, AI automatically categorizes
+              transactions, generates spending summaries, and provides personalized recommendations.
+            </p>
           </div>
           <div class="help-item">
             <h4>🔒 Is my data private?</h4>
-            <p>Yes. All data is stored locally on your device using PluresDB. Nothing is sent to external servers unless you explicitly configure an AI provider.</p>
+            <p>
+              Yes. All data is stored locally on your device using PluresDB. Nothing is sent to
+              external servers unless you explicitly configure an AI provider.
+            </p>
           </div>
           <div class="help-item">
             <h4>📊 What are Reports?</h4>
-            <p><a href="/reports">Reports</a> shows spending trends, budget variance, debt payoff projections, and AI-generated financial summaries.</p>
+            <p>
+              <a href="/reports">Reports</a> shows spending trends, budget variance, debt payoff projections,
+              and AI-generated financial summaries.
+            </p>
           </div>
         </div>
       </Card>
@@ -207,13 +244,13 @@
     gap: var(--space-4, 16px);
     padding: var(--space-4, 16px);
     border-radius: var(--radius-md, 8px);
-    background: var(--color-bg-subtle, rgba(255,255,255,0.03));
+    background: var(--color-bg-subtle, rgba(255, 255, 255, 0.03));
     border: 1px solid var(--color-border-subtle, #2a2a4a);
   }
 
   .step.first {
     border-color: var(--color-text-link, #818cf8);
-    background: var(--color-bg-active, rgba(99,102,241,0.08));
+    background: var(--color-bg-active, rgba(99, 102, 241, 0.08));
   }
 
   .step-number {
