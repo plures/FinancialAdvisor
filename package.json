@@ -2,7 +2,7 @@
   "name": "financial-advisor",
   "displayName": "Financial Advisor",
   "description": "Personal AI Financial Advisor - Multiplatform Desktop App with AI Integration",
-  "version": "0.21.2",
+  "version": "0.21.3",
   "type": "module",
   "publisher": "plures",
   "private": true,
