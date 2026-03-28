@@ -5,6 +5,8 @@ on:
     types: [opened, ready_for_review, synchronize, closed]
   check_suite:
     types: [completed]
+  schedule:
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 permissions:
