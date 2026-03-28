@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Button, Card, Alert } from '@plures/design-dojo';
+  import { Button, Card } from '@plures/design-dojo';
   import { accounts } from '$lib/stores/financial';
 
   let greeting = $state('Financial Advisor');
@@ -130,9 +130,9 @@
 
   <!-- Help section (always visible) -->
   <section class="help-section">
-    <button class="help-toggle" onclick={() => showHelp = !showHelp}>
+    <Button variant="ghost" class="help-toggle" onclick={() => showHelp = !showHelp}>
       {showHelp ? '▼' : '▶'} Quick Help
-    </button>
+    </Button>
 
     {#if showHelp}
       <Card>

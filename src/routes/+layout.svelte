@@ -30,9 +30,9 @@
 <div class="app-shell" class:sidebar-collapsed={!sidebarOpen}>
   <!-- Mobile header -->
   <header class="mobile-header">
-    <button class="menu-toggle" onclick={() => mobileMenuOpen = !mobileMenuOpen} aria-label="Toggle menu">
+    <Button variant="ghost" class="menu-toggle" onclick={() => mobileMenuOpen = !mobileMenuOpen} aria-label="Toggle menu">
       <span class="menu-icon">{mobileMenuOpen ? '✕' : '☰'}</span>
-    </button>
+    </Button>
     <span class="mobile-title">Financial Advisor</span>
   </header>
 
@@ -45,9 +45,9 @@
           <span class="brand-text">Financial Advisor</span>
         {/if}
       </h2>
-      <button class="sidebar-toggle desktop-only" onclick={() => sidebarOpen = !sidebarOpen} aria-label="Toggle sidebar">
+      <Button variant="ghost" class="sidebar-toggle desktop-only" onclick={() => sidebarOpen = !sidebarOpen} aria-label="Toggle sidebar">
         {sidebarOpen ? '◀' : '▶'}
-      </button>
+      </Button>
     </div>
 
     <nav class="sidebar-nav" aria-label="Main navigation">

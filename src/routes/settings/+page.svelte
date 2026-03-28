@@ -186,7 +186,7 @@
   <div class="dialog-content">
     <h2>📤 Import Data</h2>
     <p>Select a Financial Advisor export file (.json) to restore your data.</p>
-    <input type="file" accept=".json" />
+    <Input type="file" accept=".json" />
     <div class="dialog-actions">
       <Button variant="secondary" onclick={() => showImportDialog = false}>Cancel</Button>
       <Button variant="primary">Import</Button>
