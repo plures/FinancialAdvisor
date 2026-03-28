@@ -1,7 +1,9 @@
 <script lang="ts">
   import '../app.css';
-  import { page } from '$app/stores';
   import { Button } from '@plures/design-dojo';
+  import type { Snippet } from 'svelte';
+
+  let { children }: { children: Snippet } = $props();
 
   const navItems = [
     { href: '/', label: 'Home', icon: '🏠' },
@@ -16,6 +18,35 @@
 
   let sidebarOpen = $state(true);
   let mobileMenuOpen = $state(false);
+  let currentPath = $state(typeof window !== 'undefined' ? window.location.pathname : '/');
+
+  // Update path on navigation
+  $effect(() => {
+    if (typeof window === 'undefined') return;
+    const update = () => {
+      currentPath = window.location.pathname;
+    };
+    window.addEventListener('popstate', update);
+    // SvelteKit uses pushState — observe via MutationObserver on the URL
+    const observer = new MutationObserver(update);
+    observer.observe(document.querySelector('head title') ?? document.head, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+    return () => {
+      window.removeEventListener('popstate', update);
+      observer.disconnect();
+    };
+  });
+
+  function handleNavClick(_href: string) {
+    mobileMenuOpen = false;
+    // Let SvelteKit handle navigation, then update path
+    requestAnimationFrame(() => {
+      currentPath = window.location.pathname;
+    });
+  }
 
   function isActive(href: string, currentPath: string): boolean {
     if (href === '/') return currentPath === '/';
@@ -65,8 +96,8 @@
         <a
           href={item.href}
           class="nav-item"
-          class:active={isActive(item.href, $page.url.pathname)}
-          onclick={() => (mobileMenuOpen = false)}
+          class:active={isActive(item.href, currentPath)}
+          onclick={() => handleNavClick(item.href)}
         >
           <span class="nav-icon">{item.icon}</span>
           {#if sidebarOpen}
@@ -93,7 +124,7 @@
 
   <!-- Main content -->
   <main class="main-content">
-    <slot />
+    {@render children()}
   </main>
 </div>
 
