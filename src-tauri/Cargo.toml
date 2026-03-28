@@ -3,7 +3,7 @@ name = "financial-advisor"
 version = "0.2.0"
 description = "Personal AI Financial Advisor"
 authors = ["Plures Team"]
-license = "MIT"
+license = "BSL-1.1"
 repository = "https://github.com/plures/FinancialAdvisor"
 edition = "2021"
 
