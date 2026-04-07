@@ -1,3 +1,20 @@
+## [0.22.0] — 2026-04-07
+
+- chore: centralize release to org-wide reusable workflow (65e5ec4)
+- chore: centralize CI to org-wide reusable workflow (01b64ef)
+- ci: add Design-Dojo UI compliance gate (265b235)
+- ci: standardize Node version to lts/* — remove hardcoded versions (b4c376c)
+- ci: tech-doc-writer triggers on minor prerelease only [actions-optimization] (4d9de3d)
+- ci: add concurrency group to copilot-pr-lifecycle [actions-optimization] (bc6ac84)
+- ci: centralize lifecycle — event-driven with schedule guard (e28683c)
+- refactor: centralize lifecycle — call reusable from plures/repo-template (c6696f8)
+- fix(security): pin axios to 1.13.6 — CVE supply chain attack on ^1.14.1 (446e2a1)
+- fix: lifecycle v4.4 — catch self-approval error, don't crash on own PRs (3176539)
+- fix: lifecycle v4.3 — guard notify step, escape PR title in JSON (3f2b6f9)
+- fix: lifecycle v4.2 — filter out release/publish checks from CI evaluation (f0d9a71)
+- fix: lifecycle v4.1 — process all PRs independently, add Path F debug logging (fca31fd)
+- feat: lifecycle v4 — merge all PRs, Copilot default reviewer, no nudges (f0deb28)
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
