@@ -18,9 +18,9 @@ const PRIMITIVE_TAG_MAP = {
   textarea: 'Input',
 };
 
-// Design-dojo components that should be imported from '@plures/design-dojo'
-// Note: Button, Input, Select, Card, and EmptyState are local components in
-// $lib/components/ because their @plures/design-dojo API is not yet compatible.
+// Components that must be imported from '@plures/design-dojo', not from local paths.
+// Button, Input, Select, Card, and EmptyState are excluded because their
+// @plures/design-dojo API is not yet compatible with this app's usage.
 const DESIGN_DOJO_COMPONENTS = new Set([
   'Badge',
   'Callout', 'Toggle', 'Toast', 'Dialog', 'Tooltip',
