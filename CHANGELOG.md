@@ -1,3 +1,8 @@
+## [0.22.1] — 2026-04-07
+
+- fix: inline reusable workflow to fix schedule trigger failures (e93a53e)
+- docs: add structured ROADMAP.md for automated issue generation (6b5aaa7)
+
 ## [0.22.0] — 2026-04-07
 
 - chore: centralize release to org-wide reusable workflow (65e5ec4)
