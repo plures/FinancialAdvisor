@@ -13,18 +13,10 @@
 
 import { describe, it, beforeEach } from 'mocha';
 import * as assert from 'assert';
-import {
-  SemanticMerchantClusterer,
-} from '../../packages/resolution/dist/semantic-clustering.js';
-import {
-  CorrectionLearner,
-} from '../../packages/resolution/dist/correction-learning.js';
-import {
-  ResolutionEngine,
-} from '../../packages/resolution/dist/resolution-engine.js';
-import {
-  TransactionAnalyzer,
-} from '../../packages/resolution/dist/categorization.js';
+import { SemanticMerchantClusterer } from '../../packages/resolution/dist/semantic-clustering.js';
+import { CorrectionLearner } from '../../packages/resolution/dist/correction-learning.js';
+import { ResolutionEngine } from '../../packages/resolution/dist/resolution-engine.js';
+import { TransactionAnalyzer } from '../../packages/resolution/dist/categorization.js';
 import { TransactionType } from '../../packages/domain/dist/types.js';
 import { createMoney } from '../../packages/domain/dist/money.js';
 
@@ -75,9 +67,7 @@ describe('SemanticMerchantClusterer', () => {
     });
 
     it('should accept multiple merchants without throwing', () => {
-      assert.doesNotThrow(() =>
-        clusterer.addMerchants(['Whole Foods', 'Safeway', 'Kroger']),
-      );
+      assert.doesNotThrow(() => clusterer.addMerchants(['Whole Foods', 'Safeway', 'Kroger']));
     });
   });
 
@@ -100,7 +90,7 @@ describe('SemanticMerchantClusterer', () => {
       // Grocery neighbours should score higher than non-grocery
       assert.ok(
         merchants.some(m => /trader|safeway|kroger/i.test(m)),
-        `Expected grocery-related results but got: ${merchants.join(', ')}`,
+        `Expected grocery-related results but got: ${merchants.join(', ')}`
       );
     });
 
@@ -109,7 +99,7 @@ describe('SemanticMerchantClusterer', () => {
       for (let i = 1; i < results.length; i++) {
         assert.ok(
           results[i - 1]!.similarity >= results[i]!.similarity,
-          'Results must be sorted by similarity (descending)',
+          'Results must be sorted by similarity (descending)'
         );
       }
     });
@@ -123,7 +113,7 @@ describe('SemanticMerchantClusterer', () => {
       const results = clusterer.findSimilar('Uber Technologies', 10, 0.0);
       assert.ok(
         results.every(r => r.merchant !== 'Uber Technologies'),
-        'The query merchant should not appear in results',
+        'The query merchant should not appear in results'
       );
     });
 
@@ -190,10 +180,7 @@ describe('SemanticMerchantClusterer', () => {
       const allMembers = clusters.flatMap(c => c.members);
 
       for (const m of merchants) {
-        assert.ok(
-          allMembers.includes(m),
-          `Merchant "${m}" missing from all clusters`,
-        );
+        assert.ok(allMembers.includes(m), `Merchant "${m}" missing from all clusters`);
       }
     });
 
@@ -226,7 +213,7 @@ describe('CorrectionLearner', () => {
           originalCategory: 'Other',
           correctedCategory: 'Groceries',
           correctedAt: new Date(),
-        }),
+        })
       );
     });
 
@@ -467,10 +454,10 @@ describe('ResolutionEngine', () => {
       const result = engine.resolve(tx2);
 
       assert.ok(
-        result.explanation.reasons.some(r =>
-          r.includes('Bistro 22') || r.toLowerCase().includes('previously'),
+        result.explanation.reasons.some(
+          r => r.includes('Bistro 22') || r.toLowerCase().includes('previously')
         ),
-        `No correction reason found. Got: ${result.explanation.reasons.join(' | ')}`,
+        `No correction reason found. Got: ${result.explanation.reasons.join(' | ')}`
       );
     });
   });
@@ -508,7 +495,7 @@ describe('ResolutionEngine', () => {
       for (const result of results) {
         assert.ok(
           result.category === 'Groceries' || result.category !== 'Other',
-          `Expected Groceries-related category, got "${result.category}"`,
+          `Expected Groceries-related category, got "${result.category}"`
         );
       }
     });
@@ -528,7 +515,7 @@ describe('ResolutionEngine', () => {
 
       assert.ok(
         (result.explanation.similarTransactionCount ?? 0) > 0,
-        'Expected historical transaction count to be populated',
+        'Expected historical transaction count to be populated'
       );
     });
 
@@ -536,9 +523,24 @@ describe('ResolutionEngine', () => {
       const jan = (day: number) => new Date(2024, 0, day);
 
       const history = [
-        makeTxn({ amountCents: -4500, merchant: 'Weekly Store', date: jan(1), category: 'Groceries' }),
-        makeTxn({ amountCents: -4200, merchant: 'Weekly Store', date: jan(8), category: 'Groceries' }),
-        makeTxn({ amountCents: -4800, merchant: 'Weekly Store', date: jan(15), category: 'Groceries' }),
+        makeTxn({
+          amountCents: -4500,
+          merchant: 'Weekly Store',
+          date: jan(1),
+          category: 'Groceries',
+        }),
+        makeTxn({
+          amountCents: -4200,
+          merchant: 'Weekly Store',
+          date: jan(8),
+          category: 'Groceries',
+        }),
+        makeTxn({
+          amountCents: -4800,
+          merchant: 'Weekly Store',
+          date: jan(15),
+          category: 'Groceries',
+        }),
       ];
       engine.loadHistory(history);
 
@@ -547,7 +549,7 @@ describe('ResolutionEngine', () => {
 
       assert.ok(
         result.explanation.temporalPattern?.toLowerCase().includes('weekly'),
-        `Expected weekly pattern, got: "${result.explanation.temporalPattern}"`,
+        `Expected weekly pattern, got: "${result.explanation.temporalPattern}"`
       );
     });
   });
@@ -741,9 +743,7 @@ describe('TransactionAnalyzer', () => {
 
   describe('findUnusualTransactions', () => {
     it('returns empty array when no expense transactions exist', () => {
-      const txns = [
-        makeFullTxn({ amountCents: 50000 }),
-      ];
+      const txns = [makeFullTxn({ amountCents: 50000 })];
       const unusual = TransactionAnalyzer.findUnusualTransactions(txns);
       assert.deepStrictEqual(unusual, []);
     });
@@ -755,8 +755,9 @@ describe('TransactionAnalyzer', () => {
 
     it('identifies outlier transactions above 2 standard deviations', () => {
       // Use many normal-sized transactions so the outlier clearly exceeds the threshold
-      const normalTxns = Array.from({ length: 20 }, (_, i) =>
-        makeFullTxn({ amountCents: -(100 + i) }) // $1.00–$1.19
+      const normalTxns = Array.from(
+        { length: 20 },
+        (_, i) => makeFullTxn({ amountCents: -(100 + i) }) // $1.00–$1.19
       );
       const outlier = makeFullTxn({ amountCents: -10000000 }); // $100,000 — extreme outlier
       const txns = [...normalTxns, outlier];

@@ -25,42 +25,21 @@ import { describe, it } from 'mocha';
 import * as assert from 'assert';
 
 // ─── Analytics imports ───────────────────────────────────────────────────────
-import {
-  computeMonthlyBurn,
-} from '../../packages/analytics/dist/burn.js';
-import {
-  computeRunway,
-} from '../../packages/analytics/dist/runway.js';
-import {
-  computeRecurringLoad,
-} from '../../packages/analytics/dist/recurring.js';
-import {
-  computeVariance,
-} from '../../packages/analytics/dist/variance.js';
-import {
-  computeDebtPayoff,
-  comparePayoffStrategies,
-} from '../../packages/analytics/dist/debt.js';
-import {
-  computeCashFlow,
-  projectCashFlow,
-} from '../../packages/analytics/dist/cash-flow.js';
-import {
-  computeSubscriptionDashboard,
-} from '../../packages/analytics/dist/subscription.js';
+import { computeMonthlyBurn } from '../../packages/analytics/dist/burn.js';
+import { computeRunway } from '../../packages/analytics/dist/runway.js';
+import { computeRecurringLoad } from '../../packages/analytics/dist/recurring.js';
+import { computeVariance } from '../../packages/analytics/dist/variance.js';
+import { computeDebtPayoff, comparePayoffStrategies } from '../../packages/analytics/dist/debt.js';
+import { computeCashFlow, projectCashFlow } from '../../packages/analytics/dist/cash-flow.js';
+import { computeSubscriptionDashboard } from '../../packages/analytics/dist/subscription.js';
 import {
   computeNetWorth,
   takeNetWorthSnapshot,
   netWorthChange,
   sortSnapshotsByPeriod,
 } from '../../packages/analytics/dist/net-worth.js';
-import {
-  computeGoalProgress,
-  computeGoalsProgress,
-} from '../../packages/analytics/dist/goals.js';
-import {
-  compareScenarioToBaseline,
-} from '../../packages/analytics/dist/scenario.js';
+import { computeGoalProgress, computeGoalsProgress } from '../../packages/analytics/dist/goals.js';
+import { compareScenarioToBaseline } from '../../packages/analytics/dist/scenario.js';
 import {
   buildFinancialTimelineSnapshot,
   sortTimelineSnapshots,
@@ -69,12 +48,14 @@ import {
 } from '../../packages/analytics/dist/timeline.js';
 
 // ─── Domain imports ──────────────────────────────────────────────────────────
-import {
-  createMoney,
-  moneyFromDecimal,
-} from '../../packages/domain/dist/money.js';
+import { createMoney, moneyFromDecimal } from '../../packages/domain/dist/money.js';
 import { createDateRange } from '../../packages/domain/dist/temporal.js';
-import { TransactionType, AccountType, GoalCategory, Priority } from '../../packages/domain/dist/types.js';
+import {
+  TransactionType,
+  AccountType,
+  GoalCategory,
+  Priority,
+} from '../../packages/domain/dist/types.js';
 
 // ─── Test helpers ────────────────────────────────────────────────────────────
 
@@ -121,9 +102,9 @@ describe('computeMonthlyBurn', () => {
 
   it('sums all expenses in the period', () => {
     const txns = [
-      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 5) }),   // $50
-      makeTxn({ amountCents: -3000, date: makeDate(2024, 1, 20) }),  // $30
-      makeTxn({ amountCents: 10000, date: makeDate(2024, 1, 15) }),  // income — ignored
+      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 5) }), // $50
+      makeTxn({ amountCents: -3000, date: makeDate(2024, 1, 20) }), // $30
+      makeTxn({ amountCents: 10000, date: makeDate(2024, 1, 15) }), // income — ignored
     ];
 
     const result = computeMonthlyBurn(txns, 'acc-1', period);
@@ -134,7 +115,7 @@ describe('computeMonthlyBurn', () => {
 
   it('splits recurring vs discretionary correctly', () => {
     const txns = [
-      makeTxn({ amountCents: -9900, date: makeDate(2024, 1, 1), isRecurring: true }),  // Netflix
+      makeTxn({ amountCents: -9900, date: makeDate(2024, 1, 1), isRecurring: true }), // Netflix
       makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 10), isRecurring: false }), // coffee
       makeTxn({ amountCents: -2000, date: makeDate(2024, 1, 20) }), // no flag
     ];
@@ -189,7 +170,7 @@ describe('computeMonthlyBurn', () => {
   it('excludes transactions outside the period', () => {
     const txns = [
       makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 5) }),
-      makeTxn({ amountCents: -9000, date: makeDate(2024, 2, 1) }),  // February — excluded
+      makeTxn({ amountCents: -9000, date: makeDate(2024, 2, 1) }), // February — excluded
     ];
 
     const result = computeMonthlyBurn(txns, 'acc-1', period);
@@ -218,8 +199,8 @@ describe('computeMonthlyBurn', () => {
 
 describe('computeRunway', () => {
   it('computes exact months from balance / burn', () => {
-    const balance = createMoney(600000, 'USD');   // $6 000
-    const burn    = createMoney(200000, 'USD');   // $2 000/month
+    const balance = createMoney(600000, 'USD'); // $6 000
+    const burn = createMoney(200000, 'USD'); // $2 000/month
 
     const result = computeRunway(balance, burn);
 
@@ -227,8 +208,8 @@ describe('computeRunway', () => {
   });
 
   it('pessimistic runway is 20% shorter than base', () => {
-    const balance = createMoney(1200000, 'USD');  // $12 000
-    const burn    = createMoney(200000,  'USD');  // $2 000/month — base = 6 months
+    const balance = createMoney(1200000, 'USD'); // $12 000
+    const burn = createMoney(200000, 'USD'); // $2 000/month — base = 6 months
 
     const result = computeRunway(balance, burn);
 
@@ -238,7 +219,7 @@ describe('computeRunway', () => {
 
   it('optimistic runway is 20% longer than base', () => {
     const balance = createMoney(1200000, 'USD');
-    const burn    = createMoney(200000,  'USD');
+    const burn = createMoney(200000, 'USD');
 
     const result = computeRunway(balance, burn);
 
@@ -248,7 +229,7 @@ describe('computeRunway', () => {
 
   it('returns Infinity when burn rate is zero', () => {
     const balance = createMoney(100000, 'USD');
-    const burn    = createMoney(0,      'USD');
+    const burn = createMoney(0, 'USD');
 
     const result = computeRunway(balance, burn);
 
@@ -258,8 +239,8 @@ describe('computeRunway', () => {
   });
 
   it('returns zero months when balance is zero', () => {
-    const balance = createMoney(0,      'USD');
-    const burn    = createMoney(100000, 'USD');
+    const balance = createMoney(0, 'USD');
+    const burn = createMoney(100000, 'USD');
 
     const result = computeRunway(balance, burn);
 
@@ -268,7 +249,7 @@ describe('computeRunway', () => {
 
   it('throws on currency mismatch', () => {
     const balance = createMoney(100000, 'USD');
-    const burn    = createMoney(100000, 'EUR');
+    const burn = createMoney(100000, 'EUR');
 
     assert.throws(() => computeRunway(balance, burn), /Currency mismatch/);
   });
@@ -279,23 +260,50 @@ describe('computeRunway', () => {
 describe('computeRecurringLoad', () => {
   it('sums monthly and annual totals from recurring transactions', () => {
     const txns = [
-      makeTxn({ amountCents: -1599, isRecurring: true, merchant: 'Netflix',  category: 'Entertainment', date: makeDate(2024, 1, 1) }),
-      makeTxn({ amountCents: -999,  isRecurring: true, merchant: 'Spotify',  category: 'Entertainment', date: makeDate(2024, 1, 1) }),
+      makeTxn({
+        amountCents: -1599,
+        isRecurring: true,
+        merchant: 'Netflix',
+        category: 'Entertainment',
+        date: makeDate(2024, 1, 1),
+      }),
+      makeTxn({
+        amountCents: -999,
+        isRecurring: true,
+        merchant: 'Spotify',
+        category: 'Entertainment',
+        date: makeDate(2024, 1, 1),
+      }),
     ];
 
     // period is 1 month
     const result = computeRecurringLoad(txns, 1);
 
-    assert.strictEqual(result.monthly.cents, 2598);         // 1599 + 999
+    assert.strictEqual(result.monthly.cents, 2598); // 1599 + 999
     assert.strictEqual(result.annual.cents, 2598 * 12);
   });
 
   it('groups identical recurring commitments into one item', () => {
     // Same merchant and similar amount appearing 3 months in a row
     const txns = [
-      makeTxn({ amountCents: -1599, isRecurring: true, merchant: 'Netflix', date: makeDate(2024, 1, 1) }),
-      makeTxn({ amountCents: -1599, isRecurring: true, merchant: 'Netflix', date: makeDate(2024, 2, 1) }),
-      makeTxn({ amountCents: -1599, isRecurring: true, merchant: 'Netflix', date: makeDate(2024, 3, 1) }),
+      makeTxn({
+        amountCents: -1599,
+        isRecurring: true,
+        merchant: 'Netflix',
+        date: makeDate(2024, 1, 1),
+      }),
+      makeTxn({
+        amountCents: -1599,
+        isRecurring: true,
+        merchant: 'Netflix',
+        date: makeDate(2024, 2, 1),
+      }),
+      makeTxn({
+        amountCents: -1599,
+        isRecurring: true,
+        merchant: 'Netflix',
+        date: makeDate(2024, 3, 1),
+      }),
     ];
 
     const result = computeRecurringLoad(txns, 3);
@@ -318,12 +326,24 @@ describe('computeRecurringLoad', () => {
   });
 
   it('includes source transaction IDs per item', () => {
-    const t1 = makeTxn({ id: 'r-1', amountCents: -999, isRecurring: true, merchant: 'Spotify', date: makeDate(2024, 1, 1) });
-    const t2 = makeTxn({ id: 'r-2', amountCents: -999, isRecurring: true, merchant: 'Spotify', date: makeDate(2024, 2, 1) });
+    const t1 = makeTxn({
+      id: 'r-1',
+      amountCents: -999,
+      isRecurring: true,
+      merchant: 'Spotify',
+      date: makeDate(2024, 1, 1),
+    });
+    const t2 = makeTxn({
+      id: 'r-2',
+      amountCents: -999,
+      isRecurring: true,
+      merchant: 'Spotify',
+      date: makeDate(2024, 2, 1),
+    });
 
     const result = computeRecurringLoad([t1, t2], 2);
 
-    const spotifyItem = result.items.find((i) => i.label === 'spotify');
+    const spotifyItem = result.items.find(i => i.label === 'spotify');
     assert.ok(spotifyItem, 'Spotify item should exist');
     assert.ok(spotifyItem.sourceTransactionIds.includes('r-1'));
     assert.ok(spotifyItem.sourceTransactionIds.includes('r-2'));
@@ -348,11 +368,9 @@ describe('computeVariance', () => {
   const period = createDateRange(makeDate(2024, 1, 1), makeDate(2024, 1, 31));
 
   it('identifies over-budget categories', () => {
-    const budgets = [
-      { category: 'Groceries', limit: moneyFromDecimal(200, 'USD') },
-    ];
+    const budgets = [{ category: 'Groceries', limit: moneyFromDecimal(200, 'USD') }];
     const txns = [
-      makeTxn({ amountCents: -15000, date: makeDate(2024, 1, 5),  category: 'Groceries' }), // $150
+      makeTxn({ amountCents: -15000, date: makeDate(2024, 1, 5), category: 'Groceries' }), // $150
       makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 20), category: 'Groceries' }), // $100 — total $250 > $200
     ];
 
@@ -366,9 +384,7 @@ describe('computeVariance', () => {
   });
 
   it('identifies under-budget categories', () => {
-    const budgets = [
-      { category: 'Dining', limit: moneyFromDecimal(300, 'USD') },
-    ];
+    const budgets = [{ category: 'Dining', limit: moneyFromDecimal(300, 'USD') }];
     const txns = [
       makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 5), category: 'Dining' }), // $100 < $300
     ];
@@ -385,11 +401,11 @@ describe('computeVariance', () => {
   it('computes net variance correctly across multiple categories', () => {
     const budgets = [
       { category: 'Groceries', limit: moneyFromDecimal(200, 'USD') },
-      { category: 'Dining',    limit: moneyFromDecimal(300, 'USD') },
+      { category: 'Dining', limit: moneyFromDecimal(300, 'USD') },
     ];
     const txns = [
-      makeTxn({ amountCents: -25000, date: makeDate(2024, 1, 5),  category: 'Groceries' }), // $250 — $50 over
-      makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 10), category: 'Dining' }),     // $100 — $200 under
+      makeTxn({ amountCents: -25000, date: makeDate(2024, 1, 5), category: 'Groceries' }), // $250 — $50 over
+      makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 10), category: 'Dining' }), // $100 — $200 under
     ];
 
     const result = computeVariance(budgets, txns, period);
@@ -397,9 +413,7 @@ describe('computeVariance', () => {
   });
 
   it('computes variance percentage correctly', () => {
-    const budgets = [
-      { category: 'Utilities', limit: moneyFromDecimal(100, 'USD') },
-    ];
+    const budgets = [{ category: 'Utilities', limit: moneyFromDecimal(100, 'USD') }];
     const txns = [
       makeTxn({ amountCents: -15000, date: makeDate(2024, 1, 5), category: 'Utilities' }), // $150 = 50% over
     ];
@@ -412,7 +426,7 @@ describe('computeVariance', () => {
   it('excludes transactions outside the period', () => {
     const budgets = [{ category: 'Groceries', limit: moneyFromDecimal(200, 'USD') }];
     const txns = [
-      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 5),  category: 'Groceries' }),
+      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 5), category: 'Groceries' }),
       makeTxn({ amountCents: -5000, date: makeDate(2024, 2, 15), category: 'Groceries' }), // out of period
     ];
 
@@ -422,11 +436,24 @@ describe('computeVariance', () => {
 
   it('includes source transaction IDs in each variance record', () => {
     const budgets = [{ category: 'Transport', limit: moneyFromDecimal(100, 'USD') }];
-    const t1 = makeTxn({ id: 'v-1', amountCents: -5000, date: makeDate(2024, 1, 5), category: 'Transport' });
-    const t2 = makeTxn({ id: 'v-2', amountCents: -3000, date: makeDate(2024, 1, 10), category: 'Transport' });
+    const t1 = makeTxn({
+      id: 'v-1',
+      amountCents: -5000,
+      date: makeDate(2024, 1, 5),
+      category: 'Transport',
+    });
+    const t2 = makeTxn({
+      id: 'v-2',
+      amountCents: -3000,
+      date: makeDate(2024, 1, 10),
+      category: 'Transport',
+    });
 
     const result = computeVariance(budgets, [t1, t2], period);
-    const ids = result.underBudget[0]?.sourceTransactionIds ?? result.overBudget[0]?.sourceTransactionIds ?? [];
+    const ids =
+      result.underBudget[0]?.sourceTransactionIds ??
+      result.overBudget[0]?.sourceTransactionIds ??
+      [];
     assert.ok(ids.includes('v-1'));
     assert.ok(ids.includes('v-2'));
   });
@@ -446,8 +473,8 @@ describe('computeDebtPayoff', () => {
     const debt = {
       id: 'd-1',
       name: 'Credit Card',
-      balance: createMoney(100000, 'USD'),    // $1 000
-      annualInterestRate: 0.20,
+      balance: createMoney(100000, 'USD'), // $1 000
+      annualInterestRate: 0.2,
       minimumPayment: createMoney(5000, 'USD'), // $50
     };
     const payment = createMoney(20000, 'USD'); // $200/month
@@ -463,7 +490,7 @@ describe('computeDebtPayoff', () => {
     const debt = {
       id: 'd-2',
       name: 'Personal Loan',
-      balance: createMoney(500000, 'USD'),  // $5 000
+      balance: createMoney(500000, 'USD'), // $5 000
       annualInterestRate: 0.12,
       minimumPayment: createMoney(10000, 'USD'),
     };
@@ -497,10 +524,7 @@ describe('computeDebtPayoff', () => {
       annualInterestRate: 0.15,
       minimumPayment: createMoney(3000, 'USD'),
     };
-    assert.throws(
-      () => computeDebtPayoff(debt, createMoney(10000, 'EUR')),
-      /Currency mismatch/,
-    );
+    assert.throws(() => computeDebtPayoff(debt, createMoney(10000, 'EUR')), /Currency mismatch/);
   });
 
   it('throws when monthly payment is zero', () => {
@@ -513,7 +537,7 @@ describe('computeDebtPayoff', () => {
     };
     assert.throws(
       () => computeDebtPayoff(debt, createMoney(0, 'USD')),
-      /monthlyPayment must be positive/,
+      /monthlyPayment must be positive/
     );
   });
 });
@@ -525,14 +549,14 @@ describe('comparePayoffStrategies', () => {
     {
       id: 'debt-1',
       name: 'Small Card',
-      balance: createMoney(100000, 'USD'),    // $1 000, high rate
+      balance: createMoney(100000, 'USD'), // $1 000, high rate
       annualInterestRate: 0.24,
       minimumPayment: createMoney(3000, 'USD'),
     },
     {
       id: 'debt-2',
       name: 'Large Card',
-      balance: createMoney(500000, 'USD'),   // $5 000, lower rate
+      balance: createMoney(500000, 'USD'), // $5 000, lower rate
       annualInterestRate: 0.12,
       minimumPayment: createMoney(10000, 'USD'),
     },
@@ -565,27 +589,27 @@ describe('comparePayoffStrategies', () => {
 
 describe('computeCashFlow', () => {
   const jan = createDateRange(makeDate(2024, 1, 1), makeDate(2024, 1, 31));
-  const q1  = createDateRange(makeDate(2024, 1, 1), makeDate(2024, 3, 31));
+  const q1 = createDateRange(makeDate(2024, 1, 1), makeDate(2024, 3, 31));
 
   it('correctly sums inflows and outflows for a single month', () => {
     const txns = [
-      makeTxn({ amountCents:  500000, date: makeDate(2024, 1, 5) }),   // $5 000 income
-      makeTxn({ amountCents: -150000, date: makeDate(2024, 1, 10) }),  // $1 500 expense
-      makeTxn({ amountCents: -50000,  date: makeDate(2024, 1, 20) }),  // $500  expense
+      makeTxn({ amountCents: 500000, date: makeDate(2024, 1, 5) }), // $5 000 income
+      makeTxn({ amountCents: -150000, date: makeDate(2024, 1, 10) }), // $1 500 expense
+      makeTxn({ amountCents: -50000, date: makeDate(2024, 1, 20) }), // $500  expense
     ];
 
     const result = computeCashFlow(txns, { period: jan });
 
-    assert.strictEqual(result.totalInflows.cents,  500000);
+    assert.strictEqual(result.totalInflows.cents, 500000);
     assert.strictEqual(result.totalOutflows.cents, 200000);
-    assert.strictEqual(result.net.cents,            300000); // 500 000 - 200 000
+    assert.strictEqual(result.net.cents, 300000); // 500 000 - 200 000
   });
 
   it('groups transactions into monthly buckets', () => {
     const txns = [
       makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 15) }),
       makeTxn({ amountCents: -20000, date: makeDate(2024, 2, 10) }),
-      makeTxn({ amountCents: -30000, date: makeDate(2024, 3, 5)  }),
+      makeTxn({ amountCents: -30000, date: makeDate(2024, 3, 5) }),
     ];
 
     const result = computeCashFlow(txns, { period: q1 });
@@ -618,9 +642,9 @@ describe('computeCashFlow', () => {
   it('groups transactions into weekly buckets', () => {
     // 2024-01-08 is a Monday (start of a week)
     const txns = [
-      makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 8) }),   // Mon week 2
-      makeTxn({ amountCents: -20000, date: makeDate(2024, 1, 10) }),  // Wed week 2 (same)
-      makeTxn({ amountCents: -30000, date: makeDate(2024, 1, 15) }),  // Mon week 3
+      makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 8) }), // Mon week 2
+      makeTxn({ amountCents: -20000, date: makeDate(2024, 1, 10) }), // Wed week 2 (same)
+      makeTxn({ amountCents: -30000, date: makeDate(2024, 1, 15) }), // Mon week 3
     ];
 
     const result = computeCashFlow(txns, { period: jan, periodUnit: 'week' });
@@ -632,37 +656,37 @@ describe('computeCashFlow', () => {
 
   it('splits recurring vs irregular inflows correctly', () => {
     const txns = [
-      makeTxn({ amountCents: 300000, date: makeDate(2024, 1, 1), isRecurring: true  }), // salary
-      makeTxn({ amountCents: 50000,  date: makeDate(2024, 1, 15)                    }), // freelance
-      makeTxn({ amountCents: 20000,  date: makeDate(2024, 1, 20), isRecurring: false }), // bonus
+      makeTxn({ amountCents: 300000, date: makeDate(2024, 1, 1), isRecurring: true }), // salary
+      makeTxn({ amountCents: 50000, date: makeDate(2024, 1, 15) }), // freelance
+      makeTxn({ amountCents: 20000, date: makeDate(2024, 1, 20), isRecurring: false }), // bonus
     ];
 
     const result = computeCashFlow(txns, { period: jan });
 
-    assert.strictEqual(result.recurringInflows.cents,  300000);
-    assert.strictEqual(result.irregularInflows.cents,   70000); // 50k + 20k
-    assert.strictEqual(result.totalInflows.cents,      370000);
+    assert.strictEqual(result.recurringInflows.cents, 300000);
+    assert.strictEqual(result.irregularInflows.cents, 70000); // 50k + 20k
+    assert.strictEqual(result.totalInflows.cents, 370000);
   });
 
   it('splits recurring vs discretionary outflows correctly', () => {
     const txns = [
-      makeTxn({ amountCents: -9900, date: makeDate(2024, 1, 1),  isRecurring: true  }), // Netflix
+      makeTxn({ amountCents: -9900, date: makeDate(2024, 1, 1), isRecurring: true }), // Netflix
       makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 10), isRecurring: false }), // dining
-      makeTxn({ amountCents: -2000, date: makeDate(2024, 1, 20)                     }), // no flag
+      makeTxn({ amountCents: -2000, date: makeDate(2024, 1, 20) }), // no flag
     ];
 
     const result = computeCashFlow(txns, { period: jan });
 
-    assert.strictEqual(result.recurringOutflows.cents,       9900);
-    assert.strictEqual(result.discretionaryOutflows.cents,   7000); // 5k + 2k
-    assert.strictEqual(result.totalOutflows.cents,          16900);
+    assert.strictEqual(result.recurringOutflows.cents, 9900);
+    assert.strictEqual(result.discretionaryOutflows.cents, 7000); // 5k + 2k
+    assert.strictEqual(result.totalOutflows.cents, 16900);
   });
 
   it('computes correct running balance with a starting balance', () => {
     const txns = [
       makeTxn({ amountCents: -50000, date: makeDate(2024, 1, 10) }), // $500 out in Jan
-      makeTxn({ amountCents: -30000, date: makeDate(2024, 2, 5)  }), // $300 out in Feb
-      makeTxn({ amountCents:  10000, date: makeDate(2024, 3, 15) }), // $100 in  in Mar
+      makeTxn({ amountCents: -30000, date: makeDate(2024, 2, 5) }), // $300 out in Feb
+      makeTxn({ amountCents: 10000, date: makeDate(2024, 3, 15) }), // $100 in  in Mar
     ];
     const start = createMoney(200000, 'USD'); // $2 000 opening
 
@@ -698,8 +722,8 @@ describe('computeCashFlow', () => {
 
   it('excludes transactions outside the period', () => {
     const txns = [
-      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 5)  }), // in period
-      makeTxn({ amountCents: -9000, date: makeDate(2024, 2, 1)  }), // outside (Feb)
+      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 5) }), // in period
+      makeTxn({ amountCents: -9000, date: makeDate(2024, 2, 1) }), // outside (Feb)
     ];
 
     const result = computeCashFlow(txns, { period: jan });
@@ -710,9 +734,24 @@ describe('computeCashFlow', () => {
 
   it('provides per-category and per-account outflow breakdowns', () => {
     const txns = [
-      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 5),  category: 'Groceries', accountId: 'acc-1' }),
-      makeTxn({ amountCents: -3000, date: makeDate(2024, 1, 8),  category: 'Groceries', accountId: 'acc-2' }),
-      makeTxn({ amountCents: -8000, date: makeDate(2024, 1, 12), category: 'Dining',    accountId: 'acc-1' }),
+      makeTxn({
+        amountCents: -5000,
+        date: makeDate(2024, 1, 5),
+        category: 'Groceries',
+        accountId: 'acc-1',
+      }),
+      makeTxn({
+        amountCents: -3000,
+        date: makeDate(2024, 1, 8),
+        category: 'Groceries',
+        accountId: 'acc-2',
+      }),
+      makeTxn({
+        amountCents: -8000,
+        date: makeDate(2024, 1, 12),
+        category: 'Dining',
+        accountId: 'acc-1',
+      }),
     ];
 
     const result = computeCashFlow(txns, { period: jan });
@@ -766,23 +805,23 @@ describe('projectCashFlow', () => {
   const salary: import('../../packages/analytics/dist/recurring.js').RecurringItem = {
     label: 'salary',
     category: 'Income',
-    monthlyAmount: createMoney(500000, 'USD'),   // $5 000/month
-    annualAmount:  createMoney(6000000, 'USD'),
+    monthlyAmount: createMoney(500000, 'USD'), // $5 000/month
+    annualAmount: createMoney(6000000, 'USD'),
     sourceTransactionIds: [],
   };
 
   const rent: import('../../packages/analytics/dist/recurring.js').RecurringItem = {
     label: 'rent',
     category: 'Housing',
-    monthlyAmount: createMoney(200000, 'USD'),   // $2 000/month
-    annualAmount:  createMoney(2400000, 'USD'),
+    monthlyAmount: createMoney(200000, 'USD'), // $2 000/month
+    annualAmount: createMoney(2400000, 'USD'),
     sourceTransactionIds: [],
   };
 
   it('projects the correct number of monthly buckets', () => {
     const result = projectCashFlow({
       currentBalance: createMoney(1000000, 'USD'),
-      recurringInflows:  [salary],
+      recurringInflows: [salary],
       recurringOutflows: [rent],
       projectionMonths: 3,
       startDate: makeDate(2024, 1, 1),
@@ -796,9 +835,9 @@ describe('projectCashFlow', () => {
 
   it('balance grows when recurring inflows exceed outflows', () => {
     const result = projectCashFlow({
-      currentBalance: createMoney(1000000, 'USD'),  // $10 000
-      recurringInflows:  [salary],                   // +$5 000/month
-      recurringOutflows: [rent],                     // -$2 000/month → net +$3 000
+      currentBalance: createMoney(1000000, 'USD'), // $10 000
+      recurringInflows: [salary], // +$5 000/month
+      recurringOutflows: [rent], // -$2 000/month → net +$3 000
       projectionMonths: 3,
       startDate: makeDate(2024, 1, 1),
     });
@@ -812,14 +851,14 @@ describe('projectCashFlow', () => {
     const bigRent: import('../../packages/analytics/dist/recurring.js').RecurringItem = {
       label: 'rent',
       category: 'Housing',
-      monthlyAmount: createMoney(600000, 'USD'),   // $6 000/month > $5 000 salary
-      annualAmount:  createMoney(7200000, 'USD'),
+      monthlyAmount: createMoney(600000, 'USD'), // $6 000/month > $5 000 salary
+      annualAmount: createMoney(7200000, 'USD'),
       sourceTransactionIds: [],
     };
 
     const result = projectCashFlow({
       currentBalance: createMoney(2000000, 'USD'),
-      recurringInflows:  [salary],
+      recurringInflows: [salary],
       recurringOutflows: [bigRent],
       projectionMonths: 2,
       startDate: makeDate(2024, 1, 1),
@@ -832,21 +871,21 @@ describe('projectCashFlow', () => {
   it('adds irregular income to the correct projected month', () => {
     const bonus: import('../../packages/analytics/dist/cash-flow.js').IrregularIncomeItem = {
       label: 'Year-end bonus',
-      amount: createMoney(500000, 'USD'),  // $5 000 bonus in March
+      amount: createMoney(500000, 'USD'), // $5 000 bonus in March
       expectedDate: makeDate(2024, 3, 15),
     };
 
     const result = projectCashFlow({
       currentBalance: createMoney(0, 'USD'),
-      recurringInflows:  [],
+      recurringInflows: [],
       recurringOutflows: [],
-      irregularInflows:  [bonus],
+      irregularInflows: [bonus],
       projectionMonths: 3,
       startDate: makeDate(2024, 1, 1),
     });
 
-    assert.strictEqual(result.buckets[0]?.expectedInflows.cents, 0);    // Jan — no bonus
-    assert.strictEqual(result.buckets[1]?.expectedInflows.cents, 0);    // Feb — no bonus
+    assert.strictEqual(result.buckets[0]?.expectedInflows.cents, 0); // Jan — no bonus
+    assert.strictEqual(result.buckets[1]?.expectedInflows.cents, 0); // Feb — no bonus
     assert.strictEqual(result.buckets[2]?.expectedInflows.cents, 500000); // Mar — bonus
     assert.strictEqual(result.finalProjectedBalance.cents, 500000);
   });
@@ -854,15 +893,15 @@ describe('projectCashFlow', () => {
   it('combines recurring and irregular inflows in the same month', () => {
     const freelance: import('../../packages/analytics/dist/cash-flow.js').IrregularIncomeItem = {
       label: 'Freelance gig',
-      amount: createMoney(100000, 'USD'),  // $1 000 in January
+      amount: createMoney(100000, 'USD'), // $1 000 in January
       expectedDate: makeDate(2024, 1, 20),
     };
 
     const result = projectCashFlow({
       currentBalance: createMoney(0, 'USD'),
-      recurringInflows:  [salary],        // $5 000/month
+      recurringInflows: [salary], // $5 000/month
       recurringOutflows: [],
-      irregularInflows:  [freelance],
+      irregularInflows: [freelance],
       projectionMonths: 1,
       startDate: makeDate(2024, 1, 1),
     });
@@ -875,48 +914,50 @@ describe('projectCashFlow', () => {
       label: 'side-job',
       category: 'Income',
       monthlyAmount: createMoney(50000, 'USD'),
-      annualAmount:  createMoney(600000, 'USD'),
+      annualAmount: createMoney(600000, 'USD'),
       sourceTransactionIds: [],
     };
     const utilities: import('../../packages/analytics/dist/recurring.js').RecurringItem = {
       label: 'utilities',
       category: 'Bills',
       monthlyAmount: createMoney(15000, 'USD'),
-      annualAmount:  createMoney(180000, 'USD'),
+      annualAmount: createMoney(180000, 'USD'),
       sourceTransactionIds: [],
     };
 
     const result = projectCashFlow({
       currentBalance: createMoney(0, 'USD'),
-      recurringInflows:  [salary, secondIncome],  // 500k + 50k = 550k
-      recurringOutflows: [rent, utilities],        // 200k + 15k = 215k
+      recurringInflows: [salary, secondIncome], // 500k + 50k = 550k
+      recurringOutflows: [rent, utilities], // 200k + 15k = 215k
       projectionMonths: 1,
       startDate: makeDate(2024, 1, 1),
     });
 
-    assert.strictEqual(result.buckets[0]?.expectedInflows.cents,  550000);
+    assert.strictEqual(result.buckets[0]?.expectedInflows.cents, 550000);
     assert.strictEqual(result.buckets[0]?.expectedOutflows.cents, 215000);
     assert.strictEqual(result.buckets[0]?.net.cents, 335000);
   });
 
   it('throws for non-positive projectionMonths', () => {
     assert.throws(
-      () => projectCashFlow({
-        currentBalance: createMoney(0, 'USD'),
-        recurringInflows:  [],
-        recurringOutflows: [],
-        projectionMonths: 0,
-      }),
-      /projectionMonths/,
+      () =>
+        projectCashFlow({
+          currentBalance: createMoney(0, 'USD'),
+          recurringInflows: [],
+          recurringOutflows: [],
+          projectionMonths: 0,
+        }),
+      /projectionMonths/
     );
     assert.throws(
-      () => projectCashFlow({
-        currentBalance: createMoney(0, 'USD'),
-        recurringInflows:  [],
-        recurringOutflows: [],
-        projectionMonths: -1,
-      }),
-      /projectionMonths/,
+      () =>
+        projectCashFlow({
+          currentBalance: createMoney(0, 'USD'),
+          recurringInflows: [],
+          recurringOutflows: [],
+          projectionMonths: -1,
+        }),
+      /projectionMonths/
     );
   });
 });
@@ -1014,9 +1055,7 @@ describe('computeSubscriptionDashboard', () => {
 
   it('marks item as unused when last transaction is older than 90 days', () => {
     const oldDate = new Date(refDate.getTime() - 91 * 24 * 60 * 60 * 1000);
-    const txns = [
-      makeRecurringTxn({ amountCents: -999, date: oldDate, merchant: 'OldService' }),
-    ];
+    const txns = [makeRecurringTxn({ amountCents: -999, date: oldDate, merchant: 'OldService' })];
     const result = computeSubscriptionDashboard(txns, new Set(), refDate);
     assert.strictEqual(result.items[0]!.status, 'unused');
     assert.strictEqual(result.unusedCount, 1);
@@ -1046,9 +1085,21 @@ describe('computeSubscriptionDashboard', () => {
 
   it('detects a price increase of ≥ 5 % and populates priceAlert', () => {
     const txns = [
-      makeRecurringTxn({ amountCents: -1000, date: makeDate(2024, 1, 1), merchant: 'CloudStorage' }),
-      makeRecurringTxn({ amountCents: -1000, date: makeDate(2024, 2, 1), merchant: 'CloudStorage' }),
-      makeRecurringTxn({ amountCents: -1200, date: makeDate(2024, 3, 1), merchant: 'CloudStorage' }), // +20%
+      makeRecurringTxn({
+        amountCents: -1000,
+        date: makeDate(2024, 1, 1),
+        merchant: 'CloudStorage',
+      }),
+      makeRecurringTxn({
+        amountCents: -1000,
+        date: makeDate(2024, 2, 1),
+        merchant: 'CloudStorage',
+      }),
+      makeRecurringTxn({
+        amountCents: -1200,
+        date: makeDate(2024, 3, 1),
+        merchant: 'CloudStorage',
+      }), // +20%
     ];
     const result = computeSubscriptionDashboard(txns, new Set(), refDate);
     const item = result.items[0]!;
@@ -1111,29 +1162,29 @@ describe('computeNetWorth', () => {
 
   it('sums checking and savings as assets', () => {
     const accounts = [
-      makeAccount({ type: AccountType.CHECKING, balance: 1000 }),  // $1000
-      makeAccount({ type: AccountType.SAVINGS,  balance: 5000 }),  // $5000
+      makeAccount({ type: AccountType.CHECKING, balance: 1000 }), // $1000
+      makeAccount({ type: AccountType.SAVINGS, balance: 5000 }), // $5000
     ];
     const result = computeNetWorth(accounts);
-    assert.strictEqual(result.assets.cents, 600000);   // 100000 + 500000
+    assert.strictEqual(result.assets.cents, 600000); // 100000 + 500000
     assert.strictEqual(result.liabilities.cents, 0);
     assert.strictEqual(result.netWorth.cents, 600000);
   });
 
   it('treats credit-card balance as a liability', () => {
     const accounts = [
-      makeAccount({ type: AccountType.SAVINGS, balance: 5000 }),       // $5000 asset
-      makeAccount({ type: AccountType.CREDIT,  balance: -1000 }),      // $1000 liability
+      makeAccount({ type: AccountType.SAVINGS, balance: 5000 }), // $5000 asset
+      makeAccount({ type: AccountType.CREDIT, balance: -1000 }), // $1000 liability
     ];
     const result = computeNetWorth(accounts);
-    assert.strictEqual(result.liabilities.cents, 100000);  // abs($1000)
+    assert.strictEqual(result.liabilities.cents, 100000); // abs($1000)
     assert.strictEqual(result.assets.cents, 500000);
-    assert.strictEqual(result.netWorth.cents, 400000);     // $5000 - $1000 = $4000
+    assert.strictEqual(result.netWorth.cents, 400000); // $5000 - $1000 = $4000
   });
 
   it('handles loan and mortgage as liabilities', () => {
     const accounts = [
-      makeAccount({ type: AccountType.LOAN,     balance: -20000 }),
+      makeAccount({ type: AccountType.LOAN, balance: -20000 }),
       makeAccount({ type: AccountType.MORTGAGE, balance: -300000 }),
     ];
     const result = computeNetWorth(accounts);
@@ -1144,20 +1195,20 @@ describe('computeNetWorth', () => {
 
   it('produces per-type breakdown', () => {
     const accounts = [
-      makeAccount({ type: AccountType.CHECKING,    balance: 1000 }),
-      makeAccount({ type: AccountType.INVESTMENT,  balance: 10000 }),
-      makeAccount({ type: AccountType.CREDIT,      balance: -2000 }),
+      makeAccount({ type: AccountType.CHECKING, balance: 1000 }),
+      makeAccount({ type: AccountType.INVESTMENT, balance: 10000 }),
+      makeAccount({ type: AccountType.CREDIT, balance: -2000 }),
     ];
     const result = computeNetWorth(accounts);
-    assert.strictEqual(result.byAccountType.get(AccountType.CHECKING)!.cents,   100000);
+    assert.strictEqual(result.byAccountType.get(AccountType.CHECKING)!.cents, 100000);
     assert.strictEqual(result.byAccountType.get(AccountType.INVESTMENT)!.cents, 1000000);
-    assert.strictEqual(result.byAccountType.get(AccountType.CREDIT)!.cents,     200000);
+    assert.strictEqual(result.byAccountType.get(AccountType.CREDIT)!.cents, 200000);
   });
 
   it('excludes inactive accounts', () => {
     const accounts = [
       makeAccount({ type: AccountType.CHECKING, balance: 5000, isActive: true }),
-      makeAccount({ type: AccountType.SAVINGS,  balance: 1000, isActive: false }), // excluded
+      makeAccount({ type: AccountType.SAVINGS, balance: 1000, isActive: false }), // excluded
     ];
     const result = computeNetWorth(accounts);
     assert.strictEqual(result.assets.cents, 500000); // only checking
@@ -1206,8 +1257,8 @@ describe('sortSnapshotsByPeriod', () => {
     ];
     const sorted = sortSnapshotsByPeriod(snaps);
     assert.deepStrictEqual(
-      sorted.map((s) => s.periodLabel),
-      ['2025-01', '2025-02', '2025-03'],
+      sorted.map(s => s.periodLabel),
+      ['2025-01', '2025-02', '2025-03']
     );
   });
 });
@@ -1282,8 +1333,8 @@ describe('computeGoalProgress', () => {
       targetDate: makeDate(2025, 12, 31),
     });
     const result = computeGoalProgress(goal, {
-      referenceDate: makeDate(2025, 7, 2),  // slightly past halfway
-      startDate:     makeDate(2025, 1, 1),
+      referenceDate: makeDate(2025, 7, 2), // slightly past halfway
+      startDate: makeDate(2025, 1, 1),
     });
     assert.strictEqual(result.isOnTrack, true);
   });
@@ -1295,8 +1346,8 @@ describe('computeGoalProgress', () => {
       targetDate: makeDate(2025, 12, 31),
     });
     const result = computeGoalProgress(goal, {
-      referenceDate: makeDate(2025, 7, 1),  // roughly halfway through year
-      startDate:     makeDate(2025, 1, 1),
+      referenceDate: makeDate(2025, 7, 1), // roughly halfway through year
+      startDate: makeDate(2025, 1, 1),
     });
     assert.strictEqual(result.isOnTrack, false);
   });
@@ -1327,10 +1378,7 @@ describe('computeGoalProgress', () => {
     const refDate = makeDate(2025, 6, 1);
     const result = computeGoalProgress(goal, { referenceDate: refDate });
     assert.ok(result.projectedCompletionDate !== undefined);
-    assert.strictEqual(
-      result.projectedCompletionDate!.getTime(),
-      refDate.getTime(),
-    );
+    assert.strictEqual(result.projectedCompletionDate!.getTime(), refDate.getTime());
   });
 
   it('returns undefined projectedCompletionDate when no contribution rate given', () => {
@@ -1371,9 +1419,9 @@ describe('computeGoalsProgress', () => {
 describe('compareScenarioToBaseline', () => {
   const baseline = {
     liquidBalanceCents: 1_000_000, // $10,000
-    monthlyBurnCents:    400_000,  // $4,000/month
-    monthlyIncomeCents:  600_000,  // $6,000/month
-    netWorthCents:     5_000_000,  // $50,000
+    monthlyBurnCents: 400_000, // $4,000/month
+    monthlyIncomeCents: 600_000, // $6,000/month
+    netWorthCents: 5_000_000, // $50,000
     currency: 'USD',
   };
 
@@ -1403,8 +1451,10 @@ describe('compareScenarioToBaseline', () => {
     const result = compareScenarioToBaseline(baseline, { monthlyBurnDeltaCents: 200_000 });
     // baseline runway = 1,000,000 / 400,000 = 2.5 months
     // projected runway = 1,000,000 / 200,000 = 5 months
-    assert.ok(result.projected.runwayMonths > result.baseline.runwayMonths,
-      'Projected runway should be longer than baseline runway');
+    assert.ok(
+      result.projected.runwayMonths > result.baseline.runwayMonths,
+      'Projected runway should be longer than baseline runway'
+    );
     assert.ok(result.delta.runwayDeltaMonths > 0);
   });
 
@@ -1443,8 +1493,8 @@ describe('buildFinancialTimelineSnapshot', () => {
       periodLabel: '2025-01',
       liquidBalanceCents: 600_000,
       monthlyIncomeCents: 500_000,
-      monthlyBurnCents:   300_000,
-      netWorthCents:     1_000_000,
+      monthlyBurnCents: 300_000,
+      netWorthCents: 1_000_000,
     });
     assert.strictEqual(snap.runwayMonths, 2); // 600,000 / 300,000
   });
@@ -1454,8 +1504,8 @@ describe('buildFinancialTimelineSnapshot', () => {
       periodLabel: '2025-02',
       liquidBalanceCents: 500_000,
       monthlyIncomeCents: 500_000,
-      monthlyBurnCents:   0,
-      netWorthCents:     500_000,
+      monthlyBurnCents: 0,
+      netWorthCents: 500_000,
     });
     assert.strictEqual(snap.runwayMonths, Infinity);
   });
@@ -1465,8 +1515,8 @@ describe('buildFinancialTimelineSnapshot', () => {
       periodLabel: '2025-03',
       liquidBalanceCents: 100_000,
       monthlyIncomeCents: 100_000,
-      monthlyBurnCents:   100_000,
-      netWorthCents:     100_000,
+      monthlyBurnCents: 100_000,
+      netWorthCents: 100_000,
     });
     assert.strictEqual(snap.currency, 'USD');
   });
@@ -1476,8 +1526,8 @@ describe('buildFinancialTimelineSnapshot', () => {
       periodLabel: '2025-06',
       liquidBalanceCents: 0,
       monthlyIncomeCents: 0,
-      monthlyBurnCents:   0,
-      netWorthCents:     0,
+      monthlyBurnCents: 0,
+      netWorthCents: 0,
     });
     assert.strictEqual(snap.periodLabel, '2025-06');
   });
@@ -1485,31 +1535,31 @@ describe('buildFinancialTimelineSnapshot', () => {
 
 describe('sortTimelineSnapshots', () => {
   it('returns snapshots in chronological order', () => {
-    const snaps = ['2025-03', '2025-01', '2025-06', '2025-02'].map((label) =>
+    const snaps = ['2025-03', '2025-01', '2025-06', '2025-02'].map(label =>
       buildFinancialTimelineSnapshot({
         periodLabel: label,
         liquidBalanceCents: 0,
         monthlyIncomeCents: 0,
-        monthlyBurnCents:   0,
-        netWorthCents:     0,
-      }),
+        monthlyBurnCents: 0,
+        netWorthCents: 0,
+      })
     );
     const sorted = sortTimelineSnapshots(snaps);
     assert.deepStrictEqual(
-      sorted.map((s) => s.periodLabel),
-      ['2025-01', '2025-02', '2025-03', '2025-06'],
+      sorted.map(s => s.periodLabel),
+      ['2025-01', '2025-02', '2025-03', '2025-06']
     );
   });
 
   it('does not mutate the input array', () => {
-    const snaps = ['2025-02', '2025-01'].map((label) =>
+    const snaps = ['2025-02', '2025-01'].map(label =>
       buildFinancialTimelineSnapshot({
         periodLabel: label,
         liquidBalanceCents: 0,
         monthlyIncomeCents: 0,
-        monthlyBurnCents:   0,
-        netWorthCents:     0,
-      }),
+        monthlyBurnCents: 0,
+        netWorthCents: 0,
+      })
     );
     sortTimelineSnapshots(snaps);
     assert.strictEqual(snaps[0]!.periodLabel, '2025-02'); // original order unchanged
@@ -1524,7 +1574,7 @@ describe('compareTimelineSnapshots', () => {
     liquidBalanceCents: number,
     monthlyIncomeCents: number,
     monthlyBurnCents: number,
-    netWorthCents: number,
+    netWorthCents: number
   ) {
     return buildFinancialTimelineSnapshot({
       periodLabel,
@@ -1577,9 +1627,27 @@ describe('compareTimelineSnapshots', () => {
 describe('buildTrendSeries', () => {
   function makeSnaps(): ReturnType<typeof buildFinancialTimelineSnapshot>[] {
     return [
-      buildFinancialTimelineSnapshot({ periodLabel: '2025-01', liquidBalanceCents: 500_000, monthlyIncomeCents: 400_000, monthlyBurnCents: 300_000, netWorthCents: 1_000_000 }),
-      buildFinancialTimelineSnapshot({ periodLabel: '2025-02', liquidBalanceCents: 600_000, monthlyIncomeCents: 400_000, monthlyBurnCents: 290_000, netWorthCents: 1_100_000 }),
-      buildFinancialTimelineSnapshot({ periodLabel: '2025-03', liquidBalanceCents: 700_000, monthlyIncomeCents: 420_000, monthlyBurnCents: 280_000, netWorthCents: 1_200_000 }),
+      buildFinancialTimelineSnapshot({
+        periodLabel: '2025-01',
+        liquidBalanceCents: 500_000,
+        monthlyIncomeCents: 400_000,
+        monthlyBurnCents: 300_000,
+        netWorthCents: 1_000_000,
+      }),
+      buildFinancialTimelineSnapshot({
+        periodLabel: '2025-02',
+        liquidBalanceCents: 600_000,
+        monthlyIncomeCents: 400_000,
+        monthlyBurnCents: 290_000,
+        netWorthCents: 1_100_000,
+      }),
+      buildFinancialTimelineSnapshot({
+        periodLabel: '2025-03',
+        liquidBalanceCents: 700_000,
+        monthlyIncomeCents: 420_000,
+        monthlyBurnCents: 280_000,
+        netWorthCents: 1_200_000,
+      }),
     ];
   }
 
@@ -1627,7 +1695,7 @@ describe('buildTrendSeries', () => {
 
   it('first x-coordinate is 0 and last is svgWidth', () => {
     const series = buildTrendSeries(makeSnaps(), 'netWorth', 'Net Worth', 300, 150);
-    const coords = series.svgPolylinePoints.split(' ').map((pt) => {
+    const coords = series.svgPolylinePoints.split(' ').map(pt => {
       const [x] = pt.split(',').map(Number);
       return x;
     });

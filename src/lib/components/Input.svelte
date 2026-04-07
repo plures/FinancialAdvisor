@@ -12,7 +12,15 @@
     value?: HTMLInputAttributes['value'];
   }
 
-  let { label, hint, error, id, value = $bindable(), class: className = '', ...restProps }: Props = $props();
+  let {
+    label,
+    hint,
+    error,
+    id,
+    value = $bindable(),
+    class: className = '',
+    ...restProps
+  }: Props = $props();
 
   const inputId = id ?? `dojo-input-${++_idCounter}`;
 </script>

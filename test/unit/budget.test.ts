@@ -17,9 +17,7 @@
 import { describe, it } from 'mocha';
 import * as assert from 'assert';
 
-import {
-  BudgetCalculator,
-} from '../../packages/analytics/dist/budget.js';
+import { BudgetCalculator } from '../../packages/analytics/dist/budget.js';
 import { BudgetPeriod, TransactionType } from '../../packages/domain/dist/types.js';
 import { createMoney } from '../../packages/domain/dist/money.js';
 import type { Budget, Transaction } from '../../packages/domain/dist/types.js';
@@ -40,7 +38,7 @@ function makeBudget(overrides: Partial<Budget> = {}): Budget {
     id: 'b-1',
     name: 'Groceries Budget',
     category: 'Groceries',
-    amount: 500,         // $500 — plain number, not Money
+    amount: 500, // $500 — plain number, not Money
     period: BudgetPeriod.MONTHLY,
     startDate: makeDate(2024, 1, 1),
     spent: 0,
@@ -88,15 +86,15 @@ describe('BudgetCalculator.analyzeBudget', () => {
   it('sums only expense transactions in the budget category', () => {
     const txns = [
       makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 5), category: 'Groceries' }), // $100
-      makeTxn({ amountCents: -5000,  date: makeDate(2024, 1, 10), category: 'Groceries' }), // $50
-      makeTxn({ amountCents: -8000,  date: makeDate(2024, 1, 12), category: 'Dining' }), // ignored: different category
-      makeTxn({ amountCents:  5000,  date: makeDate(2024, 1, 8),  category: 'Groceries' }), // ignored: income
+      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 10), category: 'Groceries' }), // $50
+      makeTxn({ amountCents: -8000, date: makeDate(2024, 1, 12), category: 'Dining' }), // ignored: different category
+      makeTxn({ amountCents: 5000, date: makeDate(2024, 1, 8), category: 'Groceries' }), // ignored: income
     ];
 
     const result = BudgetCalculator.analyzeBudget(budget, txns, makeDate(2024, 1, 15));
 
-    assert.strictEqual(result.totalSpent, 150);   // $100 + $50
-    assert.strictEqual(result.remaining, 350);    // $500 - $150
+    assert.strictEqual(result.totalSpent, 150); // $100 + $50
+    assert.strictEqual(result.remaining, 350); // $500 - $150
     assert.ok(result.percentageUsed > 0);
   });
 

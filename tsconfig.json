@@ -23,12 +23,7 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true
   },
-  "include": [
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-    "src/**/*.js",
-    "src/**/*.svelte"
-  ],
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
   "exclude": [
     "node_modules",
     ".svelte-kit",

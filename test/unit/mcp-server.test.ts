@@ -24,15 +24,10 @@ function makeConfig(dir: string): DatabaseConfig {
   return { dbPath: path.join(dir, 'test.db'), encryptionKey: 'test-key' };
 }
 
-async function connectClient(
-  server: FinancialAdvisorMCPServer,
-): Promise<Client> {
+async function connectClient(server: FinancialAdvisorMCPServer): Promise<Client> {
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
-  const client = new Client(
-    { name: 'test-client', version: '1.0.0' },
-    { capabilities: {} },
-  );
+  const client = new Client({ name: 'test-client', version: '1.0.0' }, { capabilities: {} });
   await client.connect(clientTransport);
   return client;
 }
@@ -64,7 +59,7 @@ describe('MCP Protocol Handlers', () => {
       const { resources } = await client.listResources();
       assert.ok(Array.isArray(resources));
       assert.ok(resources.length >= 2);
-      const uris = resources.map((r) => r.uri);
+      const uris = resources.map(r => r.uri);
       assert.ok(uris.includes('financial://accounts'), 'should include accounts resource');
       assert.ok(uris.includes('financial://transactions'), 'should include transactions resource');
     });
@@ -72,7 +67,10 @@ describe('MCP Protocol Handlers', () => {
     it('each resource has a name and description', async () => {
       const { resources } = await client.listResources();
       for (const r of resources) {
-        assert.ok(typeof r.name === 'string' && r.name.length > 0, `resource ${r.uri} must have a non-empty name`);
+        assert.ok(
+          typeof r.name === 'string' && r.name.length > 0,
+          `resource ${r.uri} must have a non-empty name`
+        );
       }
     });
   });
@@ -109,7 +107,7 @@ describe('MCP Protocol Handlers', () => {
     it('throws for an unknown resource URI', async () => {
       await assert.rejects(
         () => client.readResource({ uri: 'financial://unknown' }),
-        /Unknown resource/,
+        /Unknown resource/
       );
     });
   });
@@ -120,7 +118,7 @@ describe('MCP Protocol Handlers', () => {
     it('returns all twelve registered tools', async () => {
       const { tools } = await client.listTools();
       assert.ok(Array.isArray(tools));
-      const names = tools.map((t) => t.name);
+      const names = tools.map(t => t.name);
       assert.ok(names.includes('add_account'));
       assert.ok(names.includes('add_transaction'));
       assert.ok(names.includes('analyze_spending'));
@@ -221,7 +219,7 @@ describe('MCP Protocol Handlers', () => {
     it('throws for an unknown tool name', async () => {
       await assert.rejects(
         () => client.callTool({ name: 'unknown_tool', arguments: {} }),
-        /Unknown tool/,
+        /Unknown tool/
       );
     });
 
@@ -314,7 +312,10 @@ describe('MCP Protocol Handlers', () => {
     it('run_scenario returns a JSON result for spending_reduction', async () => {
       const result = await client.callTool({
         name: 'run_scenario',
-        arguments: { scenario: 'spending_reduction', params: { category: 'Food', reductionCents: 10000 } },
+        arguments: {
+          scenario: 'spending_reduction',
+          params: { category: 'Food', reductionCents: 10000 },
+        },
       });
       const text = (result.content[0] as { type: 'text'; text: string }).text;
       const data = JSON.parse(text);
@@ -333,8 +334,9 @@ describe('MCP Protocol Handlers', () => {
 
     it('run_scenario throws for an unknown scenario type', async () => {
       await assert.rejects(
-        () => client.callTool({ name: 'run_scenario', arguments: { scenario: 'unknown', params: {} } }),
-        /Unknown scenario type/,
+        () =>
+          client.callTool({ name: 'run_scenario', arguments: { scenario: 'unknown', params: {} } }),
+        /Unknown scenario type/
       );
     });
 
@@ -358,7 +360,10 @@ describe('MCP Protocol Handlers', () => {
     it('start_import_watcher restarts an already-running watcher', async () => {
       const watchDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-watcher-restart-'));
       try {
-        await client.callTool({ name: 'start_import_watcher', arguments: { watchDir, pollInterval: 0 } });
+        await client.callTool({
+          name: 'start_import_watcher',
+          arguments: { watchDir, pollInterval: 0 },
+        });
         const result = await client.callTool({
           name: 'start_import_watcher',
           arguments: { watchDir, pollInterval: 0 },
@@ -374,7 +379,10 @@ describe('MCP Protocol Handlers', () => {
     it('stop_import_watcher stops the watcher and returns a confirmation message', async () => {
       const watchDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-watcher-stop-'));
       try {
-        await client.callTool({ name: 'start_import_watcher', arguments: { watchDir, pollInterval: 0 } });
+        await client.callTool({
+          name: 'start_import_watcher',
+          arguments: { watchDir, pollInterval: 0 },
+        });
         const result = await client.callTool({ name: 'stop_import_watcher', arguments: {} });
         const text = (result.content[0] as { type: 'text'; text: string }).text;
         assert.ok(text.includes('Import watcher stopped'));
@@ -416,7 +424,7 @@ describe('categorizeTransactions — recategorization path', () => {
     // "starbucks" is typically mapped to a coffee/food category (not 'Other').
     await server.addTransaction({
       accountId: 'acct-1',
-      amount: -5.00,
+      amount: -5.0,
       description: 'STARBUCKS COFFEE',
       category: 'Other',
       date: '2024-03-01',
@@ -430,15 +438,11 @@ describe('categorizeTransactions — recategorization path', () => {
   });
 
   it('recategorizes multiple "Other" transactions when possible', async () => {
-    const descriptions = [
-      'WHOLE FOODS MARKET',
-      'NETFLIX.COM',
-      'AMAZON PRIME',
-    ];
+    const descriptions = ['WHOLE FOODS MARKET', 'NETFLIX.COM', 'AMAZON PRIME'];
     for (const description of descriptions) {
       await server.addTransaction({
         accountId: 'acct-1',
-        amount: -10.00,
+        amount: -10.0,
         description,
         category: 'Other',
         date: '2024-03-01',
@@ -452,7 +456,7 @@ describe('categorizeTransactions — recategorization path', () => {
   it('does not modify transactions that already have a specific category', async () => {
     await server.addTransaction({
       accountId: 'acct-1',
-      amount: -20.00,
+      amount: -20.0,
       description: 'Rent Payment',
       category: 'Housing',
       date: '2024-03-01',

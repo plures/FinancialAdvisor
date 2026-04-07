@@ -84,11 +84,13 @@ interface InvestmentRecommendation {
 ### JavaScript with JSDoc
 
 **Pros:**
+
 - No compilation step
 - Smaller bundle size
 - Familiar to more developers
 
 **Cons:**
+
 - Runtime type errors
 - Poor IDE support for complex types
 - Type annotations can get out of sync
@@ -96,10 +98,12 @@ interface InvestmentRecommendation {
 ### Other Typed Languages
 
 **Pros:**
+
 - Different performance characteristics
 - Different ecosystem benefits
 
 **Cons:**
+
 - VSCode extension ecosystem is TypeScript-focused
 - Additional tooling complexity
 - Team learning curve
@@ -148,9 +152,7 @@ interface InvestmentRecommendation {
 
 ```typescript
 // Good: Explicit types and error handling
-function calculatePortfolioValue(
-  investments: Investment[]
-): Promise<PortfolioValue> {
+function calculatePortfolioValue(investments: Investment[]): Promise<PortfolioValue> {
   return investments.reduce((total, investment) => {
     if (!investment.currentValue) {
       throw new Error(`Missing value for investment ${investment.id}`);
@@ -190,16 +192,19 @@ function calc(data: any) {
 ## Migration Strategy
 
 ### Phase 1: Core Types
+
 - [ ] Define financial domain types
 - [ ] Set up strict TypeScript configuration
 - [ ] Convert main extension files
 
 ### Phase 2: Test Coverage
+
 - [ ] Add types to test files
 - [ ] Use typed test utilities
 - [ ] Ensure type coverage in tests
 
 ### Phase 3: Advanced Types
+
 - [ ] Generic types for reusability
 - [ ] Union types for state management
 - [ ] Mapped types for transformations

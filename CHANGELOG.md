@@ -3,7 +3,7 @@
 - chore: centralize release to org-wide reusable workflow (65e5ec4)
 - chore: centralize CI to org-wide reusable workflow (01b64ef)
 - ci: add Design-Dojo UI compliance gate (265b235)
-- ci: standardize Node version to lts/* — remove hardcoded versions (b4c376c)
+- ci: standardize Node version to lts/\* — remove hardcoded versions (b4c376c)
 - ci: tech-doc-writer triggers on minor prerelease only [actions-optimization] (4d9de3d)
 - ci: add concurrency group to copilot-pr-lifecycle [actions-optimization] (bc6ac84)
 - ci: centralize lifecycle — event-driven with schedule guard (e28683c)

@@ -27,6 +27,7 @@ Implement flexible file import supporting industry-standard formats.
 **Features Implemented:**
 
 #### CSV Importer
+
 - Template-based column mapping
 - Flexible field detection (name or index)
 - Multiple date format support
@@ -40,13 +41,14 @@ import { CSVImporter, createCommonBankTemplates } from '@financialadvisor/shared
 const importer = new CSVImporter();
 const result = await importer.import('/path/to/transactions.csv', {
   accountId: 'account-123',
-  csvTemplate: templates.find(t => t.id === 'chase-checking')
+  csvTemplate: templates.find(t => t.id === 'chase-checking'),
 });
 
 console.log(`Imported ${result.transactionsImported} transactions`);
 ```
 
 #### OFX/QFX Importer
+
 - SGML format support (OFX 1.x)
 - XML format support (OFX 2.x)
 - QFX compatibility (Quicken format)
@@ -59,7 +61,7 @@ import { OFXImporter } from '@financialadvisor/shared';
 
 const importer = new OFXImporter();
 const result = await importer.import('/path/to/statement.ofx', {
-  accountId: 'account-123'
+  accountId: 'account-123',
 });
 
 console.log(`Imported ${result.transactionsImported} transactions`);
@@ -68,6 +70,7 @@ console.log(`Imported ${result.transactionsImported} transactions`);
 #### Common Bank Templates
 
 Pre-configured templates for popular banks:
+
 - Chase Bank (Checking, Savings, Credit Card)
 - Bank of America
 - Wells Fargo
@@ -98,7 +101,7 @@ await service.watchDirectory('~/Downloads/BankStatements', {
   autoImport: true,
   archiveAfterImport: true,
   archivePath: '~/Documents/ImportedStatements',
-  accountId: 'account-123'
+  accountId: 'account-123',
 });
 ```
 
@@ -215,13 +218,10 @@ import { createAccountIntegrationService } from '@financialadvisor/shared';
 const service = createAccountIntegrationService();
 
 // Import CSV file with template
-const result = await service.importFile(
-  '/path/to/transactions.csv',
-  {
-    accountId: 'checking-account-1',
-    csvTemplateId: 'chase-checking'
-  }
-);
+const result = await service.importFile('/path/to/transactions.csv', {
+  accountId: 'checking-account-1',
+  csvTemplateId: 'chase-checking',
+});
 
 if (result.success) {
   console.log(`✅ Imported ${result.transactionsImported} transactions`);
@@ -235,10 +235,9 @@ if (result.success) {
 
 ```typescript
 // Import OFX file
-const result = await service.importFile(
-  '/path/to/statement.ofx',
-  { accountId: 'checking-account-1' }
-);
+const result = await service.importFile('/path/to/statement.ofx', {
+  accountId: 'checking-account-1',
+});
 
 console.log(`File hash: ${result.fileHash}`);
 console.log(`Imported: ${result.transactionsImported}`);
@@ -276,13 +275,10 @@ service.registerCSVTemplate({
 });
 
 // Use custom template
-const result = await service.importFile(
-  '/path/to/statement.csv',
-  {
-    accountId: 'cu-account',
-    csvTemplateId: 'my-credit-union'
-  }
-);
+const result = await service.importFile('/path/to/statement.csv', {
+  accountId: 'cu-account',
+  csvTemplateId: 'my-credit-union',
+});
 ```
 
 ## Testing
@@ -294,9 +290,9 @@ describe('CSVImporter', () => {
   it('should parse Chase CSV correctly', async () => {
     const importer = new CSVImporter();
     const result = await importer.import('test-data/chase.csv', {
-      csvTemplate: chaseTemplate
+      csvTemplate: chaseTemplate,
     });
-    
+
     expect(result.success).toBe(true);
     expect(result.transactionsImported).toBeGreaterThan(0);
   });
@@ -306,7 +302,7 @@ describe('OFXImporter', () => {
   it('should parse OFX 2.0 XML format', async () => {
     const importer = new OFXImporter();
     const result = await importer.import('test-data/statement.ofx');
-    
+
     expect(result.success).toBe(true);
   });
 });
@@ -318,11 +314,11 @@ describe('OFXImporter', () => {
 describe('AccountIntegrationService', () => {
   it('should import and deduplicate transactions', async () => {
     const service = createAccountIntegrationService();
-    
+
     // First import
     const result1 = await service.importFile('statement1.ofx');
     expect(result1.transactionsImported).toBe(10);
-    
+
     // Re-import same file
     const result2 = await service.importFile('statement1.ofx');
     expect(result2.transactionsSkipped).toBe(10);
@@ -339,10 +335,7 @@ describe('AccountIntegrationService', () => {
 {
   "fileImport": {
     "enabled": true,
-    "watchFolders": [
-      "~/Downloads/BankStatements",
-      "~/Documents/Finances/Imports"
-    ],
+    "watchFolders": ["~/Downloads/BankStatements", "~/Documents/Finances/Imports"],
     "autoImport": true,
     "archiveAfterImport": true,
     "archivePath": "~/Documents/Finances/Archive",
@@ -375,24 +368,28 @@ describe('AccountIntegrationService', () => {
 ## Next Steps
 
 ### Sprint 1 (Week 1-2)
+
 - [ ] Implement directory watcher
 - [ ] Add file archival
 - [ ] Create import status notifications
 - [ ] Write unit tests for importers
 
 ### Sprint 2 (Week 3-4)
+
 - [ ] Implement transaction deduplication
 - [ ] Add duplicate resolution UI
 - [ ] Create merge/split tools
 - [ ] Integration tests
 
 ### Sprint 3 (Week 5-6)
+
 - [ ] Template builder UI
 - [ ] Community template repository
 - [ ] Template import/export
 - [ ] Support 20+ bank formats
 
 ### Sprint 4 (Week 7-8)
+
 - [ ] Open Bank Project integration
 - [ ] Self-hosted OBP setup guide
 - [ ] Bank connector framework
@@ -414,11 +411,13 @@ describe('AccountIntegrationService', () => {
 ### Current Progress: 35%
 
 **Completed:**
+
 - File import framework
 - CSV/OFX importers
 - Template system
 
 **Remaining:**
+
 - Directory watcher
 - Deduplication
 - Enhanced templates
@@ -436,6 +435,7 @@ describe('AccountIntegrationService', () => {
 ## Support
 
 For implementation questions:
+
 - **GitHub Issues**: https://github.com/plures/FinancialAdvisor/issues
 - **Discussions**: https://github.com/plures/FinancialAdvisor/discussions
 - **Documentation**: https://docs.financial-advisor.dev

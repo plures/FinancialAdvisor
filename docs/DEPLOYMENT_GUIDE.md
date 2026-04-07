@@ -49,12 +49,14 @@ Financial Advisor is a local-first desktop application built with Tauri, designe
 #### For End Users
 
 **Minimum:**
+
 - **OS:** Windows 10+, macOS 11+, or Linux (Ubuntu 20.04+, Fedora 36+)
 - **RAM:** 4 GB
 - **Storage:** 500 MB for application + user data
 - **Display:** 1280x720 minimum
 
 **Recommended:**
+
 - **OS:** Windows 11, macOS 13+, or Linux (Ubuntu 22.04+)
 - **RAM:** 8 GB or more
 - **Storage:** 2 GB (allows for extensive transaction history)
@@ -81,31 +83,35 @@ Financial Advisor is a local-first desktop application built with Tauri, designe
    - Linux: `FinancialAdvisor-0.4.0-amd64.deb` or `FinancialAdvisor-0.4.0-x86_64.AppImage`
 
 2. **Install the application:**
-   
+
    **Windows:**
+
    ```powershell
    # Run installer
    .\FinancialAdvisor-0.4.0-x64-setup.exe
-   
+
    # Or use silent install
    .\FinancialAdvisor-0.4.0-x64-setup.exe /S
    ```
-   
+
    **macOS:**
+
    ```bash
    # Mount and install
    hdiutil attach FinancialAdvisor-0.4.0-universal.dmg
    cp -R "/Volumes/Financial Advisor/Financial Advisor.app" /Applications/
    hdiutil detach "/Volumes/Financial Advisor"
    ```
-   
+
    **Linux (Debian/Ubuntu):**
+
    ```bash
    sudo dpkg -i FinancialAdvisor-0.4.0-amd64.deb
    sudo apt-get install -f  # Fix dependencies if needed
    ```
-   
+
    **Linux (AppImage):**
+
    ```bash
    chmod +x FinancialAdvisor-0.4.0-x86_64.AppImage
    ./FinancialAdvisor-0.4.0-x86_64.AppImage
@@ -163,6 +169,7 @@ npm run tauri:dev
 Create or edit configuration file:
 
 **Location:**
+
 - **Windows:** `%APPDATA%\com.plures.financial-advisor\config.json`
 - **macOS:** `~/Library/Application Support/com.plures.financial-advisor/config.json`
 - **Linux:** `~/.config/com.plures.financial-advisor/config.json`
@@ -258,6 +265,7 @@ PluresDB is configured automatically. Advanced settings:
 ### Data Encryption
 
 1. **Enable Encryption:**
+
    ```json
    {
      "privacy": {
@@ -268,10 +276,11 @@ PluresDB is configured automatically. Advanced settings:
    ```
 
 2. **Generate Strong Encryption Key:**
+
    ```bash
    # Using OpenSSL
    openssl rand -base64 32
-   
+
    # Using Node.js
    node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
    ```
@@ -296,10 +305,7 @@ chmod 600 ~/.financial-advisor/config.json
 {
   "network": {
     "allowExternalConnections": false,
-    "trustedDomains": [
-      "api.openai.com",
-      "localhost"
-    ],
+    "trustedDomains": ["api.openai.com", "localhost"],
     "enforceHTTPS": true,
     "validateSSL": true
   }
@@ -432,6 +438,7 @@ aws s3 cp ~/.financial-advisor/backups/ \
 **Symptom:** Application crashes on launch or shows blank window
 
 **Solutions:**
+
 1. Check logs: `~/.financial-advisor/logs/app.log`
 2. Verify data directory permissions
 3. Clear cache: `rm -rf ~/.financial-advisor/cache`
@@ -442,6 +449,7 @@ aws s3 cp ~/.financial-advisor/backups/ \
 **Symptom:** "Cannot open database" or corruption errors
 
 **Solutions:**
+
 1. Restore from backup
 2. Run database repair: `npm run db:repair`
 3. Check disk space
@@ -452,6 +460,7 @@ aws s3 cp ~/.financial-advisor/backups/ \
 **Symptom:** AI features not working, timeout errors
 
 **Solutions:**
+
 1. Verify API key is correct
 2. Check network connectivity
 3. Verify API endpoint
@@ -463,6 +472,7 @@ aws s3 cp ~/.financial-advisor/backups/ \
 #### Slow Transaction Import
 
 **Solutions:**
+
 1. Increase batch size in configuration
 2. Enable connection pooling
 3. Check disk I/O performance
@@ -471,6 +481,7 @@ aws s3 cp ~/.financial-advisor/backups/ \
 #### High Memory Usage
 
 **Solutions:**
+
 1. Reduce cache size
 2. Decrease batch processing size
 3. Close unused features

@@ -52,7 +52,7 @@ export const ledgerIntegrityExpectation: Expectation<LedgerIntegrityData> = {
       ) {
         violations.push(
           `${prefix}: amountCents must be a non-negative safe integer ` +
-          `(got ${entry.amountCents}).`
+            `(got ${entry.amountCents}).`
         );
       } else {
         totalDebits += entry.amountCents;

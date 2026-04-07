@@ -7,11 +7,7 @@
 
 // Engine primitives
 /** @see {@link PraxisEngine} */
-export {
-  PraxisEngine,
-  passed,
-  failed,
-} from './engine.js';
+export { PraxisEngine, passed, failed } from './engine.js';
 /** Engine primitive types. */
 export type {
   ExpectationResult,
@@ -41,7 +37,10 @@ export type {
 } from './expectations/resolution-confidence.js';
 
 /** Budget-compliance expectation and helper to compute per-budget status. */
-export { budgetComplianceExpectation, budgetComplianceStatus } from './expectations/budget-compliance.js';
+export {
+  budgetComplianceExpectation,
+  budgetComplianceStatus,
+} from './expectations/budget-compliance.js';
 /** Data shape for the budget-compliance expectation. */
 export type {
   BudgetComplianceData,
@@ -63,8 +62,4 @@ export type {
 
 // Lifecycle
 /** Lifecycle helpers for creating and managing the shared praxis engine. */
-export {
-  createPraxisEngine,
-  initializePraxisEngine,
-  getPraxisEngine,
-} from './lifecycle.js';
+export { createPraxisEngine, initializePraxisEngine, getPraxisEngine } from './lifecycle.js';

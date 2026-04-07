@@ -9,10 +9,14 @@ import { Transaction, TransactionType } from '../../packages/domain/dist/types.j
 import { moneyFromDecimal, moneyToDecimal } from '../../packages/domain/dist/money.js';
 
 describe('PredictiveAnalytics', () => {
-  const createTransaction = (amount: number, category: string, daysAgo: number = 0): Transaction => {
+  const createTransaction = (
+    amount: number,
+    category: string,
+    daysAgo: number = 0
+  ): Transaction => {
     const date = new Date();
     date.setDate(date.getDate() - daysAgo);
-    
+
     return {
       id: `txn-${Math.random()}`,
       importSessionId: 'test-session',
@@ -23,15 +27,19 @@ describe('PredictiveAnalytics', () => {
       description: `Test transaction for ${category}`,
       type: amount < 0 ? TransactionType.EXPENSE : TransactionType.INCOME,
       merchant: 'Test Merchant',
-      tags: []
+      tags: [],
     };
   };
 
   describe('analyzeSpendingTrends', () => {
     it('should identify increasing trends', () => {
       const transactions: Transaction[] = [
-        ...Array(10).fill(null).map((_, i) => createTransaction(-100, 'Groceries', 60 - i)),
-        ...Array(10).fill(null).map((_, i) => createTransaction(-150, 'Groceries', 30 - i))
+        ...Array(10)
+          .fill(null)
+          .map((_, i) => createTransaction(-100, 'Groceries', 60 - i)),
+        ...Array(10)
+          .fill(null)
+          .map((_, i) => createTransaction(-150, 'Groceries', 30 - i)),
       ];
 
       const trends = PredictiveAnalytics.analyzeSpendingTrends(transactions, 90);
@@ -44,8 +52,12 @@ describe('PredictiveAnalytics', () => {
 
     it('should identify decreasing trends', () => {
       const transactions: Transaction[] = [
-        ...Array(10).fill(null).map((_, i) => createTransaction(-200, 'Dining', 60 - i)),
-        ...Array(10).fill(null).map((_, i) => createTransaction(-100, 'Dining', 30 - i))
+        ...Array(10)
+          .fill(null)
+          .map((_, i) => createTransaction(-200, 'Dining', 60 - i)),
+        ...Array(10)
+          .fill(null)
+          .map((_, i) => createTransaction(-100, 'Dining', 30 - i)),
       ];
 
       const trends = PredictiveAnalytics.analyzeSpendingTrends(transactions, 90);
@@ -58,7 +70,9 @@ describe('PredictiveAnalytics', () => {
 
     it('should identify stable trends', () => {
       const transactions: Transaction[] = [
-        ...Array(20).fill(null).map((_, i) => createTransaction(-100, 'Utilities', 60 - i))
+        ...Array(20)
+          .fill(null)
+          .map((_, i) => createTransaction(-100, 'Utilities', 60 - i)),
       ];
 
       const trends = PredictiveAnalytics.analyzeSpendingTrends(transactions, 90);
@@ -70,9 +84,9 @@ describe('PredictiveAnalytics', () => {
     });
 
     it('should calculate confidence scores', () => {
-      const transactions: Transaction[] = Array(30).fill(null).map((_, i) => 
-        createTransaction(-100 + (Math.random() * 20 - 10), 'Shopping', i)
-      );
+      const transactions: Transaction[] = Array(30)
+        .fill(null)
+        .map((_, i) => createTransaction(-100 + (Math.random() * 20 - 10), 'Shopping', i));
 
       const trends = PredictiveAnalytics.analyzeSpendingTrends(transactions, 90);
       const shoppingTrend = trends.find(t => t.category === 'Shopping');
@@ -86,7 +100,7 @@ describe('PredictiveAnalytics', () => {
   describe('forecastSpending', () => {
     it('should forecast future spending based on historical data', () => {
       const transactions: Transaction[] = [];
-      
+
       // Create 6 months of data with consistent spending
       for (let month = 0; month < 6; month++) {
         for (let i = 0; i < 30; i++) {
@@ -115,10 +129,10 @@ describe('PredictiveAnalytics', () => {
 
     it('should detect upward trends in forecasts', () => {
       const transactions: Transaction[] = [];
-      
+
       // Create data with increasing trend
       for (let month = 0; month < 6; month++) {
-        const baseAmount = -1000 - ((5 - month) * 100); // Increasing spending (older months lower)
+        const baseAmount = -1000 - (5 - month) * 100; // Increasing spending (older months lower)
         for (let i = 0; i < 10; i++) {
           transactions.push(createTransaction(baseAmount, 'Variable', month * 30 + i));
         }
@@ -134,26 +148,28 @@ describe('PredictiveAnalytics', () => {
 
   describe('detectAnomalies', () => {
     it('should detect unusually large transactions', () => {
-      const normalTransactions: Transaction[] = Array(20).fill(null).map((_, i) => 
-        createTransaction(-50, 'Groceries', i)
-      );
-      
+      const normalTransactions: Transaction[] = Array(20)
+        .fill(null)
+        .map((_, i) => createTransaction(-50, 'Groceries', i));
+
       const anomalousTransaction = createTransaction(-500, 'Groceries', 0);
       const transactions = [...normalTransactions, anomalousTransaction];
 
       const anomalies = PredictiveAnalytics.detectAnomalies(transactions, 2.5);
 
       expect(anomalies.length).to.be.greaterThan(0);
-      const largeAnomaly = anomalies.find(a => Math.abs(moneyToDecimal(a.transaction.amount)) === 500);
+      const largeAnomaly = anomalies.find(
+        a => Math.abs(moneyToDecimal(a.transaction.amount)) === 500
+      );
       expect(largeAnomaly).to.exist;
       expect(largeAnomaly!.severity).to.be.oneOf(['medium', 'high']);
     });
 
     it('should classify anomaly severity correctly', () => {
-      const normalTransactions: Transaction[] = Array(30).fill(null).map((_, i) => 
-        createTransaction(-100, 'Shopping', i)
-      );
-      
+      const normalTransactions: Transaction[] = Array(30)
+        .fill(null)
+        .map((_, i) => createTransaction(-100, 'Shopping', i));
+
       const highAnomaly = createTransaction(-1000, 'Shopping', 0);
       const transactions = [...normalTransactions, highAnomaly];
 
@@ -166,9 +182,9 @@ describe('PredictiveAnalytics', () => {
     });
 
     it('should not flag normal transactions as anomalies', () => {
-      const transactions: Transaction[] = Array(30).fill(null).map((_, i) => 
-        createTransaction(-100 + (Math.random() * 10 - 5), 'Regular', i)
-      );
+      const transactions: Transaction[] = Array(30)
+        .fill(null)
+        .map((_, i) => createTransaction(-100 + (Math.random() * 10 - 5), 'Regular', i));
 
       const anomalies = PredictiveAnalytics.detectAnomalies(transactions, 2.5);
 
@@ -178,9 +194,11 @@ describe('PredictiveAnalytics', () => {
 
   describe('predictBudgetVariance', () => {
     it('should predict safe budget status', () => {
-      const transactions: Transaction[] = Array(15).fill(null).map((_, i) => 
-        createTransaction(-30, 'Entertainment', i) // $450 total for 15 days
-      );
+      const transactions: Transaction[] = Array(15)
+        .fill(null)
+        .map(
+          (_, i) => createTransaction(-30, 'Entertainment', i) // $450 total for 15 days
+        );
 
       const budgets = new Map([['Entertainment', 1000]]); // $1000 budget
 
@@ -193,9 +211,11 @@ describe('PredictiveAnalytics', () => {
     });
 
     it('should predict warning budget status', () => {
-      const transactions: Transaction[] = Array(15).fill(null).map((_, i) => 
-        createTransaction(-35, 'Dining', i) // $525 for 15 days
-      );
+      const transactions: Transaction[] = Array(15)
+        .fill(null)
+        .map(
+          (_, i) => createTransaction(-35, 'Dining', i) // $525 for 15 days
+        );
 
       const budgets = new Map([['Dining', 600]]); // Will be close
 
@@ -207,9 +227,11 @@ describe('PredictiveAnalytics', () => {
     });
 
     it('should predict danger budget status', () => {
-      const transactions: Transaction[] = Array(15).fill(null).map((_, i) => 
-        createTransaction(-50, 'Shopping', i) // $750 for 15 days, $1500 projected
-      );
+      const transactions: Transaction[] = Array(15)
+        .fill(null)
+        .map(
+          (_, i) => createTransaction(-50, 'Shopping', i) // $750 for 15 days, $1500 projected
+        );
 
       const budgets = new Map([['Shopping', 1000]]); // Will exceed
 
@@ -222,9 +244,11 @@ describe('PredictiveAnalytics', () => {
     });
 
     it('should calculate variance percentage correctly', () => {
-      const transactions: Transaction[] = Array(10).fill(null).map((_, i) => 
-        createTransaction(-60, 'Test', i) // $600 for 10 days
-      );
+      const transactions: Transaction[] = Array(10)
+        .fill(null)
+        .map(
+          (_, i) => createTransaction(-60, 'Test', i) // $600 for 10 days
+        );
 
       const budgets = new Map([['Test', 1000]]);
 

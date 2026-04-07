@@ -25,9 +25,7 @@
       "@financialadvisor/mcp-server/*": ["packages/mcp-server/src/*"]
     }
   },
-  "include": [
-    "test/**/*"
-  ],
+  "include": ["test/**/*"],
   "exclude": [
     "node_modules",
     "out",

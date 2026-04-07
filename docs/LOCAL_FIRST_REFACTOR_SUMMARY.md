@@ -36,11 +36,13 @@ New documentation and architecture aligned with project vision:
 ### Before: Plaid-First (Rejected)
 
 **Approach**:
+
 - Primary: Plaid API integration
 - Secondary: Open Bank Project migration "at scale"
 - Philosophy: Start with third-party, migrate later
 
 **Problems**:
+
 - ❌ Contradicted ADR-003 (Privacy by Design)
 - ❌ Made users dependent on middleman
 - ❌ Expensive at scale ($600-1,200/month at 2,000 accounts)
@@ -50,12 +52,14 @@ New documentation and architecture aligned with project vision:
 ### After: Local-First (Accepted)
 
 **Approach**:
+
 - Primary: File-based import (OFX/QFX/CSV)
 - Secondary: Self-hosted Open Bank Project
 - Optional: Plaid (only with explicit consent and warnings)
 - Philosophy: Local-first, user empowerment, no middlemen
 
 **Benefits**:
+
 - ✅ Aligns with ADR-003 (Privacy by Design)
 - ✅ Zero cost at any scale
 - ✅ Works with ANY bank (via standard file exports)
@@ -84,6 +88,7 @@ New documentation and architecture aligned with project vision:
 ```
 
 **User Workflow**:
+
 1. Download OFX/CSV from bank website (monthly)
 2. Drop file into FinancialAdvisor or save to watched folder
 3. Auto-import detects and processes file
@@ -121,6 +126,7 @@ For advanced users who want automation:
 Only for users who explicitly choose convenience over privacy:
 
 **Requirements**:
+
 1. Must show privacy warning before enabling
 2. User must explicitly consent
 3. Clear explanation of data sharing
@@ -131,40 +137,44 @@ Only for users who explicitly choose convenience over privacy:
 
 ## Key Differences
 
-| Aspect | Old (Plaid-First) | New (Local-First) |
-|--------|-------------------|-------------------|
-| **Philosophy** | Start with third-party | Local-first always |
-| **Privacy** | Plaid has access | User has all data |
-| **Cost** | $0.30-0.60/account | $0 forever |
-| **Bank Coverage** | 12,000+ via Plaid | ANY bank (file export) |
-| **User Control** | Plaid controls flow | User controls everything |
-| **Data Ownership** | Shared with Plaid | 100% user owned |
-| **Alignment** | ❌ Conflicts with ADR-003 | ✅ Perfect ADR-003 alignment |
-| **Vision** | ❌ Against project values | ✅ Embodies project vision |
+| Aspect             | Old (Plaid-First)         | New (Local-First)            |
+| ------------------ | ------------------------- | ---------------------------- |
+| **Philosophy**     | Start with third-party    | Local-first always           |
+| **Privacy**        | Plaid has access          | User has all data            |
+| **Cost**           | $0.30-0.60/account        | $0 forever                   |
+| **Bank Coverage**  | 12,000+ via Plaid         | ANY bank (file export)       |
+| **User Control**   | Plaid controls flow       | User controls everything     |
+| **Data Ownership** | Shared with Plaid         | 100% user owned              |
+| **Alignment**      | ❌ Conflicts with ADR-003 | ✅ Perfect ADR-003 alignment |
+| **Vision**         | ❌ Against project values | ✅ Embodies project vision   |
 
 ## Implementation Plan
 
 ### Phase 1: File-Based Import (2-3 weeks)
 
 **Week 1: OFX/QFX Import**
+
 - Implement OFX parser (use library or build our own)
 - Transaction extraction and mapping
 - Integration with PluresDB
 - Basic file import UI
 
 **Week 2: CSV Import with Templates**
+
 - Flexible CSV parsing engine
 - Bank-specific template system
 - Pre-configured templates for top 20 banks
 - Template management UI
 
 **Week 3: Auto-Import & Polish**
+
 - Directory watcher using chokidar
 - Auto-import on file detection
 - File archival and encryption
 - Import history tracking
 
 **Deliverables**:
+
 - Users can import OFX/QFX/CSV files
 - Auto-import from designated folder
 - Template system for CSV formats
@@ -202,7 +212,7 @@ Perfect alignment:
 ✅ **Explicit Consent**: User explicitly downloads and imports  
 ✅ **Minimal Data**: Only user-chosen files imported  
 ✅ **Transparency**: User sees exactly what's imported  
-✅ **User Control**: User controls timing and data flow  
+✅ **User Control**: User controls timing and data flow
 
 ### Core Values ✅
 
@@ -210,13 +220,14 @@ Perfect alignment:
 ✅ **No Middlemen**: Direct bank → user → app  
 ✅ **User Empowerment**: Users own 100% of their data  
 ✅ **Open Source**: Free and auditable forever  
-✅ **Privacy**: Maximum privacy by design  
+✅ **Privacy**: Maximum privacy by design
 
 ## Cost Analysis
 
 ### File-Based Import (Primary)
 
 **At 10,000 users (20,000 accounts)**:
+
 - Infrastructure: $0
 - API costs: $0
 - User cost: $0 (open source)
@@ -227,6 +238,7 @@ Perfect alignment:
 ### Plaid (Old Approach)
 
 **At 10,000 users (20,000 accounts)**:
+
 - Plaid API: $6,000 - $12,000/month
 - Infrastructure: $50-100/month
 - Total: ~$6,050 - $12,100/month
@@ -237,7 +249,8 @@ Perfect alignment:
 
 ### vs. Mint/YNAB (Plaid-based)
 
-**FinancialAdvisor**: 
+**FinancialAdvisor**:
+
 - "We never see your bank credentials"
 - "Your data never leaves your machine"
 - "Free forever, open source"
@@ -247,6 +260,7 @@ Perfect alignment:
 ### vs. Quicken (File-based, proprietary)
 
 **FinancialAdvisor**:
+
 - "Like Quicken, but open source and free"
 - "With AI features and modern UI"
 - "Your data is truly yours"
@@ -349,7 +363,7 @@ class AccountIntegrationService {
 ✅ **Security Scan**: CodeQL - 0 vulnerabilities  
 ✅ **Vision Alignment**: Perfect match with project values  
 ✅ **ADR-003 Compliance**: Complete alignment  
-✅ **Cost**: $0 at any scale  
+✅ **Cost**: $0 at any scale
 
 ## Conclusion
 

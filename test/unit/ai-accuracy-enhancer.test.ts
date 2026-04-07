@@ -18,10 +18,11 @@ describe('AIAccuracyEnhancer', () => {
   describe('calculateConfidence', () => {
     it('should score high-quality responses highly', () => {
       const response: AIResponse = {
-        content: 'Based on your spending data, you spent $1,245.50 this month, which is a 15% increase from last month. Your top categories were Groceries ($450), Dining Out ($320), and Transportation ($275). I recommend reducing dining expenses by 20% to meet your savings goal.',
+        content:
+          'Based on your spending data, you spent $1,245.50 this month, which is a 15% increase from last month. Your top categories were Groceries ($450), Dining Out ($320), and Transportation ($275). I recommend reducing dining expenses by 20% to meet your savings goal.',
         model: 'gpt-4',
         timestamp: new Date(),
-        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       };
 
       const confidence = enhancer.calculateConfidence(response);
@@ -35,7 +36,7 @@ describe('AIAccuracyEnhancer', () => {
       const response: AIResponse = {
         content: 'OK',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const confidence = enhancer.calculateConfidence(response);
@@ -48,13 +49,13 @@ describe('AIAccuracyEnhancer', () => {
       const specificResponse: AIResponse = {
         content: 'You spent $542.30 on groceries in March 2024, a 12% decrease from February.',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const genericResponse: AIResponse = {
         content: 'You spent some money on groceries last month.',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const specificConfidence = enhancer.calculateConfidence(specificResponse);
@@ -67,31 +68,33 @@ describe('AIAccuracyEnhancer', () => {
 
     it('should consider context consistency', () => {
       const context: FinancialContext = {
-        accounts: [{
-          id: '1',
-          name: 'Checking',
-          type: AccountType.CHECKING,
-          balance: 5000,
-          currency: 'USD',
-          lastUpdated: new Date(),
-          isActive: true
-        }] as Account[],
+        accounts: [
+          {
+            id: '1',
+            name: 'Checking',
+            type: AccountType.CHECKING,
+            balance: 5000,
+            currency: 'USD',
+            lastUpdated: new Date(),
+            isActive: true,
+          },
+        ] as Account[],
         transactions: [],
         budgets: [],
         goals: [],
-        investments: []
+        investments: [],
       };
 
       const consistentResponse: AIResponse = {
         content: 'Your checking account has a balance of $5,000.',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const inconsistentResponse: AIResponse = {
         content: 'Your investment portfolio is performing well.',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const consistentConfidence = enhancer.calculateConfidence(consistentResponse, context);
@@ -106,9 +109,10 @@ describe('AIAccuracyEnhancer', () => {
   describe('validateResponse', () => {
     it('should validate good responses', () => {
       const response: AIResponse = {
-        content: 'Based on your transaction history, I recommend allocating $500 to savings and $300 to emergency fund.',
+        content:
+          'Based on your transaction history, I recommend allocating $500 to savings and $300 to emergency fund.',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const validation = enhancer.validateResponse(response);
@@ -122,7 +126,7 @@ describe('AIAccuracyEnhancer', () => {
       const response: AIResponse = {
         content: '',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const validation = enhancer.validateResponse(response);
@@ -136,7 +140,7 @@ describe('AIAccuracyEnhancer', () => {
       const response: AIResponse = {
         content: 'I cannot provide specific advice without more information.',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const validation = enhancer.validateResponse(response);
@@ -147,9 +151,10 @@ describe('AIAccuracyEnhancer', () => {
 
     it('should flag overly uncertain responses', () => {
       const response: AIResponse = {
-        content: 'You spent approximately around roughly about an estimated $500 or so, give or take.',
+        content:
+          'You spent approximately around roughly about an estimated $500 or so, give or take.',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const validation = enhancer.validateResponse(response);
@@ -161,7 +166,7 @@ describe('AIAccuracyEnhancer', () => {
       const multiLineResponse: AIResponse = {
         content: 'The category is:\nGroceries\nBecause it is food.',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const validation = enhancer.validateResponse(multiLineResponse, 'category');
@@ -208,9 +213,7 @@ describe('AIAccuracyEnhancer', () => {
       const similarities = enhancer.findSimilarCategory('restaurant food');
 
       for (let i = 1; i < similarities.length; i++) {
-        expect(similarities[i - 1].similarity).to.be.greaterThanOrEqual(
-          similarities[i].similarity
-        );
+        expect(similarities[i - 1].similarity).to.be.greaterThanOrEqual(similarities[i].similarity);
       }
     });
   });
@@ -220,7 +223,7 @@ describe('AIAccuracyEnhancer', () => {
       const response: AIResponse = {
         content: 'Test response',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       const key = 'test-query';
@@ -245,7 +248,7 @@ describe('AIAccuracyEnhancer', () => {
         transactions: [],
         budgets: [],
         goals: [],
-        investments: []
+        investments: [],
       };
 
       const key1 = enhancer.generateCacheKey(query, context);
@@ -261,23 +264,23 @@ describe('AIAccuracyEnhancer', () => {
       expect(key1).to.not.equal(key2);
     });
 
-    it('should clean expired cache entries', (done) => {
+    it('should clean expired cache entries', done => {
       const response: AIResponse = {
         content: 'Test',
         model: 'gpt-4',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       enhancer.cacheResponse('test', response);
-      
+
       // Override TTL for testing by accessing private property
       // In real scenario, wait for actual TTL or mock time
       enhancer.cleanCache();
-      
+
       // Cache should still exist if not expired
       const cached = enhancer.getCachedResponse('test');
       expect(cached).to.exist;
-      
+
       done();
     });
   });

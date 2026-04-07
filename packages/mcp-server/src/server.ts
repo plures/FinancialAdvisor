@@ -217,11 +217,15 @@ export class FinancialAdvisorMCPServer {
           },
           {
             name: 'get_recommendations',
-            description: 'Generate ranked financial recommendations from current account and transaction data',
+            description:
+              'Generate ranked financial recommendations from current account and transaction data',
             inputSchema: {
               type: 'object',
               properties: {
-                accountId: { type: 'string', description: 'Optional account ID to filter transactions' },
+                accountId: {
+                  type: 'string',
+                  description: 'Optional account ID to filter transactions',
+                },
               },
             },
           },
@@ -260,7 +264,12 @@ export class FinancialAdvisorMCPServer {
               properties: {
                 scenario: {
                   type: 'string',
-                  enum: ['cancel_subscription', 'extra_debt_payment', 'spending_reduction', 'income_change'],
+                  enum: [
+                    'cancel_subscription',
+                    'extra_debt_payment',
+                    'spending_reduction',
+                    'income_change',
+                  ],
                   description: 'Scenario type to model',
                 },
                 params: {
@@ -273,7 +282,8 @@ export class FinancialAdvisorMCPServer {
           },
           {
             name: 'start_import_watcher',
-            description: 'Start watching a directory for new financial statement files (.csv, .ofx, .qfx) and auto-import them',
+            description:
+              'Start watching a directory for new financial statement files (.csv, .ofx, .qfx) and auto-import them',
             inputSchema: {
               type: 'object',
               properties: {
@@ -292,7 +302,8 @@ export class FinancialAdvisorMCPServer {
                 },
                 pollInterval: {
                   type: 'number',
-                  description: 'Polling interval in milliseconds; 0 disables polling (default: 2000)',
+                  description:
+                    'Polling interval in milliseconds; 0 disables polling (default: 2000)',
                 },
               },
             },
@@ -492,11 +503,7 @@ export class FinancialAdvisorMCPServer {
     };
   }
 
-  async analyzeSpending(args: {
-    startDate?: string;
-    endDate?: string;
-    accountId?: string;
-  }) {
+  async analyzeSpending(args: { startDate?: string; endDate?: string; accountId?: string }) {
     const filters: { startDate?: Date; endDate?: Date; accountId?: string; limit?: number } = {};
 
     if (args.startDate) {
@@ -635,7 +642,9 @@ Currently no budget data available. Add budgets to get budget analysis.
   }
 
   /** Build a FinancialStateSnapshot from the current storage contents. */
-  private async buildStateSnapshot(accountId?: string): Promise<import('@financialadvisor/advice').FinancialStateSnapshot> {
+  private async buildStateSnapshot(
+    accountId?: string
+  ): Promise<import('@financialadvisor/advice').FinancialStateSnapshot> {
     const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
     const accounts = await this.storage.getAccounts();
     const txFilter: { accountId?: string; limit?: number } = { limit: 500 };
@@ -737,9 +746,7 @@ Currently no budget data available. Add budgets to get budget analysis.
       case 'cancel_subscription':
         input = {
           type: 'cancel_subscription',
-          itemLabels: Array.isArray(params.itemLabels)
-            ? (params.itemLabels as string[])
-            : [],
+          itemLabels: Array.isArray(params.itemLabels) ? (params.itemLabels as string[]) : [],
         };
         break;
       case 'extra_debt_payment':

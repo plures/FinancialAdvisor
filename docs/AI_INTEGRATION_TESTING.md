@@ -32,6 +32,7 @@ npm run test:integration
 ```
 
 You'll see output like:
+
 ```
 OpenAI Provider Integration
   - should test connection to OpenAI API
@@ -51,6 +52,7 @@ npm run test:integration
 ```
 
 Successful tests will show:
+
 ```
 OpenAI Provider Integration
   ✓ should test connection to OpenAI API
@@ -62,6 +64,7 @@ OpenAI Provider Integration
 ### CI/CD Testing
 
 The GitHub Actions CI workflow automatically runs integration tests when:
+
 - Code is pushed to `main` or `develop` branches
 - Pull requests are created/updated
 
@@ -168,7 +171,7 @@ describe('AI Provider Integration Tests', () => {
 AI integration tests have extended timeouts (30 seconds) to accommodate API response times:
 
 ```typescript
-describe('AI Provider Integration Tests', function() {
+describe('AI Provider Integration Tests', function () {
   this.timeout(30000); // 30 second timeout
   // ...
 });
@@ -196,7 +199,7 @@ const config: AIProviderConfig = {
   apiKey: OPENAI_API_KEY,
   model: 'gpt-4o-mini', // Change model here
   maxTokens: 500,
-  temperature: 0.7
+  temperature: 0.7,
 };
 ```
 
@@ -212,16 +215,16 @@ When adding new AI integration tests:
 Example:
 
 ```typescript
-it('should perform new AI operation', async function() {
+it('should perform new AI operation', async function () {
   if (!hasOpenAIKey) {
     this.skip(); // Skip if no API key
   }
 
   const response = await provider.newOperation(data);
-  
+
   // Validate response structure
   assert.ok(response.content);
-  
+
   // Validate response content (flexible assertions)
   const contentLower = response.content.toLowerCase();
   assert.ok(

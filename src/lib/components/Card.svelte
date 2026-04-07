@@ -20,10 +20,7 @@
   }: Props = $props();
 </script>
 
-<div
-  class="dojo-card dojo-card--pad-{padding} {className}"
-  class:dojo-card--elevated={elevated}
->
+<div class="dojo-card dojo-card--pad-{padding} {className}" class:dojo-card--elevated={elevated}>
   {#if header}
     <div class="dojo-card__header">
       {@render header()}

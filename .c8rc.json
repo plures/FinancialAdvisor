@@ -5,10 +5,7 @@
   "functions": 80,
   "branches": 80,
   "statements": 80,
-  "include": [
-    "out/test/packages/*/dist/**/*.js",
-    "out/test/src/shared/financial-utils.js"
-  ],
+  "include": ["out/test/packages/*/dist/**/*.js", "out/test/src/shared/financial-utils.js"],
   "exclude": [
     "**/*.d.js",
     "**/*.test.js",
@@ -17,11 +14,6 @@
     "out/test/packages/vscode-extension/**",
     "out/test/packages/eslint-plugin-design-dojo/**"
   ],
-  "reporter": [
-    "text",
-    "text-summary",
-    "html",
-    "lcov"
-  ],
+  "reporter": ["text", "text-summary", "html", "lcov"],
   "report-dir": "./coverage"
 }

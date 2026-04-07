@@ -7,6 +7,7 @@ Public application modules used across the Svelte app. This is an internal API r
 ### `src/lib/stores/financial.ts`
 
 **Stores**
+
 - `accounts` — CRUD over `Account[]`
   - `load(): Promise<void>`
   - `add(account: Account): Promise<void>`
@@ -28,22 +29,26 @@ Public application modules used across the Svelte app. This is an internal API r
   - `remove(id: string): Promise<void>`
 
 **Derived stores**
+
 - `totalBalance` — aggregate balance across accounts
 - `activeAccounts` — accounts where `isActive === true`
 
 ### `src/lib/stores/review.ts`
 
 **Types**
+
 - `ReviewStatus`
 - `ImportReviewItem`, `MerchantMergeItem`, `RecurringItem`, `CategoryCorrectionItem`
 
 **Stores**
+
 - `importReviewStore`
 - `merchantMergeStore`
 - `recurringStore`
 - `categoryCorrectionStore`
 
 **Seed helpers**
+
 - `seedImportReview(): void`
 - `seedMerchantMerge(): void`
 - `seedRecurring(): void`
@@ -55,10 +60,12 @@ Public application modules used across the Svelte app. This is an internal API r
 ### `src/lib/pluresdb/store.ts`
 
 **Types**
+
 - `EmbeddingMetadata`, `EmbeddingResult`
 - Re-exported schema types: `Account`, `Transaction`, `Budget`, `Goal`
 
 **Class**
+
 - `FinancialDataStore`
   - `initialize(): Promise<void>`
   - `saveAccount(account: Account): Promise<Account>`
@@ -78,6 +85,7 @@ Public application modules used across the Svelte app. This is an internal API r
   - `searchSimilar(vector: number[], limit?: number): Promise<EmbeddingResult[]>`
 
 **Singleton**
+
 - `dataStore: FinancialDataStore`
 
 ## AI Categorization
@@ -85,13 +93,16 @@ Public application modules used across the Svelte app. This is an internal API r
 ### `src/lib/ai/categorizer.ts`
 
 **Types**
+
 - `AIProvider`
 - `CategoryExample`
 
 **Constants**
+
 - `STANDARD_CATEGORIES: string[]`
 
 **Class**
+
 - `AICategorizer`
   - `setProvider(provider: AIProvider): void`
   - `initializeExamples(): Promise<void>`
@@ -99,6 +110,7 @@ Public application modules used across the Svelte app. This is an internal API r
   - `learn(description: string, category: string): Promise<void>`
 
 **Singleton**
+
 - `aiCategorizer: AICategorizer`
 
 ## Praxis Integration
@@ -111,9 +123,11 @@ Public application modules used across the Svelte app. This is an internal API r
 ### `src/lib/praxis/logic.ts`
 
 **Types**
+
 - `BudgetAnalysis`
 
 **Class**
+
 - `FinancialLogic`
   - `validateAccount(account: Account): { valid: boolean; errors: string[] }`
   - `validateTransaction(transaction: Transaction): { valid: boolean; errors: string[] }`

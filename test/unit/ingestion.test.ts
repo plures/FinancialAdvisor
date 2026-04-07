@@ -12,7 +12,10 @@ import * as crypto from 'crypto';
 
 import { ImportSessionStore } from '../../packages/ingestion/dist/import-session-store.js';
 import { RawTransactionStore } from '../../packages/ingestion/dist/raw-transaction.js';
-import { CSVImporter, createCommonBankTemplates } from '../../packages/ingestion/dist/csv-importer.js';
+import {
+  CSVImporter,
+  createCommonBankTemplates,
+} from '../../packages/ingestion/dist/csv-importer.js';
 import { OFXImporter } from '../../packages/ingestion/dist/ofx-importer.js';
 import { createAccountIntegrationService } from '../../packages/ingestion/dist/index.js';
 import {
@@ -277,15 +280,15 @@ describe('CSVImporter.validate', () => {
   it('should fail for a file that does not exist', async () => {
     const result = await new CSVImporter().validate('/no/such/file.csv');
     assert.strictEqual(result.valid, false);
-    assert.ok(result.errors.some((e) => /not found/i.test(e)));
+    assert.ok(result.errors.some(e => /not found/i.test(e)));
   });
 
   it('should fail when template is missing required fields', async () => {
     const p = writeTmpFile('bad-tmpl.csv', SIMPLE_CSV);
     const result = await new CSVImporter().validate(p, {
       csvTemplate: {
-        id: '',        // invalid
-        name: '',      // invalid
+        id: '', // invalid
+        name: '', // invalid
         bankName: 'X',
         dateColumn: 0,
         descriptionColumn: 1,
@@ -511,7 +514,7 @@ describe('OFXImporter.import — SGML OFX', () => {
 
     const raws = txStore.findBySession(result.importSessionId!);
     assert.strictEqual(raws.length, 2);
-    const fitids = raws.map((r) => r.sourceId);
+    const fitids = raws.map(r => r.sourceId);
     assert.ok(fitids.includes('TXN001'));
     assert.ok(fitids.includes('TXN002'));
   });
@@ -585,7 +588,7 @@ describe('createCommonBankTemplates', () => {
 
   it('should include Chase and Bank of America templates', () => {
     const templates = createCommonBankTemplates();
-    const ids = templates.map((t) => t.id);
+    const ids = templates.map(t => t.id);
     assert.ok(ids.includes('chase-checking'));
     assert.ok(ids.includes('bofa-checking'));
   });
@@ -918,9 +921,7 @@ describe('OFXImporter — transaction-level deduplication (FITID)', () => {
     assert.strictEqual(hashStore.size, 2);
 
     // Simulate deletion: remove hashes so re-import is allowed
-    const hashes = ['TXN001', 'TXN002'].map(fitid =>
-      computeOFXTransactionHash(fitid, 'acct-del')
-    );
+    const hashes = ['TXN001', 'TXN002'].map(fitid => computeOFXTransactionHash(fitid, 'acct-del'));
     for (const h of hashes) {
       hashStore.remove(h);
     }
@@ -1023,9 +1024,8 @@ describe('DirectoryWatcher — file import via polling', () => {
     const hashStore = new TransactionHashStore();
     const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
 
-    const { AccountIntegrationService } = await import(
-      '../../packages/ledger/dist/account-integration-service.js'
-    );
+    const { AccountIntegrationService } =
+      await import('../../packages/ledger/dist/account-integration-service.js');
     const service = new AccountIntegrationService();
     service.registerImporter(['csv', 'txt'], csvImporter);
 
@@ -1057,9 +1057,8 @@ describe('DirectoryWatcher — file import via polling', () => {
     const hashStore = new TransactionHashStore();
     const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
 
-    const { AccountIntegrationService } = await import(
-      '../../packages/ledger/dist/account-integration-service.js'
-    );
+    const { AccountIntegrationService } =
+      await import('../../packages/ledger/dist/account-integration-service.js');
     const service = new AccountIntegrationService();
     service.registerImporter(['csv', 'txt'], csvImporter);
 
@@ -1092,9 +1091,8 @@ describe('DirectoryWatcher — file import via polling', () => {
     const hashStore = new TransactionHashStore();
     const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
 
-    const { AccountIntegrationService } = await import(
-      '../../packages/ledger/dist/account-integration-service.js'
-    );
+    const { AccountIntegrationService } =
+      await import('../../packages/ledger/dist/account-integration-service.js');
     const service = new AccountIntegrationService();
     service.registerImporter(['csv', 'txt'], csvImporter);
 
@@ -1123,9 +1121,8 @@ describe('DirectoryWatcher — file import via polling', () => {
     const hashStore = new TransactionHashStore();
     const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
 
-    const { AccountIntegrationService } = await import(
-      '../../packages/ledger/dist/account-integration-service.js'
-    );
+    const { AccountIntegrationService } =
+      await import('../../packages/ledger/dist/account-integration-service.js');
     const service = new AccountIntegrationService();
     service.registerImporter(['csv', 'txt'], csvImporter);
 
@@ -1171,9 +1168,8 @@ describe('DirectoryWatcher — archive collision handling', () => {
     const hashStore = new TransactionHashStore();
     const csvImporter = new CSVImporter(sessionStore, txStore, hashStore);
 
-    const { AccountIntegrationService } = await import(
-      '../../packages/ledger/dist/account-integration-service.js'
-    );
+    const { AccountIntegrationService } =
+      await import('../../packages/ledger/dist/account-integration-service.js');
     const service = new AccountIntegrationService();
     service.registerImporter(['csv', 'txt'], csvImporter);
 
@@ -1197,7 +1193,12 @@ describe('DirectoryWatcher — archive collision handling', () => {
 
     // A timestamped copy should also be present
     const archivedFiles = fs.readdirSync(archivedDir);
-    const timestampedEntries = archivedFiles.filter(f => f.startsWith('collision-') && f.endsWith('.csv'));
-    assert.ok(timestampedEntries.length > 0, 'A timestamped archived file should have been created');
+    const timestampedEntries = archivedFiles.filter(
+      f => f.startsWith('collision-') && f.endsWith('.csv')
+    );
+    assert.ok(
+      timestampedEntries.length > 0,
+      'A timestamped archived file should have been created'
+    );
   });
 });

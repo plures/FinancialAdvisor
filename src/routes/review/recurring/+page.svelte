@@ -46,13 +46,12 @@
     other: '❓',
   };
 
-  const typeVariant: Record<RecurringItem['type'], 'accent' | 'success' | 'warning' | 'neutral'> =
-    {
-      subscription: 'accent',
-      bill: 'warning',
-      income: 'success',
-      other: 'neutral',
-    };
+  const typeVariant: Record<RecurringItem['type'], 'accent' | 'success' | 'warning' | 'neutral'> = {
+    subscription: 'accent',
+    bill: 'warning',
+    income: 'success',
+    other: 'neutral',
+  };
 
   const freqLabel: Record<string, string> = {
     monthly: 'Monthly',

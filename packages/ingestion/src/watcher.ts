@@ -79,7 +79,11 @@ export class DirectoryWatcher {
 
     this.fileExtensions =
       config.filePatterns !== undefined
-        ? new Set(config.filePatterns.map(p => (p.startsWith('.') ? p.toLowerCase() : `.${p.toLowerCase()}`)))
+        ? new Set(
+            config.filePatterns.map(p =>
+              p.startsWith('.') ? p.toLowerCase() : `.${p.toLowerCase()}`
+            )
+          )
         : new Set(SUPPORTED_EXTENSIONS);
 
     this.autoArchive = config.autoArchive !== false;
@@ -253,9 +257,7 @@ export class DirectoryWatcher {
         transactionsSkipped: result.transactionsSkipped,
       };
 
-      console.error(
-        `[watcher] ${fileResult.message} — "${path.basename(filePath)}"`
-      );
+      console.error(`[watcher] ${fileResult.message} — "${path.basename(filePath)}"`);
 
       if (this.autoArchive) {
         await this.archiveFile(filePath);
@@ -285,7 +287,9 @@ export class DirectoryWatcher {
 
     try {
       fs.renameSync(filePath, finalDest);
-      console.error(`[watcher] Archived "${path.basename(filePath)}" → "${path.basename(finalDest)}"`);
+      console.error(
+        `[watcher] Archived "${path.basename(filePath)}" → "${path.basename(finalDest)}"`
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[watcher] Failed to archive "${path.basename(filePath)}": ${message}`);

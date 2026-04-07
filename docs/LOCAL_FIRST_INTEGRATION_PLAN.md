@@ -110,7 +110,7 @@ FinancialAdvisor is a local-first, open-source project that empowers users to ow
 ✅ **Works Offline**: No internet needed after download  
 ✅ **Privacy**: Bank never knows about our app  
 ✅ **Free**: Zero API costs  
-✅ **Universal**: Works with ANY bank that exports files  
+✅ **Universal**: Works with ANY bank that exports files
 
 ### Secondary Method: Self-Hosted Open Bank Project (Phase 2)
 
@@ -132,7 +132,7 @@ docker-compose up -d openbankproject
 ✅ **Open Source**: AGPL licensed  
 ✅ **No Fees**: Free forever  
 ✅ **Privacy**: Data never leaves user's infrastructure  
-✅ **Automated**: Daily sync without manual file downloads  
+✅ **Automated**: Daily sync without manual file downloads
 
 ### Optional Method: Plaid Bridge (Phase 3, User-Controlled)
 
@@ -174,18 +174,21 @@ docker-compose up -d openbankproject
 Use existing open-source libraries:
 
 **Option 1: ofxtools (Python)**
+
 ```python
 # Python library for OFX parsing
 pip install ofxtools
 ```
 
 **Option 2: node-ofx-parser (Node.js)**
+
 ```javascript
 // JavaScript library for OFX parsing
 npm install ofx-parser
 ```
 
 **Option 3: Build Our Own (TypeScript)**
+
 - Full control over parsing
 - TypeScript native
 - Optimize for our use case
@@ -193,6 +196,7 @@ npm install ofx-parser
 ### CSV Import Engine
 
 **Flexible Mapping System**:
+
 ```typescript
 interface CSVTemplate {
   name: string; // "Chase Checking", "Bank of America"
@@ -208,15 +212,16 @@ interface CSVTemplate {
 ### File Watcher
 
 Use `chokidar` (proven, lightweight):
+
 ```typescript
 import chokidar from 'chokidar';
 
 const watcher = chokidar.watch('~/Downloads/BankStatements', {
   ignored: /(^|[\/\\])\../, // ignore dotfiles
-  persistent: true
+  persistent: true,
 });
 
-watcher.on('add', async (path) => {
+watcher.on('add', async path => {
   if (isFinancialFile(path)) {
     await importFile(path);
   }
@@ -226,6 +231,7 @@ watcher.on('add', async (path) => {
 ### Open Bank Project
 
 **Self-Hosted Option**:
+
 ```yaml
 # docker-compose.yml
 version: '3'
@@ -233,7 +239,7 @@ services:
   obp:
     image: openbankproject/obp-full
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
       - DATABASE_URL=postgresql://user:pass@db:5432/obp
     volumes:
@@ -245,6 +251,7 @@ services:
 ### Phase 1: File-Based Import (2-3 weeks) ✅ PRIMARY
 
 **Week 1: OFX/QFX Import**
+
 - [x] Research OFX format specification
 - [ ] Implement OFX parser (or integrate library)
 - [ ] Create OFX transaction mapper
@@ -252,6 +259,7 @@ services:
 - [ ] Test with sample OFX files from major banks
 
 **Week 2: CSV Import with Templates**
+
 - [ ] Build flexible CSV parser
 - [ ] Create template system for bank-specific formats
 - [ ] Add template management UI
@@ -259,6 +267,7 @@ services:
 - [ ] Test with real CSV exports
 
 **Week 3: Auto-Import & Polish**
+
 - [ ] Implement directory watcher
 - [ ] Add transaction deduplication
 - [ ] Create import history tracking
@@ -266,6 +275,7 @@ services:
 - [ ] User testing and refinement
 
 **Deliverables**:
+
 - Users can import OFX/QFX/CSV files
 - Auto-import from watched folder
 - Template system for CSV formats
@@ -274,18 +284,21 @@ services:
 ### Phase 2: Enhanced Features (2-3 weeks)
 
 **Week 1: Transaction Intelligence**
+
 - [ ] Smart categorization from file metadata
 - [ ] Duplicate detection across imports
 - [ ] Balance reconciliation
 - [ ] Import conflict resolution
 
 **Week 2: PluresDB Integration**
+
 - [ ] Encrypted transaction storage
 - [ ] Vector embeddings for AI categorization
 - [ ] Transaction search and filtering
 - [ ] Historical data analytics
 
 **Week 3: UI/UX Polish**
+
 - [ ] Import wizard for first-time users
 - [ ] Drag-and-drop file import
 - [ ] Import status notifications
@@ -326,14 +339,14 @@ interface ImportSource {
     watchFolder?: string;
     autoImport?: boolean;
     archiveAfterImport?: boolean;
-    
+
     // For CSV
     template?: CSVTemplate;
-    
+
     // For OBP
     obpUrl?: string;
     obpAccountId?: string;
-    
+
     // For Plaid (optional)
     plaidItemId?: string;
     plaidAccessToken?: string; // Encrypted, with warning
@@ -521,7 +534,7 @@ describe('File Import Flow', () => {
 **Infrastructure**: FREE (runs locally)  
 **API Costs**: $0/month (no APIs)  
 **User Cost**: FREE (open source)  
-**Maintenance**: Minimal (mature OFX standard)  
+**Maintenance**: Minimal (mature OFX standard)
 
 **At 10,000 users**: Still $0/month
 
@@ -537,7 +550,7 @@ describe('File Import Flow', () => {
 **Only if user enables** (~5% of users might choose this)
 
 **At 500 Plaid users**: ~$150-300/month  
-**At 2,000 Plaid users**: ~$600-1,200/month  
+**At 2,000 Plaid users**: ~$600-1,200/month
 
 **Mitigation**: Encourage file-based or OBP alternatives
 
@@ -545,24 +558,24 @@ describe('File Import Flow', () => {
 
 ### vs. Plaid-First Approach
 
-| Aspect | File-Based (Ours) | Plaid-First |
-|--------|-------------------|-------------|
-| Privacy | ✅ Maximum | ❌ Third-party access |
-| Cost | ✅ $0 | ❌ $0.30-0.60/account |
-| User Control | ✅ Complete | ❌ Plaid has data |
-| Bank Coverage | ✅ ANY bank | ⚠️ 12,000+ |
-| Setup | ⚠️ Manual download | ✅ 3-click |
-| Automation | ⚠️ Requires OBP | ✅ Automatic |
+| Aspect        | File-Based (Ours)  | Plaid-First           |
+| ------------- | ------------------ | --------------------- |
+| Privacy       | ✅ Maximum         | ❌ Third-party access |
+| Cost          | ✅ $0              | ❌ $0.30-0.60/account |
+| User Control  | ✅ Complete        | ❌ Plaid has data     |
+| Bank Coverage | ✅ ANY bank        | ⚠️ 12,000+            |
+| Setup         | ⚠️ Manual download | ✅ 3-click            |
+| Automation    | ⚠️ Requires OBP    | ✅ Automatic          |
 
 ### vs. Quicken/Mint
 
-| Aspect | FinancialAdvisor | Quicken/Mint |
-|--------|-----------------|--------------|
-| Data Ownership | ✅ User owns | ❌ Company owns |
-| Privacy | ✅ Local-first | ❌ Cloud-based |
-| Cost | ✅ Free | ❌ $50-100/year |
-| Open Source | ✅ Yes | ❌ No |
-| Self-Hosted | ✅ Yes | ❌ No |
+| Aspect         | FinancialAdvisor | Quicken/Mint    |
+| -------------- | ---------------- | --------------- |
+| Data Ownership | ✅ User owns     | ❌ Company owns |
+| Privacy        | ✅ Local-first   | ❌ Cloud-based  |
+| Cost           | ✅ Free          | ❌ $50-100/year |
+| Open Source    | ✅ Yes           | ❌ No           |
+| Self-Hosted    | ✅ Yes           | ❌ No           |
 
 ## Success Metrics
 
@@ -601,6 +614,7 @@ Our users are global. We must support them wherever they are, with whatever fina
 #### Institution Directory Feature
 
 **Workflow**:
+
 1. Research and compile global list of OBP-participating institutions
 2. Create searchable directory within FinancialAdvisor app
 3. Filter by country, region, services offered
@@ -608,6 +622,7 @@ Our users are global. We must support them wherever they are, with whatever fina
 5. Highlight benefits: API access, data portability, lower fees
 
 **Implementation**:
+
 ```typescript
 interface OBPInstitution {
   id: string;
@@ -637,15 +652,13 @@ class OBPInstitutionDirectory {
     services?: string[];
     features?: string[];
   }): Promise<OBPInstitution[]>;
-  
-  async suggestAlternatives(
-    currentBank: string,
-    userLocation: string
-  ): Promise<OBPInstitution[]>;
+
+  async suggestAlternatives(currentBank: string, userLocation: string): Promise<OBPInstitution[]>;
 }
 ```
 
 **UI Features**:
+
 - "Find OBP Banks Near You" search
 - "Compare Your Bank" feature showing OBP alternatives
 - User reviews and ratings
@@ -666,6 +679,7 @@ class OBPInstitutionDirectory {
 #### 1. OBP Advocacy & Education
 
 **Actions**:
+
 - **Documentation**: Create guides for banks to join OBP
 - **Case Studies**: Show benefits of OBP adoption
 - **Developer Resources**: APIs, SDKs, integration examples
@@ -676,6 +690,7 @@ class OBPInstitutionDirectory {
 #### 2. Community Connector Development
 
 **Actions**:
+
 - **Connector Templates**: Starter kits for new bank integrations
 - **Community Repository**: GitHub repo for community connectors
 - **Bounty Program**: Rewards for verified connectors
@@ -689,18 +704,21 @@ class OBPInstitutionDirectory {
 **Strategies**:
 
 **A. Grassroots Movement**
+
 - Partner with credit unions (more innovative than big banks)
 - Target fintech-friendly states (Wyoming, Delaware)
 - Build coalition with consumer rights groups
 - Lobby for Open Banking legislation
 
 **B. Community Banking Initiative**
+
 - Work with community banks and credit unions
 - Provide free OBP integration support
 - Create "OBP-Ready" certification program
 - Showcase early adopters as innovation leaders
 
 **C. Regulatory Engagement**
+
 - Engage with CFPB (Consumer Financial Protection Bureau)
 - Support Section 1033 implementation (Dodd-Frank)
 - Comment on proposed Open Banking rules
@@ -715,12 +733,14 @@ class OBPInstitutionDirectory {
 **Model**: Become a trusted broker connecting users to OBP institutions.
 
 **Services**:
+
 - **Account Opening**: Streamlined process for multiple OBP banks
 - **Rate Shopping**: Compare rates across OBP institutions
 - **Portfolio Management**: Multi-institution account management
 - **Switching Service**: Help users migrate from traditional banks
 
 **Revenue Model** (sustainable, user-aligned):
+
 - Referral fees from OBP institutions (disclosed to users)
 - Premium features (advanced analytics, AI insights)
 - Enterprise tier for businesses
@@ -731,6 +751,7 @@ class OBPInstitutionDirectory {
 **Model**: Charter a digital bank/credit union with OBP at its core.
 
 **Vision**:
+
 - **Fully OBP-Compatible**: API-first from day one
 - **User-Owned**: Cooperative or public benefit corporation structure
 - **Zero Data Exploitation**: Business model based on services, not data
@@ -738,6 +759,7 @@ class OBPInstitutionDirectory {
 - **Crypto-Friendly**: Bridge traditional and cryptocurrency banking
 
 **Requirements**:
+
 - Banking charter (federal or state)
 - Regulatory compliance (FDIC, OCC, NCUA)
 - Significant capital investment
@@ -751,6 +773,7 @@ class OBPInstitutionDirectory {
 **Model**: Leverage crypto to provide banking services where traditional banking is limited.
 
 **Services**:
+
 - **Crypto-to-Fiat Gateway**: Local currency on/off ramps
 - **Stablecoin Accounts**: USD-pegged accounts via stablecoins
 - **Cross-Border Transfers**: Crypto for low-cost international transfers
@@ -758,18 +781,21 @@ class OBPInstitutionDirectory {
 - **Self-Custody Support**: Users control their crypto keys
 
 **Markets**:
+
 - Underbanked populations
 - High-remittance corridors
 - Countries with unstable currencies
 - Users avoiding traditional banking fees
 
 **Technology Stack**:
+
 - Lightning Network for Bitcoin transactions
 - Ethereum/Polygon for stablecoins
 - DEX aggregators for best rates
 - Self-custody wallets integrated in app
 
 **Regulatory Considerations**:
+
 - MSB (Money Service Business) license
 - State-by-state money transmitter licenses
 - KYC/AML compliance
@@ -782,6 +808,7 @@ class OBPInstitutionDirectory {
 #### Revenue Streams (User-Aligned)
 
 **1. Freemium Model**
+
 - **Free Tier**: Full local-first functionality, file imports, basic AI
 - **Premium Tier** ($5-10/month):
   - Advanced AI features (GPT-4, Claude)
@@ -791,6 +818,7 @@ class OBPInstitutionDirectory {
   - Unlimited transaction history
 
 **2. Enterprise/Business Tier** ($50-200/month)
+
 - Team collaboration features
 - Advanced reporting and compliance
 - API access for integrations
@@ -798,22 +826,26 @@ class OBPInstitutionDirectory {
 - White-label options
 
 **3. OBP Institution Referrals**
+
 - Referral fees from OBP banks (fully disclosed)
 - User gets better banking, we get sustainable revenue
 - Never hidden, always transparent
 
 **4. Crypto Services** (if implemented)
+
 - Small transaction fees for crypto services (disclosed)
 - Competitive with or better than alternatives
 - Optional - users can use external crypto services
 
 **5. Professional Services**
+
 - Consulting for institutions wanting to adopt OBP
 - Connector development services
 - Custom integration work
 - Training and education
 
 **6. Community Funding**
+
 - GitHub Sponsors
 - Patreon
 - Grants from open-source foundations
@@ -826,21 +858,24 @@ class OBPInstitutionDirectory {
 ✅ **Optional**: Users can use free tier forever  
 ✅ **Fair Value**: Premium features worth the price  
 ✅ **Open Source**: Core remains open source regardless of revenue  
-✅ **No Data Sales**: Never, ever sell or monetize user data  
+✅ **No Data Sales**: Never, ever sell or monetize user data
 
 ### Implementation Priority
 
 **Immediate** (Next 6 months):
+
 1. ✅ Phase 5: OBP Institution Directory
 2. ✅ Phase 6: Connector development support
 3. ✅ Premium tier (funding for development)
 
 **Medium-term** (6-18 months):
+
 1. ⏳ Grassroots OBP advocacy in US
 2. ⏳ Partner with 2-3 credit unions
 3. ⏳ Crypto bridge services (if market demand)
 
 **Long-term** (18+ months):
+
 1. 🔮 Evaluate becoming OBP broker
 2. 🔮 Consider banking charter (if resources align)
 3. 🔮 Expand internationally

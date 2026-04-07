@@ -1,6 +1,7 @@
 # Copilot Instructions
 
 ## Handling Complex Queries
+
 When dealing with complex requests, you should follow a multi-step approach.
 Some steps might be sequential, while others can be performed in parallel. You should use your judgment to determine the most effective way to handle each query.
 

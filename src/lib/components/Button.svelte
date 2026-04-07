@@ -8,8 +8,13 @@
     children: Snippet;
   }
 
-  const { variant = 'primary', size = 'md', children, class: className = '', ...restProps }: Props =
-    $props();
+  const {
+    variant = 'primary',
+    size = 'md',
+    children,
+    class: className = '',
+    ...restProps
+  }: Props = $props();
 </script>
 
 <button class="dojo-btn dojo-btn--{variant} dojo-btn--{size} {className}" {...restProps}>

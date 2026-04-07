@@ -49,14 +49,14 @@ Describe the tests you ran and how to reproduce them:
 Which areas of financial functionality does this affect?
 
 - [ ] Budget Management
-- [ ] Investment Planning  
+- [ ] Investment Planning
 - [ ] Expense Tracking
 - [ ] Financial Goals
 - [ ] Market Analysis
 - [ ] Risk Assessment
 - [ ] MCP Server Integration
 - [ ] VSCode Extension UI
-- [ ] Other: ___________
+- [ ] Other: ****\_\_\_****
 
 ## Screenshots (if applicable)
 

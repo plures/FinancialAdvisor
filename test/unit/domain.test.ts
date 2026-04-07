@@ -128,7 +128,10 @@ describe('Money', () => {
     });
 
     it('should throw on currency mismatch', () => {
-      assert.throws(() => subtractMoney(createMoney(100, 'USD'), createMoney(50, 'GBP')), /Currency mismatch/);
+      assert.throws(
+        () => subtractMoney(createMoney(100, 'USD'), createMoney(50, 'GBP')),
+        /Currency mismatch/
+      );
     });
   });
 
@@ -179,7 +182,10 @@ describe('Money', () => {
     });
 
     it('should throw on currency mismatch', () => {
-      assert.throws(() => compareMoney(createMoney(100, 'USD'), createMoney(100, 'EUR')), /Currency mismatch/);
+      assert.throws(
+        () => compareMoney(createMoney(100, 'USD'), createMoney(100, 'EUR')),
+        /Currency mismatch/
+      );
     });
   });
 
@@ -321,7 +327,10 @@ describe('Temporal types', () => {
 describe('MerchantEntity', () => {
   describe('createMerchantEntity', () => {
     it('should create a valid MerchantEntity', () => {
-      const m = createMerchantEntity('m1', 'Starbucks Coffee', 'Food & Dining', ['STARBUCKS', 'Starbucks']);
+      const m = createMerchantEntity('m1', 'Starbucks Coffee', 'Food & Dining', [
+        'STARBUCKS',
+        'Starbucks',
+      ]);
       assert.strictEqual(m.id, 'm1');
       assert.strictEqual(m.name, 'Starbucks Coffee');
       assert.strictEqual(m.category, 'Food & Dining');
@@ -382,11 +391,17 @@ describe('ImportSession', () => {
     });
 
     it('should throw for negative rowCount', () => {
-      assert.throws(() => createImportSession('s1', 'abc', 'acct-1', new Date(), -1), /non-negative integer/);
+      assert.throws(
+        () => createImportSession('s1', 'abc', 'acct-1', new Date(), -1),
+        /non-negative integer/
+      );
     });
 
     it('should throw when errorCount exceeds rowCount', () => {
-      assert.throws(() => createImportSession('s1', 'abc', 'acct-1', new Date(), 5, 10), /cannot exceed rowCount/);
+      assert.throws(
+        () => createImportSession('s1', 'abc', 'acct-1', new Date(), 5, 10),
+        /cannot exceed rowCount/
+      );
     });
 
     it('should produce a frozen object', () => {
@@ -417,11 +432,17 @@ describe('Posting', () => {
     });
 
     it('should throw when debitAccountId is empty', () => {
-      assert.throws(() => createPosting('', 'credit-acct', amount), /debitAccountId must not be empty/);
+      assert.throws(
+        () => createPosting('', 'credit-acct', amount),
+        /debitAccountId must not be empty/
+      );
     });
 
     it('should throw when creditAccountId is empty', () => {
-      assert.throws(() => createPosting('debit-acct', '', amount), /creditAccountId must not be empty/);
+      assert.throws(
+        () => createPosting('debit-acct', '', amount),
+        /creditAccountId must not be empty/
+      );
     });
 
     it('should throw when debit and credit are the same account (self-posting)', () => {
@@ -741,7 +762,9 @@ describe('deepClone', () => {
 describe('debounce', () => {
   it('delays function execution', done => {
     let callCount = 0;
-    const fn = debounce(() => { callCount++; }, 20);
+    const fn = debounce(() => {
+      callCount++;
+    }, 20);
     fn();
     fn();
     fn();
@@ -756,14 +779,18 @@ describe('debounce', () => {
 describe('throttle', () => {
   it('calls the function immediately on first call', () => {
     let callCount = 0;
-    const fn = throttle(() => { callCount++; }, 50);
+    const fn = throttle(() => {
+      callCount++;
+    }, 50);
     fn();
     assert.strictEqual(callCount, 1);
   });
 
   it('throttles subsequent calls within the delay window', () => {
     let callCount = 0;
-    const fn = throttle(() => { callCount++; }, 100);
+    const fn = throttle(() => {
+      callCount++;
+    }, 100);
     fn();
     fn();
     fn();
@@ -820,7 +847,16 @@ describe('AccountType', () => {
   });
 
   it('should include all expected types', () => {
-    const expected = ['checking', 'savings', 'credit', 'credit_card', 'investment', 'loan', 'mortgage', 'retirement'];
+    const expected = [
+      'checking',
+      'savings',
+      'credit',
+      'credit_card',
+      'investment',
+      'loan',
+      'mortgage',
+      'retirement',
+    ];
     for (const type of expected) {
       assert.ok(
         Object.values(AccountType).includes(type as AccountType),

@@ -9,7 +9,12 @@
  * advice engine.
  */
 
-import type { RecurringItem, SubscriptionItem, CategoryVariance, DebtAccount } from '@financialadvisor/analytics';
+import type {
+  RecurringItem,
+  SubscriptionItem,
+  CategoryVariance,
+  DebtAccount,
+} from '@financialadvisor/analytics';
 
 import type {
   RecurringCommitmentSnapshot,
@@ -98,9 +103,7 @@ export function categoryVariancesToSpendSnapshots(
  * Convert analytics {@link DebtAccount} objects to advice
  * {@link DebtSnapshot} objects.
  */
-export function debtAccountsToSnapshots(
-  debts: readonly DebtAccount[]
-): DebtSnapshot[] {
+export function debtAccountsToSnapshots(debts: readonly DebtAccount[]): DebtSnapshot[] {
   return debts.map(d => ({
     name: d.name,
     balanceCents: d.balance.cents,
@@ -192,12 +195,9 @@ export function buildFinancialStateSnapshot(
         : [];
 
   const categorySpend: CategorySpendSnapshot[] =
-    categoryVariances !== undefined
-      ? categoryVariancesToSpendSnapshots(categoryVariances)
-      : [];
+    categoryVariances !== undefined ? categoryVariancesToSpendSnapshots(categoryVariances) : [];
 
-  const debtSnapshots: DebtSnapshot[] =
-    debts !== undefined ? debtAccountsToSnapshots(debts) : [];
+  const debtSnapshots: DebtSnapshot[] = debts !== undefined ? debtAccountsToSnapshots(debts) : [];
 
   return {
     liquidBalanceCents,

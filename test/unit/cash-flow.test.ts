@@ -19,10 +19,7 @@
 import { describe, it } from 'mocha';
 import * as assert from 'assert';
 
-import {
-  computeCashFlow,
-  projectCashFlow,
-} from '../../packages/analytics/dist/cash-flow.js';
+import { computeCashFlow, projectCashFlow } from '../../packages/analytics/dist/cash-flow.js';
 import { createMoney, moneyFromDecimal } from '../../packages/domain/dist/money.js';
 import { createDateRange } from '../../packages/domain/dist/temporal.js';
 import { TransactionType } from '../../packages/domain/dist/types.js';
@@ -90,21 +87,21 @@ describe('computeCashFlow', () => {
 
   it('correctly sums inflows and outflows for a single month', () => {
     const txns = [
-      makeTxn({ amountCents:  500000, date: makeDate(2024, 1, 5) }),   // $5 000 income
-      makeTxn({ amountCents: -150000, date: makeDate(2024, 1, 10) }),  // $1 500 expense
-      makeTxn({ amountCents: -50000,  date: makeDate(2024, 1, 20) }),  // $500  expense
+      makeTxn({ amountCents: 500000, date: makeDate(2024, 1, 5) }), // $5 000 income
+      makeTxn({ amountCents: -150000, date: makeDate(2024, 1, 10) }), // $1 500 expense
+      makeTxn({ amountCents: -50000, date: makeDate(2024, 1, 20) }), // $500  expense
     ];
 
     const result = computeCashFlow(txns, { period: jan });
 
-    assert.strictEqual(result.totalInflows.cents,  500000);
+    assert.strictEqual(result.totalInflows.cents, 500000);
     assert.strictEqual(result.totalOutflows.cents, 200000);
-    assert.strictEqual(result.net.cents,           300000);  // $3 000 positive
+    assert.strictEqual(result.net.cents, 300000); // $3 000 positive
   });
 
   it('net is positive when inflows exceed outflows', () => {
     const txns = [
-      makeTxn({ amountCents:  300000, date: makeDate(2024, 1, 5) }),
+      makeTxn({ amountCents: 300000, date: makeDate(2024, 1, 5) }),
       makeTxn({ amountCents: -100000, date: makeDate(2024, 1, 15) }),
     ];
 
@@ -115,7 +112,7 @@ describe('computeCashFlow', () => {
 
   it('net is negative when outflows exceed inflows', () => {
     const txns = [
-      makeTxn({ amountCents:  50000,  date: makeDate(2024, 1, 5) }),
+      makeTxn({ amountCents: 50000, date: makeDate(2024, 1, 5) }),
       makeTxn({ amountCents: -200000, date: makeDate(2024, 1, 15) }),
     ];
 
@@ -126,49 +123,53 @@ describe('computeCashFlow', () => {
 
   it('splits recurring vs discretionary outflows correctly', () => {
     const txns = [
-      makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 5),  isRecurring: true  }), // recurring
-      makeTxn({ amountCents: -5000,  date: makeDate(2024, 1, 10), isRecurring: false }), // discretionary
-      makeTxn({ amountCents: -3000,  date: makeDate(2024, 1, 15) }),                      // no flag → discretionary
+      makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 5), isRecurring: true }), // recurring
+      makeTxn({ amountCents: -5000, date: makeDate(2024, 1, 10), isRecurring: false }), // discretionary
+      makeTxn({ amountCents: -3000, date: makeDate(2024, 1, 15) }), // no flag → discretionary
     ];
 
     const result = computeCashFlow(txns, { period: jan });
 
-    assert.strictEqual(result.recurringOutflows.cents,       10000);
-    assert.strictEqual(result.discretionaryOutflows.cents,    8000);
-    assert.strictEqual(result.totalOutflows.cents,           18000);
+    assert.strictEqual(result.recurringOutflows.cents, 10000);
+    assert.strictEqual(result.discretionaryOutflows.cents, 8000);
+    assert.strictEqual(result.totalOutflows.cents, 18000);
   });
 
   it('splits recurring vs irregular inflows correctly', () => {
     const txns = [
-      makeTxn({ amountCents:  200000, date: makeDate(2024, 1, 1), isRecurring: true  }), // salary
-      makeTxn({ amountCents:   50000, date: makeDate(2024, 1, 15), isRecurring: false }), // bonus
+      makeTxn({ amountCents: 200000, date: makeDate(2024, 1, 1), isRecurring: true }), // salary
+      makeTxn({ amountCents: 50000, date: makeDate(2024, 1, 15), isRecurring: false }), // bonus
     ];
 
     const result = computeCashFlow(txns, { period: jan });
 
-    assert.strictEqual(result.recurringInflows.cents,   200000);
-    assert.strictEqual(result.irregularInflows.cents,    50000);
-    assert.strictEqual(result.totalInflows.cents,       250000);
+    assert.strictEqual(result.recurringInflows.cents, 200000);
+    assert.strictEqual(result.irregularInflows.cents, 50000);
+    assert.strictEqual(result.totalInflows.cents, 250000);
   });
 
   it('excludes TRANSFER transactions from totals', () => {
     const txns = [
-      makeTxn({ amountCents:  100000, date: makeDate(2024, 1, 5) }),                             // income
-      makeTxn({ amountCents: -100000, date: makeDate(2024, 1, 10), type: TransactionType.TRANSFER }), // transfer — excluded
+      makeTxn({ amountCents: 100000, date: makeDate(2024, 1, 5) }), // income
+      makeTxn({
+        amountCents: -100000,
+        date: makeDate(2024, 1, 10),
+        type: TransactionType.TRANSFER,
+      }), // transfer — excluded
     ];
 
     const result = computeCashFlow(txns, { period: jan });
 
-    assert.strictEqual(result.totalInflows.cents,  100000);
-    assert.strictEqual(result.totalOutflows.cents,       0);
-    assert.strictEqual(result.net.cents,           100000);
+    assert.strictEqual(result.totalInflows.cents, 100000);
+    assert.strictEqual(result.totalOutflows.cents, 0);
+    assert.strictEqual(result.net.cents, 100000);
   });
 
   it('excludes transactions outside the date range', () => {
     const txns = [
-      makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 15) }),  // in range
+      makeTxn({ amountCents: -10000, date: makeDate(2024, 1, 15) }), // in range
       makeTxn({ amountCents: -20000, date: makeDate(2023, 12, 31) }), // before range
-      makeTxn({ amountCents: -30000, date: makeDate(2024, 2, 1) }),   // after range
+      makeTxn({ amountCents: -30000, date: makeDate(2024, 2, 1) }), // after range
     ];
 
     const result = computeCashFlow(txns, { period: jan });
@@ -218,8 +219,8 @@ describe('computeCashFlow', () => {
     const q1 = createDateRange(makeDate(2024, 1, 1), makeDate(2024, 3, 31));
     const startingBalance = createMoney(100000, 'USD'); // $1 000 opening balance
     const txns = [
-      makeTxn({ amountCents:  50000, date: makeDate(2024, 1, 15) }), // Jan +$500
-      makeTxn({ amountCents:  50000, date: makeDate(2024, 2, 15) }), // Feb +$500
+      makeTxn({ amountCents: 50000, date: makeDate(2024, 1, 15) }), // Jan +$500
+      makeTxn({ amountCents: 50000, date: makeDate(2024, 2, 15) }), // Feb +$500
       makeTxn({ amountCents: -20000, date: makeDate(2024, 3, 15) }), // Mar -$200
     ];
 
@@ -243,7 +244,11 @@ describe('computeCashFlow', () => {
 
     const result = computeCashFlow(txns, { period: range, periodUnit: 'day' });
 
-    assert.strictEqual(result.buckets.length, 2, 'should produce one bucket per day with transactions');
+    assert.strictEqual(
+      result.buckets.length,
+      2,
+      'should produce one bucket per day with transactions'
+    );
     assert.strictEqual(result.buckets[0]?.periodStart, '2024-01-01');
     assert.strictEqual(result.buckets[1]?.periodStart, '2024-01-02');
   });
@@ -267,15 +272,15 @@ describe('projectCashFlow', () => {
     const currentBalance = createMoney(100000, 'USD'); // $1 000
     const result = projectCashFlow({
       currentBalance,
-      recurringInflows:  [makeRecurringItem(300000, 'Salary')],  // $3 000/month
-      recurringOutflows: [makeRecurringItem(100000, 'Bills')],   // $1 000/month
+      recurringInflows: [makeRecurringItem(300000, 'Salary')], // $3 000/month
+      recurringOutflows: [makeRecurringItem(100000, 'Bills')], // $1 000/month
       projectionMonths: 3,
     });
 
     const finalBalance = result.finalProjectedBalance;
     assert.ok(
       finalBalance.cents > currentBalance.cents,
-      'balance should grow with positive monthly net',
+      'balance should grow with positive monthly net'
     );
     // Net per month = $2 000 × 3 = $6 000 → final = $7 000
     assert.strictEqual(finalBalance.cents, 100000 + 3 * (300000 - 100000));
@@ -285,14 +290,14 @@ describe('projectCashFlow', () => {
     const currentBalance = createMoney(500000, 'USD'); // $5 000
     const result = projectCashFlow({
       currentBalance,
-      recurringInflows:  [makeRecurringItem(100000, 'Part-time')], // $1 000/month
-      recurringOutflows: [makeRecurringItem(300000, 'Rent')],      // $3 000/month
+      recurringInflows: [makeRecurringItem(100000, 'Part-time')], // $1 000/month
+      recurringOutflows: [makeRecurringItem(300000, 'Rent')], // $3 000/month
       projectionMonths: 2,
     });
 
     assert.ok(
       result.finalProjectedBalance.cents < currentBalance.cents,
-      'balance should decrease with negative monthly net',
+      'balance should decrease with negative monthly net'
     );
   });
 
@@ -340,7 +345,7 @@ describe('projectCashFlow', () => {
   it('net per bucket equals expectedInflows minus expectedOutflows', () => {
     const result = projectCashFlow({
       currentBalance: createMoney(0, 'USD'),
-      recurringInflows:  [makeRecurringItem(250000, 'Salary')],
+      recurringInflows: [makeRecurringItem(250000, 'Salary')],
       recurringOutflows: [makeRecurringItem(150000, 'Rent')],
       projectionMonths: 1,
       startDate: makeDate(2024, 6, 1),
@@ -350,7 +355,7 @@ describe('projectCashFlow', () => {
     assert.ok(bucket !== undefined);
     assert.strictEqual(
       bucket.net.cents,
-      bucket.expectedInflows.cents - bucket.expectedOutflows.cents,
+      bucket.expectedInflows.cents - bucket.expectedOutflows.cents
     );
   });
 
@@ -363,7 +368,7 @@ describe('projectCashFlow', () => {
           recurringOutflows: [],
           projectionMonths: 0,
         }),
-      /projectionMonths must be positive/,
+      /projectionMonths must be positive/
     );
 
     assert.throws(
@@ -374,7 +379,7 @@ describe('projectCashFlow', () => {
           recurringOutflows: [],
           projectionMonths: -1,
         }),
-      /projectionMonths must be positive/,
+      /projectionMonths must be positive/
     );
   });
 
@@ -382,12 +387,12 @@ describe('projectCashFlow', () => {
     const result = projectCashFlow({
       currentBalance: createMoney(0, 'USD'),
       recurringInflows: [
-        makeRecurringItem(200000, 'Salary'),      // $2 000
-        makeRecurringItem(50000,  'Freelance'),   // $500
+        makeRecurringItem(200000, 'Salary'), // $2 000
+        makeRecurringItem(50000, 'Freelance'), // $500
       ],
       recurringOutflows: [
-        makeRecurringItem(100000, 'Rent'),        // $1 000
-        makeRecurringItem(30000,  'Subscriptions'), // $300
+        makeRecurringItem(100000, 'Rent'), // $1 000
+        makeRecurringItem(30000, 'Subscriptions'), // $300
       ],
       projectionMonths: 1,
       startDate: makeDate(2024, 1, 1),
@@ -395,8 +400,8 @@ describe('projectCashFlow', () => {
 
     const bucket = result.buckets[0];
     assert.ok(bucket !== undefined);
-    assert.strictEqual(bucket.expectedInflows.cents,  250000); // $2 500
+    assert.strictEqual(bucket.expectedInflows.cents, 250000); // $2 500
     assert.strictEqual(bucket.expectedOutflows.cents, 130000); // $1 300
-    assert.strictEqual(bucket.net.cents,              120000); // $1 200
+    assert.strictEqual(bucket.net.cents, 120000); // $1 200
   });
 });

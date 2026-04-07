@@ -5,7 +5,12 @@
  * All text is generated deterministically from the supplied data.
  */
 
-import type { FinancialSummary, FinancialStateSnapshot, Recommendation, SummaryProvider } from './types.js';
+import type {
+  FinancialSummary,
+  FinancialStateSnapshot,
+  Recommendation,
+  SummaryProvider,
+} from './types.js';
 
 // ---------------------------------------------------------------------------
 // Factory
@@ -30,9 +35,7 @@ import type { FinancialSummary, FinancialStateSnapshot, Recommendation, SummaryP
  * const summary = await summarizeWithProvider(state, recs, provider);
  * ```
  */
-export function createSummaryProvider(
-  fn: (prompt: string) => Promise<string>
-): SummaryProvider {
+export function createSummaryProvider(fn: (prompt: string) => Promise<string>): SummaryProvider {
   return { summarize: fn };
 }
 
@@ -198,7 +201,9 @@ function _buildLLMPrompt(
   if (recommendations.length > 0) {
     lines.push('', 'Recommendations:');
     for (const rec of recommendations) {
-      lines.push(`  - ${rec.title}: Save $${_fmt(rec.monthlySavings.cents)}/month (${rec.confidence} confidence)`);
+      lines.push(
+        `  - ${rec.title}: Save $${_fmt(rec.monthlySavings.cents)}/month (${rec.confidence} confidence)`
+      );
     }
   }
 
@@ -209,10 +214,7 @@ function _buildLLMPrompt(
  * Parse the LLM response into a FinancialSummary.
  * Falls back to the template summary if parsing fails.
  */
-function _parseLLMResponse(
-  response: string,
-  fallback: FinancialSummary
-): FinancialSummary {
+function _parseLLMResponse(response: string, fallback: FinancialSummary): FinancialSummary {
   try {
     // Try to extract JSON from the response
     const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -234,7 +236,8 @@ function _parseLLMResponse(
 
       const headline = typeof obj['headline'] === 'string' ? obj['headline'] : fallback.headline;
       const overview = typeof obj['overview'] === 'string' ? obj['overview'] : fallback.overview;
-      const topAction = typeof obj['topAction'] === 'string' ? obj['topAction'] : fallback.topAction;
+      const topAction =
+        typeof obj['topAction'] === 'string' ? obj['topAction'] : fallback.topAction;
 
       let highlights: readonly string[];
       if (Array.isArray(obj['highlights']) && obj['highlights'].every(h => typeof h === 'string')) {

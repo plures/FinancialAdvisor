@@ -85,16 +85,16 @@ export const resolutionConfidenceExpectation: Expectation<ResolutionConfidenceDa
     if (averageConfidence < minAverageConfidence) {
       violations.push(
         `Average categorization confidence ${(averageConfidence * 100).toFixed(1)}% ` +
-        `is below the required minimum of ${(minAverageConfidence * 100).toFixed(1)}%.`
+          `is below the required minimum of ${(minAverageConfidence * 100).toFixed(1)}%.`
       );
     }
 
     if (lowConfidenceFraction > maxLowConfidenceFraction) {
       violations.push(
         `${(lowConfidenceFraction * 100).toFixed(1)}% of transactions have confidence ` +
-        `below ${(minConfidencePerItem * 100).toFixed(1)}% ` +
-        `(limit: ${(maxLowConfidenceFraction * 100).toFixed(1)}%). ` +
-        `${lowConfidenceCount} of ${categorizedTransactions.length} transactions affected.`
+          `below ${(minConfidencePerItem * 100).toFixed(1)}% ` +
+          `(limit: ${(maxLowConfidenceFraction * 100).toFixed(1)}%). ` +
+          `${lowConfidenceCount} of ${categorizedTransactions.length} transactions affected.`
       );
     }
 

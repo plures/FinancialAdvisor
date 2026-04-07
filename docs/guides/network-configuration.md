@@ -21,6 +21,7 @@ The most critical external service for this project is the OpenAI API, which is 
 **Domain:** `api.openai.com`  
 **Port:** 443 (HTTPS)  
 **Required for:**
+
 - Integration tests in `packages/ai-integration`
 - AI provider functionality validation
 - Financial analysis features
@@ -36,13 +37,15 @@ GitHub-hosted runners have unrestricted outbound internet access by default. No 
 If your GitHub organization uses IP allow lists for security:
 
 1. **Navigate to Organization Settings:**
+
    ```
    GitHub Organization → Settings → Security → IP allow list
    ```
 
 2. **Add allowed domains:**
-   
+
    For OpenAI API:
+
    ```
    Domain: api.openai.com
    Protocol: HTTPS
@@ -50,13 +53,14 @@ If your GitHub organization uses IP allow lists for security:
    ```
 
 3. **Add GitHub Actions IP ranges:**
-   
+
    GitHub Actions runners use dynamic IPs. Add the current ranges:
+
    ```bash
    # Fetch current GitHub Actions IP ranges
    curl https://api.github.com/meta | jq '.actions'
    ```
-   
+
    Add each IP range to your allow list.
 
 4. **Additional recommended domains:**
@@ -71,32 +75,35 @@ If your GitHub organization uses IP allow lists for security:
 If you're using self-hosted runners, configure your firewall to allow outbound HTTPS connections:
 
 1. **Firewall Rules (iptables example):**
+
    ```bash
    # Allow HTTPS to OpenAI API
    sudo iptables -A OUTPUT -p tcp --dport 443 -d api.openai.com -j ACCEPT
-   
+
    # Allow HTTPS to NPM registry
    sudo iptables -A OUTPUT -p tcp --dport 443 -d registry.npmjs.org -j ACCEPT
-   
+
    # Allow HTTPS to GitHub API
    sudo iptables -A OUTPUT -p tcp --dport 443 -d api.github.com -j ACCEPT
    ```
 
 2. **Corporate Proxy Configuration:**
-   
+
    If using a corporate proxy:
+
    ```bash
    # Set proxy environment variables
    export HTTP_PROXY=http://proxy.company.com:8080
    export HTTPS_PROXY=http://proxy.company.com:8080
    export NO_PROXY=localhost,127.0.0.1
    ```
-   
+
    Add these to your runner's environment configuration.
 
 3. **DNS Resolution:**
-   
+
    Ensure your runner can resolve external domains:
+
    ```bash
    # Test DNS resolution
    nslookup api.openai.com
@@ -110,10 +117,11 @@ If you're using self-hosted runners, configure your firewall to allow outbound H
 OpenAI API access requires an API key. Store it securely as a GitHub secret:
 
 1. **Create the secret:**
+
    ```
    Repository → Settings → Secrets and variables → Actions → New repository secret
    ```
-   
+
    Name: `OPENAI_API_KEY`  
    Value: `sk-...` (your OpenAI API key)
 
@@ -138,8 +146,9 @@ The following workflows require network access:
 ### CI/CD Pipeline (`.github/workflows/ci.yml`)
 
 **Jobs requiring network access:**
+
 - `lint` - Downloads NPM dependencies
-- `typecheck` - Downloads NPM dependencies  
+- `typecheck` - Downloads NPM dependencies
 - `test` - Downloads NPM dependencies, runs OpenAI integration tests
 - `package` - Downloads NPM dependencies
 - `security` - Downloads NPM dependencies, runs security scans
@@ -147,6 +156,7 @@ The following workflows require network access:
 ### Security Scanning (`.github/workflows/security.yml`)
 
 **Jobs requiring network access:**
+
 - `codeql` - Downloads NPM dependencies, uploads results to GitHub
 - `dependency-scan` - Downloads NPM dependencies, runs OSV scanner
 - `sbom` - Downloads NPM dependencies, generates SBOM
@@ -156,6 +166,7 @@ The following workflows require network access:
 ### Release Pipeline (`.github/workflows/release.yml`)
 
 **Jobs requiring network access:**
+
 - `release` - Downloads NPM dependencies, builds and packages
 - `publish` - Publishes to NPM registry and VS Code marketplace
 
@@ -164,12 +175,14 @@ The following workflows require network access:
 ### Network Connection Errors
 
 If you see errors like:
+
 ```
 Error: connect ETIMEDOUT api.openai.com:443
 Error: getaddrinfo ENOTFOUND api.openai.com
 ```
 
 **Solutions:**
+
 1. Verify the domain is in your allow list
 2. Check firewall rules allow outbound HTTPS to the domain
 3. Verify DNS resolution works from the runner
@@ -184,6 +197,7 @@ Error: OpenAI API error: Request failed with status code 401
 ```
 
 **Solutions:**
+
 1. Verify `OPENAI_API_KEY` secret is set correctly
 2. Check the API key is valid and has sufficient quota
 3. Verify network access to `api.openai.com` is allowed
@@ -197,6 +211,7 @@ Error: npm ERR! network request failed
 ```
 
 **Solutions:**
+
 1. Verify access to `registry.npmjs.org` is allowed
 2. Check for proxy configuration if using a corporate network
 3. Verify DNS resolution for NPM registry domains
@@ -206,6 +221,7 @@ Error: npm ERR! network request failed
 After configuring network access, validate it works:
 
 1. **Trigger a workflow run:**
+
    ```bash
    # Via GitHub UI: Actions → CI/CD Pipeline → Run workflow
    # Or push a commit to trigger the workflow
@@ -219,10 +235,11 @@ After configuring network access, validate it works:
    - Verify API calls succeed
 
 3. **Verify specific functionality:**
+
    ```bash
    # Check NPM installation works
    npm ci
-   
+
    # Check OpenAI API access works (locally with API key)
    curl -H "Authorization: Bearer $OPENAI_API_KEY" \
         https://api.openai.com/v1/models

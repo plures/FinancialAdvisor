@@ -5,9 +5,7 @@
   "functions": 50,
   "branches": 40,
   "statements": 50,
-  "include": [
-    "out/test/src/shared/financial-utils.js"
-  ],
+  "include": ["out/test/src/shared/financial-utils.js"],
   "exclude": [
     "out/test/src/extension.js",
     "out/test/src/extension/**/*.js",
@@ -20,12 +18,7 @@
     "**/*.test.js",
     "**/node_modules/**"
   ],
-  "reporter": [
-    "text",
-    "text-summary",
-    "html",
-    "lcov"
-  ],
+  "reporter": ["text", "text-summary", "html", "lcov"],
   "report-dir": "./coverage",
   "cache": false,
   "instrument": true,
