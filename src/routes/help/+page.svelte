@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from '@plures/design-dojo';
+  import Card from '$lib/components/Card.svelte';
 </script>
 
 <svelte:head>

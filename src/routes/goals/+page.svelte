@@ -3,17 +3,13 @@
   import { goals } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Goal } from '$lib/praxis/schema';
-  import {
-    Button,
-    Input,
-    Select,
-    Card,
-    Badge,
-    Alert,
-    EmptyState,
-    dojoSlide,
-    dojoFade,
-  } from '@plures/design-dojo';
+  import { Badge, Callout } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import Input from '$lib/components/Input.svelte';
+  import Select from '$lib/components/Select.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
+  import Card from '$lib/components/Card.svelte';
+  import { slide, fade } from 'svelte/transition';
 
   let showAddForm = false;
   let showProgressForm = false;
@@ -149,16 +145,16 @@
   </header>
 
   {#if showAddForm}
-    <div transition:dojoSlide>
+    <div transition:slide>
       <Card class="add-form-card">
         <h2 class="form-heading">Create New Goal</h2>
 
         {#if errors.length > 0}
-          <Alert variant="danger" class="form-errors">
+          <Callout tone="error" className="form-errors">
             {#each errors as error}
               <p>{error}</p>
             {/each}
-          </Alert>
+          </Callout>
         {/if}
 
         <form
@@ -227,7 +223,7 @@
       aria-modal="true"
       aria-labelledby="progress-modal-title"
     >
-      <div transition:dojoFade class="modal-backdrop" onclick={cancelProgress}></div>
+      <div transition:fade class="modal-backdrop" onclick={cancelProgress}></div>
       <div class="modal-card">
         <Card elevated>
           <h2 id="progress-modal-title" class="form-heading">Add Progress</h2>
@@ -275,7 +271,7 @@
             <div class="goal-content">
               <div class="goal-top">
                 <h3 class="goal-name">{goal.name}</h3>
-                <Badge variant={goal.isCompleted ? 'success' : 'primary'}>
+                <Badge variant={goal.isCompleted ? 'success' : 'accent'}>
                   {goal.isCompleted ? '✓ Completed' : 'In Progress'}
                 </Badge>
               </div>

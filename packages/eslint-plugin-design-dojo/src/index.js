@@ -18,10 +18,12 @@ const PRIMITIVE_TAG_MAP = {
   textarea: 'Input',
 };
 
-// Design-dojo components that should not be imported locally
+// Design-dojo components that should be imported from '@plures/design-dojo'
+// Note: Button, Input, Select, Card, and EmptyState are local components in
+// $lib/components/ because their @plures/design-dojo API is not yet compatible.
 const DESIGN_DOJO_COMPONENTS = new Set([
-  'Button', 'Input', 'Select', 'Card', 'Badge',
-  'Alert', 'EmptyState', 'Toggle', 'Toast', 'Dialog', 'Tooltip',
+  'Badge',
+  'Callout', 'Toggle', 'Toast', 'Dialog', 'Tooltip',
 ]);
 
 /** @type {import('eslint').Rule.RuleModule} */

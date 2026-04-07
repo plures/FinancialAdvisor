@@ -1,9 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { derived } from 'svelte/store';
-  import { Card, Badge, Button, Toggle, Toast, EmptyState } from '@plures/design-dojo';
+  import { Badge, Toggle, Toast } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
+  import Card from '$lib/components/Card.svelte';
   import { recurringStore, seedRecurring, type RecurringItem } from '$lib/stores/review';
-  import { dojoFade } from '@plures/design-dojo';
+  import { fade } from 'svelte/transition';
 
   const pending = derived(recurringStore, $s => $s.filter(i => i.status === 'pending').length);
   const accepted = derived(recurringStore, $s => $s.filter(i => i.status === 'reviewed').length);
@@ -43,9 +46,9 @@
     other: '❓',
   };
 
-  const typeVariant: Record<RecurringItem['type'], 'primary' | 'success' | 'warning' | 'neutral'> =
+  const typeVariant: Record<RecurringItem['type'], 'accent' | 'success' | 'warning' | 'neutral'> =
     {
-      subscription: 'primary',
+      subscription: 'accent',
       bill: 'warning',
       income: 'success',
       other: 'neutral',
@@ -89,7 +92,7 @@
   {:else}
     <div class="cards-grid">
       {#each $recurringStore as item (item.id)}
-        <div class:card-done={item.status !== 'pending'} transition:dojoFade>
+        <div class:card-done={item.status !== 'pending'} transition:fade>
           <Card elevated>
             {#snippet header()}
               <div class="card-head">
@@ -157,7 +160,7 @@
 </div>
 
 {#if showToast}
-  <div class="toast-region" transition:dojoFade>
+  <div class="toast-region" transition:fade>
     <Toast message={toastMessage} variant={toastVariant} onclose={() => (showToast = false)} />
   </div>
 {/if}

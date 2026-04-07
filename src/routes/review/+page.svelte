@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { derived } from 'svelte/store';
-  import { Card, Badge, Button } from '@plures/design-dojo';
+  import { Badge } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import Card from '$lib/components/Card.svelte';
   import {
     importReviewStore,
     merchantMergeStore,

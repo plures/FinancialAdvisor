@@ -15,8 +15,7 @@
     "**/node_modules/**",
     "out/test/.praxis/**",
     "out/test/packages/vscode-extension/**",
-    "out/test/packages/eslint-plugin-design-dojo/**",
-    "out/test/packages/design-dojo/**"
+    "out/test/packages/eslint-plugin-design-dojo/**"
   ],
   "reporter": [
     "text",

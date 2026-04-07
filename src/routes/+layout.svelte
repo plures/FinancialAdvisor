@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../app.css';
-  import { Button } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
   import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();
