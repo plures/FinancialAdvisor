@@ -1,3 +1,7 @@
+## [0.22.2] — 2026-04-17
+
+- fix(lifecycle): label-based retry counter + CI fix priority (e6b8429)
+
 ## [0.22.1] — 2026-04-07
 
 - fix: inline reusable workflow to fix schedule trigger failures (e93a53e)
