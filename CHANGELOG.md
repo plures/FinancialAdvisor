@@ -1,3 +1,7 @@
+## [0.23.1] — 2026-04-18
+
+- refactor: remove vendored design-dojo fork, import from @plures/design-dojo (#168) (bcae7b3)
+
 ## [0.23.0] — 2026-04-18
 
 - feat(lifecycle v11): smart CI failure handling — infra vs code (b74bb19)
