@@ -133,12 +133,9 @@ export class PredictiveAnalytics {
     // Simple linear regression for trend
     const trend = this.calculateLinearTrend(recentMonths.map(m => m.total));
 
-    // Start from the last known month value
-    const lastMonthValue = recentMonths[recentMonths.length - 1]?.total || baseline;
-
     for (let i = 1; i <= monthsAhead; i++) {
-      // Project from last month's value using the trend
-      const prediction = lastMonthValue + trend * i;
+      // Project from baseline to avoid overreacting to a single partial/outlier month
+      const prediction = baseline + trend * i;
       const variance = stdDev / Math.sqrt(recentMonths.length);
       const confidence = Math.max(0.5, 1 - variance / baseline);
 
