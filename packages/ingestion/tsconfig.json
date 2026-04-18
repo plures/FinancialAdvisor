@@ -7,9 +7,5 @@
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"],
-  "references": [
-    { "path": "../domain" },
-    { "path": "../ledger" },
-    { "path": "../storage" }
-  ]
+  "references": [{ "path": "../domain" }, { "path": "../ledger" }, { "path": "../storage" }]
 }

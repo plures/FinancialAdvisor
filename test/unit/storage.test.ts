@@ -30,10 +30,7 @@ import { RecurringSeriesStore } from '../../packages/storage/dist/recurring-seri
 import { ReviewDecisionStore } from '../../packages/storage/dist/review-decision-store.js';
 
 // ── Migrations ────────────────────────────────────────────────────────────────
-import {
-  MigrationRunner,
-  SCHEMA_MIGRATIONS,
-} from '../../packages/storage/dist/migrations.js';
+import { MigrationRunner, SCHEMA_MIGRATIONS } from '../../packages/storage/dist/migrations.js';
 
 // ── Aggregate factory ─────────────────────────────────────────────────────────
 import { createStorageSchema } from '../../packages/storage/dist/storage-schema.js';
@@ -70,7 +67,7 @@ function makeRawTx(overrides: Partial<RawTransactionRecord> = {}): RawTransactio
 }
 
 function makeCanonical(
-  overrides: Partial<CanonicalTransactionRecord> = {},
+  overrides: Partial<CanonicalTransactionRecord> = {}
 ): CanonicalTransactionRecord {
   return {
     id: 'canon-1',
@@ -133,7 +130,7 @@ function makePosting(overrides: Partial<PostingRecord> = {}): PostingRecord {
 }
 
 function makeRecurringSeries(
-  overrides: Partial<RecurringSeriesRecord> = {},
+  overrides: Partial<RecurringSeriesRecord> = {}
 ): RecurringSeriesRecord {
   return {
     id: 'series-1',
@@ -147,9 +144,7 @@ function makeRecurringSeries(
   };
 }
 
-function makeReviewDecision(
-  overrides: Partial<ReviewDecisionRecord> = {},
-): ReviewDecisionRecord {
+function makeReviewDecision(overrides: Partial<ReviewDecisionRecord> = {}): ReviewDecisionRecord {
   return {
     id: 'rev-1',
     entityType: 'canonical_transaction',
@@ -254,14 +249,11 @@ describe('RawTransactionStore', () => {
     store.insert(makeRawTx({ id: 'raw-2', rowNumber: 2, importSessionId: 'sess-1' }));
     const txs = store.findBySession('sess-1');
     assert.ok(txs.length >= 2);
-    assert.ok(txs.every((t) => t.importSessionId === 'sess-1'));
+    assert.ok(txs.every(t => t.importSessionId === 'sess-1'));
   });
 
   it('throws when inserting duplicate id (immutability)', () => {
-    assert.throws(
-      () => store.insert(makeRawTx({ id: 'raw-1' })),
-      /already exists.*immutable/i,
-    );
+    assert.throws(() => store.insert(makeRawTx({ id: 'raw-1' })), /already exists.*immutable/i);
   });
 
   it('returns empty array for unknown session', () => {
@@ -311,7 +303,7 @@ describe('CanonicalTransactionStore', () => {
   it('findUnreviewed returns only unreviewed records', () => {
     store.save(makeCanonical({ id: 'canon-2', rawTransactionId: 'raw-2', reviewed: true }));
     const unreviewed = store.findUnreviewed();
-    assert.ok(unreviewed.every((r) => !r.reviewed));
+    assert.ok(unreviewed.every(r => !r.reviewed));
   });
 
   it('updates reviewed flag', () => {
@@ -366,7 +358,9 @@ describe('MerchantStore', () => {
   });
 
   it('finds by category', () => {
-    store.save(makeMerchant({ id: 'merch-2', canonicalName: 'Trader Joes', category: 'Groceries' }));
+    store.save(
+      makeMerchant({ id: 'merch-2', canonicalName: 'Trader Joes', category: 'Groceries' })
+    );
     const results = store.findByCategory('Groceries');
     assert.ok(results.length >= 2);
   });
@@ -410,7 +404,7 @@ describe('MerchantAliasStore', () => {
     store.save(makeAlias({ id: 'alias-2', aliasPattern: 'WFM' }));
     const aliases = store.findByMerchant('merch-1');
     assert.ok(aliases.length >= 2);
-    assert.ok(aliases.every((a) => a.merchantId === 'merch-1'));
+    assert.ok(aliases.every(a => a.merchantId === 'merch-1'));
   });
 
   it('deletes alias and removes from merchant index', () => {
@@ -458,13 +452,15 @@ describe('AccountStore', () => {
   it('finds by type', () => {
     store.save(makeAccount({ id: 'acct-2', name: 'Visa', type: 'credit', institution: 'Visa' }));
     const checking = store.findByType('checking');
-    assert.ok(checking.every((a) => a.type === 'checking'));
+    assert.ok(checking.every(a => a.type === 'checking'));
     const credit = store.findByType('credit');
-    assert.ok(credit.some((a) => a.id === 'acct-2'));
+    assert.ok(credit.some(a => a.id === 'acct-2'));
   });
 
   it('finds by institution', () => {
-    store.save(makeAccount({ id: 'acct-3', name: 'Chase Savings', institution: 'Chase', type: 'savings' }));
+    store.save(
+      makeAccount({ id: 'acct-3', name: 'Chase Savings', institution: 'Chase', type: 'savings' })
+    );
     const chase = store.findByInstitution('Chase');
     assert.ok(chase.length >= 2);
   });
@@ -501,15 +497,17 @@ describe('PostingStore', () => {
     store.save(makePosting({ id: 'post-2', canonicalTransactionId: 'canon-1' }));
     const postings = store.findByCanonicalTransaction('canon-1');
     assert.ok(postings.length >= 2);
-    assert.ok(postings.every((p) => p.canonicalTransactionId === 'canon-1'));
+    assert.ok(postings.every(p => p.canonicalTransactionId === 'canon-1'));
   });
 
   it('finds by date range', () => {
-    store.save(makePosting({ id: 'post-3', date: new Date('2024-02-01'), canonicalTransactionId: 'canon-2' }));
+    store.save(
+      makePosting({ id: 'post-3', date: new Date('2024-02-01'), canonicalTransactionId: 'canon-2' })
+    );
     const jan = store.findByDateRange(new Date('2024-01-01'), new Date('2024-01-31'));
-    assert.ok(jan.every((p) => p.date <= new Date('2024-01-31')));
+    assert.ok(jan.every(p => p.date <= new Date('2024-01-31')));
     const feb = store.findByDateRange(new Date('2024-02-01'), new Date('2024-02-28'));
-    assert.ok(feb.some((p) => p.id === 'post-3'));
+    assert.ok(feb.some(p => p.id === 'post-3'));
   });
 
   it('deletes a record and removes canonical tx index', () => {
@@ -554,9 +552,9 @@ describe('RecurringSeriesStore', () => {
   it('finds by status', () => {
     store.save(makeRecurringSeries({ id: 'series-2', status: 'paused' }));
     store.save(makeRecurringSeries({ id: 'series-3', status: 'cancelled' }));
-    assert.ok(store.findByStatus('active').every((s) => s.status === 'active'));
-    assert.ok(store.findByStatus('paused').every((s) => s.status === 'paused'));
-    assert.ok(store.findByStatus('cancelled').every((s) => s.status === 'cancelled'));
+    assert.ok(store.findByStatus('active').every(s => s.status === 'active'));
+    assert.ok(store.findByStatus('paused').every(s => s.status === 'paused'));
+    assert.ok(store.findByStatus('cancelled').every(s => s.status === 'cancelled'));
   });
 
   it('updates status and other fields', () => {
@@ -606,7 +604,7 @@ describe('ReviewDecisionStore', () => {
   it('throws when recording a duplicate id (immutability)', () => {
     assert.throws(
       () => store.record(makeReviewDecision({ id: 'rev-1' })),
-      /already exists.*immutable/i,
+      /already exists.*immutable/i
     );
   });
 
@@ -614,17 +612,17 @@ describe('ReviewDecisionStore', () => {
     store.record(makeReviewDecision({ id: 'rev-2', decision: 'update_category' }));
     const history = store.findByEntity('canonical_transaction', 'canon-1');
     assert.ok(history.length >= 2);
-    assert.ok(history.every((d) => d.entityId === 'canon-1'));
+    assert.ok(history.every(d => d.entityId === 'canon-1'));
   });
 
   it('finds all decisions by entity type', () => {
     store.record(
-      makeReviewDecision({ id: 'rev-merchant-1', entityType: 'merchant', entityId: 'merch-1' }),
+      makeReviewDecision({ id: 'rev-merchant-1', entityType: 'merchant', entityId: 'merch-1' })
     );
     const merchantDecisions = store.findByEntityType('merchant');
-    assert.ok(merchantDecisions.every((d) => d.entityType === 'merchant'));
+    assert.ok(merchantDecisions.every(d => d.entityType === 'merchant'));
     const txDecisions = store.findByEntityType('canonical_transaction');
-    assert.ok(txDecisions.every((d) => d.entityType === 'canonical_transaction'));
+    assert.ok(txDecisions.every(d => d.entityType === 'canonical_transaction'));
   });
 
   it('has no delete or update methods (audit trail immutability)', () => {
@@ -645,7 +643,7 @@ describe('ReviewDecisionStore', () => {
         id: 'rev-snap',
         previousValue: JSON.stringify(prev),
         newValue: JSON.stringify(next),
-      }),
+      })
     );
     const d = store.findById('rev-snap')!;
     assert.deepStrictEqual(JSON.parse(d.previousValue), prev);
@@ -669,8 +667,20 @@ describe('MigrationRunner', () => {
     const log: number[] = [];
 
     await runner.runMigrations([
-      { version: 2, description: 'second', async apply() { log.push(2); } },
-      { version: 1, description: 'first', async apply() { log.push(1); } },
+      {
+        version: 2,
+        description: 'second',
+        async apply() {
+          log.push(2);
+        },
+      },
+      {
+        version: 1,
+        description: 'first',
+        async apply() {
+          log.push(1);
+        },
+      },
     ]);
 
     assert.deepStrictEqual(log, [1, 2]);
@@ -681,7 +691,15 @@ describe('MigrationRunner', () => {
   it('skips already-applied migrations on re-run', async () => {
     const runner = new MigrationRunner();
     let count = 0;
-    const migrations = [{ version: 1, description: 'once', async apply() { count++; } }];
+    const migrations = [
+      {
+        version: 1,
+        description: 'once',
+        async apply() {
+          count++;
+        },
+      },
+    ];
 
     await runner.runMigrations(migrations);
     await runner.runMigrations(migrations);
@@ -701,14 +719,14 @@ describe('MigrationRunner', () => {
 
   it('SCHEMA_MIGRATIONS includes the initial schema migration (version 1)', () => {
     assert.ok(SCHEMA_MIGRATIONS.length >= 1);
-    const v1 = SCHEMA_MIGRATIONS.find((m) => m.version === 1);
+    const v1 = SCHEMA_MIGRATIONS.find(m => m.version === 1);
     assert.ok(v1, 'migration version 1 must exist');
     assert.ok(v1!.description.includes('import_sessions'));
     assert.ok(v1!.description.includes('review_decisions'));
   });
 
   it('SCHEMA_MIGRATIONS version 1 apply() resolves without error', async () => {
-    const v1 = SCHEMA_MIGRATIONS.find((m) => m.version === 1)!;
+    const v1 = SCHEMA_MIGRATIONS.find(m => m.version === 1)!;
     await assert.doesNotReject(() => v1.apply());
   });
 });
@@ -776,9 +794,12 @@ describe('createStorageSchema', () => {
       makeReviewDecision({
         previousValue: JSON.stringify(before),
         newValue: JSON.stringify(after),
-      }),
+      })
     );
-    assert.strictEqual(schema.reviewDecisions.findByEntity('canonical_transaction', 'canon-1').length, 1);
+    assert.strictEqual(
+      schema.reviewDecisions.findByEntity('canonical_transaction', 'canon-1').length,
+      1
+    );
     assert.strictEqual(schema.canonicalTransactions.findUnreviewed().length, 0);
   });
 });

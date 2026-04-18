@@ -14,27 +14,27 @@ export default [
       parser: typescriptParser,
       parserOptions: {
         ecmaVersion: 2020,
-        sourceType: 'module'
+        sourceType: 'module',
       },
       globals: {
         ...globals.node,
-        ...globals.es2020
-      }
+        ...globals.es2020,
+      },
     },
     plugins: {
-      '@typescript-eslint': typescriptPlugin
+      '@typescript-eslint': typescriptPlugin,
     },
     rules: {
-      'curly': 'warn',
-      'eqeqeq': 'warn',
+      curly: 'warn',
+      eqeqeq: 'warn',
       'no-throw-literal': 'warn',
-      'semi': 'off',
+      semi: 'off',
       'prefer-const': 'error',
       'no-var': 'error',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'error'
-    }
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
   },
   {
     files: ['**/*.svelte'],
@@ -47,38 +47,28 @@ export default [
       parserOptions: {
         parser: typescriptParser,
         ecmaVersion: 2020,
-        sourceType: 'module'
+        sourceType: 'module',
       },
       globals: {
         ...globals.browser,
-        ...globals.es2020
-      }
+        ...globals.es2020,
+      },
     },
     rules: {
       'no-unused-vars': 'off',
       'no-undef': 'off',
       'design-dojo/no-local-primitives': 'error',
       'design-dojo/prefer-design-dojo-imports': 'warn',
-    }
+    },
   },
   {
-    // The design-dojo package itself defines the primitive components, so the
-    // no-local-primitives rule must not apply to its own source files.
-    files: ['packages/design-dojo/src/**/*.svelte'],
+    // Local component wrappers define the primitive elements themselves, so the
+    // no-local-primitives rule must not apply to their source files.
+    files: ['src/lib/components/*.svelte'],
     rules: {
       'design-dojo/no-local-primitives': 'off',
       'design-dojo/prefer-design-dojo-imports': 'off',
-    }
-  },
-  {
-    // design-dojo motion helpers run in a browser context.
-    files: ['packages/design-dojo/src/**/*.ts'],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.es2020
-      }
-    }
+    },
   },
   {
     files: ['src/lib/pluresdb/store.ts'],
@@ -86,17 +76,17 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...globals.es2020
-      }
-    }
+        ...globals.es2020,
+      },
+    },
   },
   {
     files: ['test/**/*.ts'],
     languageOptions: {
       globals: {
-        ...globals.mocha
-      }
-    }
+        ...globals.mocha,
+      },
+    },
   },
   {
     ignores: [
@@ -106,7 +96,7 @@ export default [
       'node_modules/**',
       '.vscode-test/**',
       'build/**',
-      '.svelte-kit/**'
-    ]
-  }
+      '.svelte-kit/**',
+    ],
+  },
 ];

@@ -70,9 +70,7 @@ export interface DataEventCallbacks {
  * Create a set of data-event triggers bound to the provided callbacks.
  * Pass the returned triggers to `PraxisEngine.registerTrigger()`.
  */
-export function createDataEventTriggers(
-  callbacks: DataEventCallbacks
-): Trigger[] {
+export function createDataEventTriggers(callbacks: DataEventCallbacks): Trigger[] {
   const triggers: Trigger[] = [];
 
   if (callbacks.onImportCompleted) {

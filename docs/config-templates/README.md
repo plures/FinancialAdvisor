@@ -9,6 +9,7 @@ This directory contains configuration templates for different deployment scenari
 **Use for:** Production deployments with security and monitoring enabled.
 
 **Key Features:**
+
 - Data encryption enabled
 - Full monitoring and health checks
 - Optimized performance settings
@@ -16,6 +17,7 @@ This directory contains configuration templates for different deployment scenari
 - Production-grade logging
 
 **Setup:**
+
 ```bash
 # Copy template
 cp docs/config-templates/config.production.json ~/.config/com.plures.financial-advisor/config.json
@@ -36,6 +38,7 @@ nano ~/.config/com.plures.financial-advisor/config.json
 **Use for:** Local development and testing.
 
 **Key Features:**
+
 - Encryption disabled for easier debugging
 - Local Ollama provider (no API costs)
 - Debug logging enabled
@@ -43,6 +46,7 @@ nano ~/.config/com.plures.financial-advisor/config.json
 - File import features enabled for testing
 
 **Setup:**
+
 ```bash
 # Copy template
 cp docs/config-templates/config.development.json ./config.json
@@ -65,6 +69,7 @@ npm run tauri:dev
 **Use for:** Automated testing and CI/CD pipelines.
 
 **Key Features:**
+
 - In-memory database (no persistence)
 - Minimal features enabled
 - No encryption overhead
@@ -72,6 +77,7 @@ npm run tauri:dev
 - Monitoring disabled
 
 **Setup:**
+
 ```bash
 # Set environment variable
 export FINANCIAL_ADVISOR_CONFIG=docs/config-templates/config.test.json
@@ -110,6 +116,7 @@ npm test
 ```
 
 **Supported Providers:**
+
 - `openai` - OpenAI GPT models (requires API key)
 - `ollama` - Local Ollama models (free, privacy-first)
 - `copilot` - Microsoft Copilot (requires authentication)
@@ -184,11 +191,13 @@ export FINANCIAL_ADVISOR_LOG_FILE="$HOME/.financial-advisor/logs/app.log"
 ### Encryption Keys
 
 **Generate a strong key:**
+
 ```bash
 openssl rand -base64 32
 ```
 
 **Store securely:**
+
 - **Windows:** Use Windows Credential Manager
 - **macOS:** Use Keychain Access
 - **Linux:** Use Secret Service API (gnome-keyring, kwallet)
@@ -198,6 +207,7 @@ openssl rand -base64 32
 ### API Keys
 
 **Protect your API keys:**
+
 1. Use environment variables, not config files
 2. Rotate keys regularly
 3. Use read-only keys when possible
@@ -207,6 +217,7 @@ openssl rand -base64 32
 ### File Permissions
 
 **Restrict access to configuration:**
+
 ```bash
 chmod 600 ~/.config/com.plures.financial-advisor/config.json
 chmod 700 ~/.financial-advisor
@@ -231,6 +242,7 @@ ajv validate \
 **Symptom:** Application fails to start with configuration error
 
 **Solution:**
+
 1. Validate against schema
 2. Check for syntax errors (missing commas, quotes)
 3. Verify file paths exist
@@ -241,6 +253,7 @@ ajv validate \
 **Symptom:** AI features not working
 
 **Solution:**
+
 1. Verify API key is set (config file or environment variable)
 2. Check API key is valid (test with provider's API)
 3. Verify endpoint URL is correct
@@ -251,6 +264,7 @@ ajv validate \
 **Symptom:** Cannot decrypt existing data
 
 **Solution:**
+
 1. Verify encryption key matches original key
 2. Check key is base64-encoded
 3. Key length must be 32 bytes (44 characters base64)
@@ -317,6 +331,7 @@ See `config.schema.json` for complete JSON Schema definition with all available 
 ## Support
 
 For configuration help:
+
 - **Documentation:** https://docs.financial-advisor.dev/configuration
 - **Issues:** https://github.com/plures/FinancialAdvisor/issues
 - **Discussions:** https://github.com/plures/FinancialAdvisor/discussions

@@ -3,16 +3,13 @@
   import { transactions, accounts } from '$lib/stores/financial';
   import { FinancialLogic } from '$lib/praxis/logic';
   import type { Transaction } from '$lib/praxis/schema';
-  import {
-    Button,
-    Input,
-    Select,
-    Card,
-    Badge,
-    Alert,
-    EmptyState,
-    dojoSlide,
-  } from '@plures/design-dojo';
+  import { Badge, Callout } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import Input from '$lib/components/Input.svelte';
+  import Select from '$lib/components/Select.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
+  import Card from '$lib/components/Card.svelte';
+  import { slide } from 'svelte/transition';
 
   let showAddForm = false;
   let errors: string[] = [];
@@ -107,16 +104,16 @@
   </header>
 
   {#if showAddForm}
-    <div transition:dojoSlide>
+    <div transition:slide>
       <Card class="add-form-card">
         <h2 class="form-heading">Add New Transaction</h2>
 
         {#if errors.length > 0}
-          <Alert variant="danger" class="form-errors">
+          <Callout tone="error" className="form-errors">
             {#each errors as error}
               <p>{error}</p>
             {/each}
-          </Alert>
+          </Callout>
         {/if}
 
         <form

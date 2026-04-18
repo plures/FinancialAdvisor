@@ -1,13 +1,18 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { derived } from 'svelte/store';
-  import { Badge, Button, Input, Select, Card, Toast, EmptyState } from '@plures/design-dojo';
+  import { Badge, Toast } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import Input from '$lib/components/Input.svelte';
+  import Select from '$lib/components/Select.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
+  import Card from '$lib/components/Card.svelte';
   import {
     categoryCorrectionStore,
     seedCategoryCorrections,
     type CategoryCorrectionItem,
   } from '$lib/stores/review';
-  import { dojoFade, dojoSlide } from '@plures/design-dojo';
+  import { fade, slide } from 'svelte/transition';
 
   const categories = [
     'Groceries',
@@ -111,7 +116,7 @@
   </p>
 
   {#if selected.size > 0}
-    <div class="bulk-toolbar" transition:dojoSlide>
+    <div class="bulk-toolbar" transition:slide>
       <span class="bulk-label">{selected.size} selected</span>
       <Select bind:value={bulkCategory} class="bulk-select">
         <option value="">Recategorise as…</option>
@@ -134,7 +139,7 @@
     />
   {:else}
     <Card padding="none" elevated>
-      <div class="table-wrap" transition:dojoFade>
+      <div class="table-wrap" transition:fade>
         <table class="cat-table">
           <thead>
             <tr>
@@ -184,7 +189,7 @@
                 </td>
                 <td>
                   {#if item.suggestedCategory}
-                    <Badge variant="primary">{item.suggestedCategory}</Badge>
+                    <Badge variant="accent">{item.suggestedCategory}</Badge>
                   {:else}
                     <span class="no-suggestion">—</span>
                   {/if}
@@ -237,7 +242,7 @@
 </div>
 
 {#if showToast}
-  <div class="toast-region" transition:dojoFade>
+  <div class="toast-region" transition:fade>
     <Toast message={toastMessage} variant={toastVariant} onclose={() => (showToast = false)} />
   </div>
 {/if}

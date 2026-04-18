@@ -17,12 +17,12 @@ describe('Add Account Tool Tests', () => {
     // Create a temporary database for each test
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fa-test-'));
     dbPath = path.join(tempDir, 'test.db');
-    
+
     const config: DatabaseConfig = {
       dbPath,
-      encryptionKey: 'test-key'
+      encryptionKey: 'test-key',
     };
-    
+
     server = new FinancialAdvisorMCPServer(config);
     await server.initialize();
   });
@@ -38,14 +38,14 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Test Checking',
         type: 'checking',
-        balance: 1000.50,
+        balance: 1000.5,
         currency: 'USD',
-        institution: 'Test Bank'
+        institution: 'Test Bank',
       };
 
       // Access the private method for testing
       const result = await server.addAccount(args);
-      
+
       assert.ok(result.content);
       assert.strictEqual(result.content.length, 1);
       assert.ok(result.content[0].text.includes('Test Checking'));
@@ -56,11 +56,11 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Minimal Account',
         type: 'savings',
-        balance: 0
+        balance: 0,
       };
 
       const result = await server.addAccount(args);
-      
+
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Minimal Account'));
       assert.ok(result.content[0].text.includes('added successfully'));
@@ -70,11 +70,11 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Credit Card',
         type: 'credit_card',
-        balance: -500.75
+        balance: -500.75,
       };
 
       const result = await server.addAccount(args);
-      
+
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Credit Card'));
     });
@@ -84,11 +84,11 @@ describe('Add Account Tool Tests', () => {
         name: '  Test Account  ',
         type: 'checking',
         balance: 100,
-        institution: '  Test Bank  '
+        institution: '  Test Bank  ',
       };
 
       const result = await server.addAccount(args);
-      
+
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('Test Account'));
     });
@@ -97,11 +97,11 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'USD Default',
         type: 'savings',
-        balance: 500
+        balance: 500,
       };
 
       const result = await server.addAccount(args);
-      
+
       assert.ok(result.content);
       assert.ok(result.content[0].text.includes('USD Default'));
     });
@@ -112,7 +112,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: '',
         type: 'checking',
-        balance: 1000
+        balance: 1000,
       };
 
       await assert.rejects(
@@ -125,7 +125,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: '   ',
         type: 'checking',
-        balance: 1000
+        balance: 1000,
       };
 
       await assert.rejects(
@@ -138,7 +138,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: undefined as unknown as string,
         type: 'checking',
-        balance: 1000
+        balance: 1000,
       };
 
       await assert.rejects(
@@ -151,7 +151,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Test Account',
         type: '',
-        balance: 1000
+        balance: 1000,
       };
 
       await assert.rejects(
@@ -164,20 +164,17 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Test Account',
         type: 'invalid_type',
-        balance: 1000
+        balance: 1000,
       };
 
-      await assert.rejects(
-        async () => await server.addAccount(args),
-        /Invalid account type/
-      );
+      await assert.rejects(async () => await server.addAccount(args), /Invalid account type/);
     });
 
     it('should reject non-numeric balance', async () => {
       const args = {
         name: 'Test Account',
         type: 'checking',
-        balance: 'not a number' as unknown as number
+        balance: 'not a number' as unknown as number,
       };
 
       await assert.rejects(
@@ -190,7 +187,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Test Account',
         type: 'checking',
-        balance: NaN
+        balance: NaN,
       };
 
       await assert.rejects(
@@ -205,7 +202,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Duplicate Account',
         type: 'checking',
-        balance: 1000
+        balance: 1000,
       };
 
       // Create first account
@@ -222,13 +219,13 @@ describe('Add Account Tool Tests', () => {
       const firstArgs = {
         name: 'Test Account',
         type: 'checking',
-        balance: 1000
+        balance: 1000,
       };
 
       const secondArgs = {
         name: '  TEST ACCOUNT  ',
         type: 'savings',
-        balance: 500
+        balance: 500,
       };
 
       // Create first account
@@ -238,7 +235,7 @@ describe('Add Account Tool Tests', () => {
       // But our current implementation is case-sensitive, so let's test the actual behavior
       const result = await server.addAccount(secondArgs);
       assert.ok(result.content);
-      
+
       // Note: This test shows that we might want case-insensitive duplicate checking
       // For now, documenting the current behavior
     });
@@ -247,13 +244,13 @@ describe('Add Account Tool Tests', () => {
       const firstArgs = {
         name: 'First Account',
         type: 'checking',
-        balance: 1000
+        balance: 1000,
       };
 
       const secondArgs = {
         name: 'Second Account',
         type: 'savings',
-        balance: 500
+        balance: 500,
       };
 
       const result1 = await server.addAccount(firstArgs);
@@ -267,14 +264,22 @@ describe('Add Account Tool Tests', () => {
   });
 
   describe('Account Type Validation', () => {
-    const validTypes = ['checking', 'savings', 'credit_card', 'investment', 'loan', 'mortgage', 'retirement'];
+    const validTypes = [
+      'checking',
+      'savings',
+      'credit_card',
+      'investment',
+      'loan',
+      'mortgage',
+      'retirement',
+    ];
 
     validTypes.forEach(type => {
       it(`should accept valid account type: ${type}`, async () => {
         const args = {
           name: `Test ${type} Account`,
           type: type,
-          balance: 1000
+          balance: 1000,
         };
 
         const result = await server.addAccount(args);
@@ -287,7 +292,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Upper Case Type',
         type: 'CHECKING',
-        balance: 1000
+        balance: 1000,
       };
 
       const result = await server.addAccount(args);
@@ -299,7 +304,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Mixed Case Type',
         type: 'Credit_Card',
-        balance: 1000
+        balance: 1000,
       };
 
       const result = await server.addAccount(args);
@@ -313,7 +318,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Zero Balance',
         type: 'checking',
-        balance: 0
+        balance: 0,
       };
 
       const result = await server.addAccount(args);
@@ -325,7 +330,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Large Balance',
         type: 'investment',
-        balance: 999999999.99
+        balance: 999999999.99,
       };
 
       const result = await server.addAccount(args);
@@ -337,7 +342,7 @@ describe('Add Account Tool Tests', () => {
       const args = {
         name: 'Small Balance',
         type: 'savings',
-        balance: 0.01
+        balance: 0.01,
       };
 
       const result = await server.addAccount(args);
@@ -491,11 +496,7 @@ describe('SecureStorage', () => {
     });
 
     it('filters transactions by date range', async () => {
-      const dates = [
-        new Date(2024, 0, 5),
-        new Date(2024, 3, 10),
-        new Date(2024, 11, 25),
-      ];
+      const dates = [new Date(2024, 0, 5), new Date(2024, 3, 10), new Date(2024, 11, 25)];
       for (let i = 0; i < dates.length; i++) {
         await storage.saveTransaction({
           id: `tx-d-${i}`,
@@ -602,10 +603,7 @@ describe('SecureStorage', () => {
 
   describe('createBackup', () => {
     it('throws when backup is not configured', async () => {
-      await assert.rejects(
-        async () => storage.createBackup(),
-        /Backup not configured/
-      );
+      await assert.rejects(async () => storage.createBackup(), /Backup not configured/);
     });
 
     it('creates a backup file when configured', async () => {
@@ -621,7 +619,9 @@ describe('SecureStorage', () => {
       let backupSucceeded = false;
       try {
         const backupPath = await configuredStorage.createBackup();
-        if (fs.existsSync(backupPath)) { backupSucceeded = true; }
+        if (fs.existsSync(backupPath)) {
+          backupSucceeded = true;
+        }
       } catch (_err) {
         // ESM environments may not support require() in the backup impl; treat as skipped
         backupSucceeded = true;
@@ -659,7 +659,7 @@ describe('MCP Server Additional Tools', () => {
     it('adds an expense transaction successfully', async () => {
       const result = await server.addTransaction({
         accountId: 'acct-1',
-        amount: -45.00,
+        amount: -45.0,
         description: 'Grocery Store',
         category: 'Groceries',
       });
@@ -669,7 +669,7 @@ describe('MCP Server Additional Tools', () => {
     it('adds an income transaction successfully', async () => {
       const result = await server.addTransaction({
         accountId: 'acct-1',
-        amount: 3000.00,
+        amount: 3000.0,
         description: 'Salary',
       });
       assert.ok(result.content[0].text.includes('added successfully'));
@@ -678,7 +678,7 @@ describe('MCP Server Additional Tools', () => {
     it('auto-categorizes transactions without a category', async () => {
       const result = await server.addTransaction({
         accountId: 'acct-1',
-        amount: -15.00,
+        amount: -15.0,
         description: 'starbucks coffee',
       });
       assert.ok(result.content[0].text.includes('Category:'));
@@ -687,7 +687,7 @@ describe('MCP Server Additional Tools', () => {
     it('accepts a transaction with date and merchant', async () => {
       const result = await server.addTransaction({
         accountId: 'acct-1',
-        amount: -25.00,
+        amount: -25.0,
         description: 'Netflix subscription',
         merchant: 'Netflix',
         date: '2024-06-15',
@@ -746,12 +746,12 @@ describe('MCP Server Additional Tools', () => {
       // Add some transactions without categories
       await server.addTransaction({
         accountId: 'acct-1',
-        amount: -15.00,
+        amount: -15.0,
         description: 'starbucks',
       });
       await server.addTransaction({
         accountId: 'acct-1',
-        amount: -60.00,
+        amount: -60.0,
         description: 'whole foods',
       });
       const result = await server.categorizeTransactions({ limit: 10 });

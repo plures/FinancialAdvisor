@@ -7,6 +7,7 @@ This document summarizes the complete architectural refactor of the Financial Ad
 ## Architecture Changes
 
 ### Before (v0.1.0)
+
 - **Platform**: VSCode Extension only
 - **UI**: VSCode webviews and commands
 - **Logic**: Scattered across packages
@@ -14,6 +15,7 @@ This document summarizes the complete architectural refactor of the Financial Ad
 - **Distribution**: VSCode Marketplace
 
 ### After (v0.2.0)
+
 - **Platform**: Desktop (Windows, macOS, Linux) via Tauri
 - **UI**: SvelteKit with modern reactive components
 - **Logic**: Praxis schema-driven with declarative rules
@@ -22,16 +24,16 @@ This document summarizes the complete architectural refactor of the Financial Ad
 
 ## Technology Stack
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| Frontend Framework | SvelteKit | 2.22.x |
-| UI Library | Svelte | 5.19.x |
-| Desktop Framework | Tauri | 2.9.x |
-| Backend Runtime | Rust | Latest |
-| Logic Framework | Praxis | 1.1.3 |
-| Database | PluresDB | GitHub latest |
-| Build Tool | Vite | 7.0.x |
-| Language | TypeScript | 5.9.x |
+| Component          | Technology | Version       |
+| ------------------ | ---------- | ------------- |
+| Frontend Framework | SvelteKit  | 2.22.x        |
+| UI Library         | Svelte     | 5.19.x        |
+| Desktop Framework  | Tauri      | 2.9.x         |
+| Backend Runtime    | Rust       | Latest        |
+| Logic Framework    | Praxis     | 1.1.3         |
+| Database           | PluresDB   | GitHub latest |
+| Build Tool         | Vite       | 7.0.x         |
+| Language           | TypeScript | 5.9.x         |
 
 ## Project Structure
 
@@ -74,6 +76,7 @@ FinancialAdvisor/
 ## Key Features Implemented
 
 ### 1. Account Management
+
 - Create new accounts with validation
 - Support for 7 account types (checking, savings, credit card, etc.)
 - Real-time balance tracking
@@ -81,6 +84,7 @@ FinancialAdvisor/
 - Institution tracking
 
 ### 2. Transaction Tracking
+
 - Add transactions with type (debit/credit)
 - Auto-categorization using rule-based logic
 - Category suggestions as you type
@@ -89,17 +93,20 @@ FinancialAdvisor/
 - Validation against business rules
 
 ### 3. Financial Reports
+
 - Total balance calculation
 - Account count summary
 - Transaction count summary
 - Placeholder for advanced reports
 
 ### 4. Settings
+
 - Currency selection
 - Data export options
 - AI provider configuration (placeholder)
 
 ### 5. Praxis Integration
+
 - Declarative schema for all data models
 - Business rule validation
 - Type-safe operations
@@ -107,6 +114,7 @@ FinancialAdvisor/
 - Extensible logic framework
 
 ### 6. PluresDB Foundation
+
 - Integration layer created
 - localStorage fallback implemented
 - Reactive Svelte stores
@@ -115,35 +123,42 @@ FinancialAdvisor/
 ## Data Models (Praxis Schema)
 
 ### Account
+
 - id, name, type, balance, currency
 - institution, isActive
 - createdAt, updatedAt
 - **Rules**: Balance validation for account types
 
 ### Transaction
+
 - id, accountId, amount, description
 - category, date, type (debit/credit)
 - tags, createdAt
 - **Rules**: Positive amount, required fields
 
 ### Budget (Schema defined, UI pending)
+
 - id, name, category, amount
 - period (weekly/monthly/yearly)
 - startDate, endDate, isActive
 
 ### Goal (Schema defined, UI pending)
+
 - id, name, targetAmount, currentAmount
 - deadline, category, isCompleted
 
 ## Business Logic
 
 ### Validation
+
 - Account validation (balance constraints)
 - Transaction validation (required fields, positive amounts)
 - Type-safe operations throughout
 
 ### Auto-Categorization
+
 Rule-based transaction categorization with ~70% accuracy:
+
 - Food & Groceries
 - Transportation
 - Housing
@@ -156,6 +171,7 @@ Rule-based transaction categorization with ~70% accuracy:
 **Planned**: AI-powered categorization with 95% accuracy using LLM embeddings
 
 ### Budget Analysis
+
 - Calculate spending vs budget
 - Track days remaining
 - Project overages
@@ -164,6 +180,7 @@ Rule-based transaction categorization with ~70% accuracy:
 ## Build & Development
 
 ### Development Mode
+
 ```bash
 npm install
 npm run dev              # SvelteKit dev server
@@ -171,6 +188,7 @@ npm run tauri:dev        # Tauri + Svelte dev mode
 ```
 
 ### Production Build
+
 ```bash
 npm run build            # Build frontend
 npm run tauri:build      # Build desktop app for current platform
@@ -182,6 +200,7 @@ npm run tauri:build:linux
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint             # ESLint
 npm run format           # Prettier
@@ -192,6 +211,7 @@ npm test                 # Run tests (to be updated)
 ## Migration Checklist
 
 ### Completed ✅
+
 - [x] Tauri project structure
 - [x] SvelteKit configuration
 - [x] Rust backend basics
@@ -207,6 +227,7 @@ npm test                 # Run tests (to be updated)
 - [x] Code review
 
 ### In Progress 🔄
+
 - [ ] Full PluresDB implementation
 - [ ] Vector storage for AI
 - [ ] AI provider integration
@@ -214,6 +235,7 @@ npm test                 # Run tests (to be updated)
 - [ ] Goals UI
 
 ### Pending ⏳
+
 - [ ] Mobile support (iOS/Android)
 - [ ] Advanced reporting with charts
 - [ ] Data import/export
@@ -224,12 +246,14 @@ npm test                 # Run tests (to be updated)
 ## Security
 
 ### Data Privacy
+
 - All data stored locally
 - No cloud dependencies
 - Optional encryption (PluresDB feature)
 - Tauri security policies enforced
 
 ### Type Safety
+
 - Strict TypeScript mode enabled
 - Praxis schema validation
 - Runtime validation in forms
@@ -238,6 +262,7 @@ npm test                 # Run tests (to be updated)
 ## Performance
 
 ### Optimizations
+
 - Static site generation (SSG)
 - Modern build targets (ES2022)
 - Tree-shaking enabled
@@ -245,6 +270,7 @@ npm test                 # Run tests (to be updated)
 - Lazy loading of routes
 
 ### Bundle Size
+
 - Client: ~50KB (gzipped)
 - Server: ~60KB (pre-rendered)
 - Tauri binary: ~5-10MB (platform-dependent)
@@ -289,6 +315,7 @@ npm test                 # Run tests (to be updated)
 ## Conclusion
 
 The refactor successfully transforms Financial Advisor from a VSCode extension to a modern, multiplatform desktop application with:
+
 - Modern, reactive UI with Svelte
 - Schema-driven architecture with Praxis
 - Local-first data with PluresDB

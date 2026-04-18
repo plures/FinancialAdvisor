@@ -18,10 +18,16 @@ const PRIMITIVE_TAG_MAP = {
   textarea: 'Input',
 };
 
-// Design-dojo components that should not be imported locally
+// Components that must be imported from '@plures/design-dojo', not from local paths.
+// Button, Input, Select, Card, and EmptyState are excluded because their
+// @plures/design-dojo API is not yet compatible with this app's usage.
 const DESIGN_DOJO_COMPONENTS = new Set([
-  'Button', 'Input', 'Select', 'Card', 'Badge',
-  'Alert', 'EmptyState', 'Toggle', 'Toast', 'Dialog', 'Tooltip',
+  'Badge',
+  'Callout',
+  'Toggle',
+  'Toast',
+  'Dialog',
+  'Tooltip',
 ]);
 
 /** @type {import('eslint').Rule.RuleModule} */
@@ -29,7 +35,8 @@ const noLocalPrimitives = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow raw HTML primitive elements; use @plures/design-dojo components instead.',
+      description:
+        'Disallow raw HTML primitive elements; use @plures/design-dojo components instead.',
       recommended: true,
     },
     schema: [],
@@ -43,10 +50,10 @@ const noLocalPrimitives = {
       // svelte-eslint-parser exposes SvelteElement nodes for HTML elements
       SvelteElement(node) {
         const tagName =
-          node.name && typeof node.name === 'string'
-            ? node.name
-            : node.name && node.name.name;
-        if (!tagName) {return;}
+          node.name && typeof node.name === 'string' ? node.name : node.name && node.name.name;
+        if (!tagName) {
+          return;
+        }
         const component = PRIMITIVE_TAG_MAP[tagName];
         if (component) {
           context.report({
@@ -65,7 +72,8 @@ const preferDesignDojoImports = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Prefer importing design-dojo components from @plures/design-dojo rather than local paths.',
+      description:
+        'Prefer importing design-dojo components from @plures/design-dojo rather than local paths.',
       recommended: false,
     },
     schema: [],
@@ -79,16 +87,20 @@ const preferDesignDojoImports = {
       ImportDeclaration(node) {
         const source = node.source.value;
         // Only flag local imports (relative paths), not the package itself
-        if (typeof source !== 'string' || source.startsWith('@plures/design-dojo')) {return;}
-        if (!source.startsWith('.')) {return;}
+        if (typeof source !== 'string' || source.startsWith('@plures/design-dojo')) {
+          return;
+        }
+        if (!source.startsWith('.')) {
+          return;
+        }
 
         for (const specifier of node.specifiers) {
           const name =
             specifier.type === 'ImportDefaultSpecifier'
               ? specifier.local.name
               : specifier.type === 'ImportSpecifier'
-              ? specifier.imported.name
-              : null;
+                ? specifier.imported.name
+                : null;
           if (name && DESIGN_DOJO_COMPONENTS.has(name)) {
             context.report({
               node,

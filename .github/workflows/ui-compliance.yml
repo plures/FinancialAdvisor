@@ -64,6 +64,11 @@ jobs:
               while IFS= read -r line; do
                 # Allow importing from @plures/design-dojo re-exports
                 if ! echo "$line" | grep -q "design-dojo"; then
+                  # Allow Card from $lib/components — Card exists in @plures/design-dojo
+                  # but its API (Pane/GlassPanel) is not yet compatible with this app's usage
+                  if echo "$line" | grep -qE "components/Card"; then
+                    continue
+                  fi
                   VIOLATIONS="${VIOLATIONS}⚠️ \`${file}\`: ${line} — should import from @plures/design-dojo\n"
                   COUNT=$((COUNT + 1))
                 fi

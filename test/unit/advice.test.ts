@@ -44,9 +44,7 @@ import {
   runScenarios,
   composeScenarios,
 } from '../../packages/advice/dist/scenarios.js';
-import {
-  generatePlan,
-} from '../../packages/advice/dist/planner.js';
+import { generatePlan } from '../../packages/advice/dist/planner.js';
 import {
   summarizeFinancialState,
   summarizeRecommendation,
@@ -73,7 +71,7 @@ import { createMoney } from '../../packages/domain/dist/money.js';
 function makeCommitment(
   label: string,
   monthlyAmountCents: number,
-  daysSinceLastTransaction?: number,
+  daysSinceLastTransaction?: number
 ) {
   return {
     label,
@@ -84,11 +82,7 @@ function makeCommitment(
   };
 }
 
-function makeCategorySpend(
-  category: string,
-  actualCents: number,
-  budgetedCents?: number,
-) {
+function makeCategorySpend(category: string, actualCents: number, budgetedCents?: number) {
   return {
     category,
     actualCents,
@@ -113,12 +107,12 @@ describe('generateSubscriptionRecommendations', () => {
 
   it('generates a high-confidence recommendation for unused items', () => {
     const items = [
-      makeCommitment('Hulu', 1800, 95),        // unused 95 days
-      makeCommitment('Adobe CC', 2300, 120),    // unused 120 days
-      makeCommitment('Netflix', 1599, 10),      // recently used — excluded
+      makeCommitment('Hulu', 1800, 95), // unused 95 days
+      makeCommitment('Adobe CC', 2300, 120), // unused 120 days
+      makeCommitment('Netflix', 1599, 10), // recently used — excluded
     ];
     const result = generateSubscriptionRecommendations(items);
-    const unused = result.find((r) => r.confidence === 'high');
+    const unused = result.find(r => r.confidence === 'high');
 
     assert.ok(unused, 'Expected a high-confidence recommendation');
     assert.strictEqual(unused.category, 'subscription_cancellation');
@@ -131,11 +125,11 @@ describe('generateSubscriptionRecommendations', () => {
 
   it('generates a medium-confidence recommendation for items without usage data', () => {
     const items = [
-      makeCommitment('Audible', 600),    // no usage data
-      makeCommitment('Dropbox', 999),    // no usage data
+      makeCommitment('Audible', 600), // no usage data
+      makeCommitment('Dropbox', 999), // no usage data
     ];
     const result = generateSubscriptionRecommendations(items);
-    const review = result.find((r) => r.confidence === 'medium');
+    const review = result.find(r => r.confidence === 'medium');
 
     assert.ok(review, 'Expected a medium-confidence recommendation');
     assert.strictEqual(review.category, 'subscription_cancellation');
@@ -144,12 +138,12 @@ describe('generateSubscriptionRecommendations', () => {
 
   it('can generate both high- and medium-confidence recs in one call', () => {
     const items = [
-      makeCommitment('Unused App', 500, 100),  // unused 100 days
-      makeCommitment('Unknown App', 800),       // no usage data
+      makeCommitment('Unused App', 500, 100), // unused 100 days
+      makeCommitment('Unknown App', 800), // no usage data
     ];
     const result = generateSubscriptionRecommendations(items);
     assert.strictEqual(result.length, 2);
-    const confidences = result.map((r) => r.confidence).sort();
+    const confidences = result.map(r => r.confidence).sort();
     assert.deepStrictEqual(confidences, ['high', 'medium']);
   });
 
@@ -180,7 +174,7 @@ describe('generateSpendingRecommendations', () => {
   it('generates high-confidence rec for over-budget category', () => {
     const cats = [makeCategorySpend('Dining', 40000, 25000)]; // $400 vs $250 budget
     const result = generateSpendingRecommendations(cats);
-    const rec = result.find((r) => r.confidence === 'high');
+    const rec = result.find(r => r.confidence === 'high');
 
     assert.ok(rec, 'Expected high-confidence rec for over-budget category');
     assert.strictEqual(rec.category, 'spending_reduction');
@@ -194,22 +188,22 @@ describe('generateSpendingRecommendations', () => {
       makeCategorySpend('Utilities', 10000, 10000), // exactly on budget
     ];
     const result = generateSpendingRecommendations(cats);
-    const budgetRecs = result.filter((r) => r.category === 'spending_reduction');
+    const budgetRecs = result.filter(r => r.category === 'spending_reduction');
     assert.strictEqual(budgetRecs.length, 0);
   });
 
   it('generates low-confidence rebalance recs for top unbudgeted categories', () => {
     const cats = [
-      makeCategorySpend('Entertainment', 30000),  // no budget
-      makeCategorySpend('Shopping', 50000),        // no budget
-      makeCategorySpend('Transport', 15000),        // no budget
-      makeCategorySpend('Coffee', 5000),            // no budget — below top-3 by spend
+      makeCategorySpend('Entertainment', 30000), // no budget
+      makeCategorySpend('Shopping', 50000), // no budget
+      makeCategorySpend('Transport', 15000), // no budget
+      makeCategorySpend('Coffee', 5000), // no budget — below top-3 by spend
     ];
     const result = generateSpendingRecommendations(cats, 3);
-    const rebalance = result.filter((r) => r.category === 'budget_rebalance');
+    const rebalance = result.filter(r => r.category === 'budget_rebalance');
     // Top 3 unbudgeted: Shopping, Entertainment, Transport
     assert.strictEqual(rebalance.length, 3);
-    assert.ok(rebalance.every((r) => r.confidence === 'low'));
+    assert.ok(rebalance.every(r => r.confidence === 'low'));
   });
 
   it('suggests a 10% reduction for unbudgeted categories', () => {
@@ -229,9 +223,36 @@ describe('rankRecommendations', () => {
 
   it('sorts by monthly savings descending', () => {
     const recs = [
-      { id: 'a', monthlySavings: createMoney(1000, 'USD'), annualSavings: createMoney(12000, 'USD'), confidence: 'medium' as const, title: 'A', description: '', category: 'spending_reduction' as const, sourceTransactionIds: [] },
-      { id: 'b', monthlySavings: createMoney(5000, 'USD'), annualSavings: createMoney(60000, 'USD'), confidence: 'low' as const, title: 'B', description: '', category: 'spending_reduction' as const, sourceTransactionIds: [] },
-      { id: 'c', monthlySavings: createMoney(3000, 'USD'), annualSavings: createMoney(36000, 'USD'), confidence: 'high' as const, title: 'C', description: '', category: 'spending_reduction' as const, sourceTransactionIds: [] },
+      {
+        id: 'a',
+        monthlySavings: createMoney(1000, 'USD'),
+        annualSavings: createMoney(12000, 'USD'),
+        confidence: 'medium' as const,
+        title: 'A',
+        description: '',
+        category: 'spending_reduction' as const,
+        sourceTransactionIds: [],
+      },
+      {
+        id: 'b',
+        monthlySavings: createMoney(5000, 'USD'),
+        annualSavings: createMoney(60000, 'USD'),
+        confidence: 'low' as const,
+        title: 'B',
+        description: '',
+        category: 'spending_reduction' as const,
+        sourceTransactionIds: [],
+      },
+      {
+        id: 'c',
+        monthlySavings: createMoney(3000, 'USD'),
+        annualSavings: createMoney(36000, 'USD'),
+        confidence: 'high' as const,
+        title: 'C',
+        description: '',
+        category: 'spending_reduction' as const,
+        sourceTransactionIds: [],
+      },
     ];
     const ranked = rankRecommendations(recs);
     assert.strictEqual(ranked[0].id, 'b'); // $50 savings
@@ -241,9 +262,36 @@ describe('rankRecommendations', () => {
 
   it('breaks savings ties by confidence (high > medium > low)', () => {
     const recs = [
-      { id: 'low', monthlySavings: createMoney(1000, 'USD'), annualSavings: createMoney(12000, 'USD'), confidence: 'low' as const, title: 'Low', description: '', category: 'spending_reduction' as const, sourceTransactionIds: [] },
-      { id: 'high', monthlySavings: createMoney(1000, 'USD'), annualSavings: createMoney(12000, 'USD'), confidence: 'high' as const, title: 'High', description: '', category: 'spending_reduction' as const, sourceTransactionIds: [] },
-      { id: 'medium', monthlySavings: createMoney(1000, 'USD'), annualSavings: createMoney(12000, 'USD'), confidence: 'medium' as const, title: 'Medium', description: '', category: 'spending_reduction' as const, sourceTransactionIds: [] },
+      {
+        id: 'low',
+        monthlySavings: createMoney(1000, 'USD'),
+        annualSavings: createMoney(12000, 'USD'),
+        confidence: 'low' as const,
+        title: 'Low',
+        description: '',
+        category: 'spending_reduction' as const,
+        sourceTransactionIds: [],
+      },
+      {
+        id: 'high',
+        monthlySavings: createMoney(1000, 'USD'),
+        annualSavings: createMoney(12000, 'USD'),
+        confidence: 'high' as const,
+        title: 'High',
+        description: '',
+        category: 'spending_reduction' as const,
+        sourceTransactionIds: [],
+      },
+      {
+        id: 'medium',
+        monthlySavings: createMoney(1000, 'USD'),
+        annualSavings: createMoney(12000, 'USD'),
+        confidence: 'medium' as const,
+        title: 'Medium',
+        description: '',
+        category: 'spending_reduction' as const,
+        sourceTransactionIds: [],
+      },
     ];
     const ranked = rankRecommendations(recs);
     assert.strictEqual(ranked[0].id, 'high');
@@ -262,19 +310,13 @@ describe('runScenario — cancel_subscription', () => {
   ];
 
   it('returns zero delta when label not found', () => {
-    const result = runScenario(
-      { type: 'cancel_subscription', itemLabels: ['nonexistent'] },
-      items,
-    );
+    const result = runScenario({ type: 'cancel_subscription', itemLabels: ['nonexistent'] }, items);
     assert.strictEqual(result.monthlyDelta.cents, 0);
     assert.strictEqual(result.annualDelta.cents, 0);
   });
 
   it('computes correct monthly and annual savings for a single item', () => {
-    const result = runScenario(
-      { type: 'cancel_subscription', itemLabels: ['netflix'] },
-      items,
-    );
+    const result = runScenario({ type: 'cancel_subscription', itemLabels: ['netflix'] }, items);
     assert.strictEqual(result.monthlyDelta.cents, 1599);
     assert.strictEqual(result.annualDelta.cents, 1599 * 12);
   });
@@ -282,7 +324,7 @@ describe('runScenario — cancel_subscription', () => {
   it('sums savings across multiple cancelled items', () => {
     const result = runScenario(
       { type: 'cancel_subscription', itemLabels: ['netflix', 'spotify'] },
-      items,
+      items
     );
     assert.strictEqual(result.monthlyDelta.cents, 1599 + 999);
   });
@@ -290,16 +332,13 @@ describe('runScenario — cancel_subscription', () => {
   it('is case-insensitive for item label matching', () => {
     const result = runScenario(
       { type: 'cancel_subscription', itemLabels: ['Netflix', 'HULU'] },
-      items,
+      items
     );
     assert.strictEqual(result.monthlyDelta.cents, 1599 + 1800);
   });
 
   it('description mentions the cancelled service names', () => {
-    const result = runScenario(
-      { type: 'cancel_subscription', itemLabels: ['spotify'] },
-      items,
-    );
+    const result = runScenario({ type: 'cancel_subscription', itemLabels: ['spotify'] }, items);
     assert.ok(result.description.toLowerCase().includes('spotify'));
   });
 });
@@ -311,26 +350,30 @@ describe('runScenario — extra_debt_payment', () => {
     const result = runScenario({
       type: 'extra_debt_payment',
       debtName: 'Credit Card',
-      balanceCents: 500000,       // $5,000
-      annualInterestRate: 0.20,
+      balanceCents: 500000, // $5,000
+      annualInterestRate: 0.2,
       minimumPaymentCents: 10000, // $100/month
-      extraPaymentCents: 10000,   // $100 extra
+      extraPaymentCents: 10000, // $100 extra
     });
-    assert.ok(result.monthsSaved !== undefined && result.monthsSaved > 0,
-      'Should save at least one month');
+    assert.ok(
+      result.monthsSaved !== undefined && result.monthsSaved > 0,
+      'Should save at least one month'
+    );
   });
 
   it('reports interest saved', () => {
     const result = runScenario({
       type: 'extra_debt_payment',
       debtName: 'Credit Card',
-      balanceCents: 500000,       // $5,000
-      annualInterestRate: 0.20,
+      balanceCents: 500000, // $5,000
+      annualInterestRate: 0.2,
       minimumPaymentCents: 10000,
       extraPaymentCents: 5000,
     });
-    assert.ok(result.interestSaved !== undefined && result.interestSaved.cents > 0,
-      'Should save some interest');
+    assert.ok(
+      result.interestSaved !== undefined && result.interestSaved.cents > 0,
+      'Should save some interest'
+    );
   });
 
   it('monthly delta is negative (costs extra money each month)', () => {
@@ -342,8 +385,10 @@ describe('runScenario — extra_debt_payment', () => {
       minimumPaymentCents: 100000,
       extraPaymentCents: 20000,
     });
-    assert.ok(result.monthlyDelta.cents < 0,
-      'Extra payment is a cost, so monthly delta should be negative');
+    assert.ok(
+      result.monthlyDelta.cents < 0,
+      'Extra payment is a cost, so monthly delta should be negative'
+    );
   });
 
   it('description is plain language (no jargon)', () => {
@@ -357,7 +402,7 @@ describe('runScenario — extra_debt_payment', () => {
     });
     // Should include plain English phrases
     assert.ok(result.description.includes('sooner') || result.description.includes('month'));
-    assert.ok(!result.description.includes('amortis'));  // no jargon
+    assert.ok(!result.description.includes('amortis')); // no jargon
   });
 });
 
@@ -405,16 +450,16 @@ describe('runScenarios', () => {
 
 describe('generatePlan', () => {
   const healthyState = {
-    liquidBalanceCents: 1500000,   // $15 000
-    monthlyIncomeCents: 600000,    // $6 000
-    monthlyBurnCents: 400000,      // $4 000 → 3.75 months runway
+    liquidBalanceCents: 1500000, // $15 000
+    monthlyIncomeCents: 600000, // $6 000
+    monthlyBurnCents: 400000, // $4 000 → 3.75 months runway
     currency: 'USD',
     recurringCommitments: [],
     categorySpend: [],
   };
 
   const tightState = {
-    liquidBalanceCents: 200000,    // $2 000 — < 1 month runway
+    liquidBalanceCents: 200000, // $2 000 — < 1 month runway
     monthlyIncomeCents: 400000,
     monthlyBurnCents: 400000,
     currency: 'USD',
@@ -453,9 +498,7 @@ describe('generatePlan', () => {
 
   it('calculates total monthly and annual savings', () => {
     const plan = generatePlan(healthyState, sampleRecs);
-    const expectedMonthly = sampleRecs.reduce(
-      (s, r) => s + r.monthlySavings.cents, 0,
-    );
+    const expectedMonthly = sampleRecs.reduce((s, r) => s + r.monthlySavings.cents, 0);
     assert.strictEqual(plan.totalMonthlySavings.cents, expectedMonthly);
     assert.strictEqual(plan.totalAnnualSavings.cents, expectedMonthly * 12);
   });
@@ -464,7 +507,7 @@ describe('generatePlan', () => {
     const plan = generatePlan(tightState, sampleRecs);
     assert.ok(
       plan.actions[0].title.toLowerCase().includes('emergency'),
-      'First action should be emergency fund',
+      'First action should be emergency fund'
     );
     assert.strictEqual(plan.actions[0].priority, 'critical');
   });
@@ -472,8 +515,8 @@ describe('generatePlan', () => {
   it('does NOT add emergency-fund action when runway >= 3 months', () => {
     const plan = generatePlan(healthyState, sampleRecs);
     assert.ok(
-      !plan.actions.some((a) => a.title.toLowerCase().includes('emergency')),
-      'Should not include emergency fund action when runway is healthy',
+      !plan.actions.some(a => a.title.toLowerCase().includes('emergency')),
+      'Should not include emergency fund action when runway is healthy'
     );
   });
 
@@ -488,7 +531,7 @@ describe('generatePlan', () => {
     const plan = generatePlan(healthyState, []);
     assert.ok(
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(plan.generatedAt),
-      'generatedAt should be ISO 8601',
+      'generatedAt should be ISO 8601'
     );
   });
 
@@ -507,24 +550,18 @@ describe('generatePlan', () => {
 
 describe('summarizeFinancialState', () => {
   const surplusState = {
-    liquidBalanceCents: 2000000,  // $20 000
-    monthlyIncomeCents: 600000,   // $6 000
-    monthlyBurnCents: 400000,     // $4 000
+    liquidBalanceCents: 2000000, // $20 000
+    monthlyIncomeCents: 600000, // $6 000
+    monthlyBurnCents: 400000, // $4 000
     currency: 'USD',
-    recurringCommitments: [
-      makeCommitment('Netflix', 1599),
-      makeCommitment('Spotify', 999),
-    ],
-    categorySpend: [
-      makeCategorySpend('Groceries', 60000),
-      makeCategorySpend('Dining', 30000),
-    ],
+    recurringCommitments: [makeCommitment('Netflix', 1599), makeCommitment('Spotify', 999)],
+    categorySpend: [makeCategorySpend('Groceries', 60000), makeCategorySpend('Dining', 30000)],
   };
 
   const deficitState = {
     ...surplusState,
-    liquidBalanceCents: 300000,  // $3 000 — less than 1 month of burn ($4 000)
-    monthlyIncomeCents: 300000,  // income < burn
+    liquidBalanceCents: 300000, // $3 000 — less than 1 month of burn ($4 000)
+    monthlyIncomeCents: 300000, // income < burn
   };
 
   it('returns a non-empty headline string', () => {
@@ -541,7 +578,11 @@ describe('summarizeFinancialState', () => {
 
   it('overview contains income and spending figures', () => {
     const summary = summarizeFinancialState(surplusState);
-    assert.ok(summary.overview.includes('6,000') || summary.overview.includes('6000') || summary.overview.includes('6'));
+    assert.ok(
+      summary.overview.includes('6,000') ||
+        summary.overview.includes('6000') ||
+        summary.overview.includes('6')
+    );
     assert.ok(summary.overview.length > 50);
   });
 
@@ -680,8 +721,16 @@ describe('composeScenarios', () => {
   });
 
   it('sums monthly and annual deltas across all results', () => {
-    const r1 = runScenario({ type: 'spending_reduction', category: 'Dining', reductionCents: 10000 });
-    const r2 = runScenario({ type: 'spending_reduction', category: 'Shopping', reductionCents: 5000 });
+    const r1 = runScenario({
+      type: 'spending_reduction',
+      category: 'Dining',
+      reductionCents: 10000,
+    });
+    const r2 = runScenario({
+      type: 'spending_reduction',
+      category: 'Shopping',
+      reductionCents: 5000,
+    });
     const composed = composeScenarios([r1, r2]);
     assert.strictEqual(composed.monthlyDelta.cents, 15000);
     assert.strictEqual(composed.annualDelta.cents, 180000);
@@ -692,11 +741,15 @@ describe('composeScenarios', () => {
       type: 'extra_debt_payment',
       debtName: 'Card',
       balanceCents: 500000,
-      annualInterestRate: 0.20,
+      annualInterestRate: 0.2,
       minimumPaymentCents: 10000,
       extraPaymentCents: 10000,
     });
-    const spend = runScenario({ type: 'spending_reduction', category: 'Dining', reductionCents: 5000 });
+    const spend = runScenario({
+      type: 'spending_reduction',
+      category: 'Dining',
+      reductionCents: 5000,
+    });
     const composed = composeScenarios([debt, spend], 'My plan');
     assert.strictEqual(composed.name, 'My plan');
     assert.ok(composed.interestSaved !== undefined && composed.interestSaved.cents > 0);
@@ -710,7 +763,11 @@ describe('composeScenarios', () => {
 
   it('combines income_change with spending_reduction', () => {
     const income = runScenario({ type: 'income_change', monthlyDeltaCents: 20000 });
-    const spend = runScenario({ type: 'spending_reduction', category: 'Dining', reductionCents: 10000 });
+    const spend = runScenario({
+      type: 'spending_reduction',
+      category: 'Dining',
+      reductionCents: 10000,
+    });
     const composed = composeScenarios([income, spend]);
     assert.strictEqual(composed.monthlyDelta.cents, 30000);
   });
@@ -725,7 +782,12 @@ describe('generateDebtRecommendations', () => {
 
   it('generates a recommendation for high-interest debt', () => {
     const debts = [
-      { name: 'Chase Visa', balanceCents: 500000, annualInterestRate: 0.22, minimumPaymentCents: 10000 },
+      {
+        name: 'Chase Visa',
+        balanceCents: 500000,
+        annualInterestRate: 0.22,
+        minimumPaymentCents: 10000,
+      },
     ];
     const recs = generateDebtRecommendations(debts);
     assert.ok(recs.length > 0, 'Should generate at least one recommendation');
@@ -736,16 +798,31 @@ describe('generateDebtRecommendations', () => {
 
   it('does not flag debts below the interest threshold', () => {
     const debts = [
-      { name: 'Cheap Loan', balanceCents: 300000, annualInterestRate: 0.04, minimumPaymentCents: 5000 },
+      {
+        name: 'Cheap Loan',
+        balanceCents: 300000,
+        annualInterestRate: 0.04,
+        minimumPaymentCents: 5000,
+      },
     ];
-    const recs = generateDebtRecommendations(debts, 0.10);
+    const recs = generateDebtRecommendations(debts, 0.1);
     assert.strictEqual(recs.length, 0, 'Should not flag a 4% loan with 10% threshold');
   });
 
   it('sorts by interest rate descending (highest rate first)', () => {
     const debts = [
-      { name: 'Low Rate', balanceCents: 500000, annualInterestRate: 0.12, minimumPaymentCents: 10000 },
-      { name: 'High Rate', balanceCents: 300000, annualInterestRate: 0.25, minimumPaymentCents: 8000 },
+      {
+        name: 'Low Rate',
+        balanceCents: 500000,
+        annualInterestRate: 0.12,
+        minimumPaymentCents: 10000,
+      },
+      {
+        name: 'High Rate',
+        balanceCents: 300000,
+        annualInterestRate: 0.25,
+        minimumPaymentCents: 8000,
+      },
     ];
     const recs = generateDebtRecommendations(debts);
     assert.ok(recs.length === 2);
@@ -754,7 +831,7 @@ describe('generateDebtRecommendations', () => {
 
   it('skips debts with zero balance', () => {
     const debts = [
-      { name: 'Paid Off', balanceCents: 0, annualInterestRate: 0.20, minimumPaymentCents: 0 },
+      { name: 'Paid Off', balanceCents: 0, annualInterestRate: 0.2, minimumPaymentCents: 0 },
     ];
     const recs = generateDebtRecommendations(debts);
     assert.strictEqual(recs.length, 0);
@@ -774,9 +851,9 @@ describe('generateDebtRecommendations', () => {
 describe('generateSavingsRecommendations', () => {
   it('returns emergency-fund rec when runway < 3 months', () => {
     const state = {
-      liquidBalanceCents: 200000,   // $2,000
-      monthlyIncomeCents: 500000,   // $5,000
-      monthlyBurnCents: 400000,     // $4,000 → 0.5 months runway
+      liquidBalanceCents: 200000, // $2,000
+      monthlyIncomeCents: 500000, // $5,000
+      monthlyBurnCents: 400000, // $4,000 → 0.5 months runway
       currency: 'USD',
       recurringCommitments: [] as ReturnType<typeof makeCommitment>[],
       categorySpend: [] as ReturnType<typeof makeCategorySpend>[],
@@ -790,9 +867,9 @@ describe('generateSavingsRecommendations', () => {
 
   it('does NOT recommend emergency fund when runway >= 3 months', () => {
     const state = {
-      liquidBalanceCents: 2000000,  // $20,000
+      liquidBalanceCents: 2000000, // $20,000
       monthlyIncomeCents: 600000,
-      monthlyBurnCents: 400000,     // 5 months runway
+      monthlyBurnCents: 400000, // 5 months runway
       currency: 'USD',
       recurringCommitments: [] as ReturnType<typeof makeCommitment>[],
       categorySpend: [] as ReturnType<typeof makeCategorySpend>[],
@@ -804,9 +881,9 @@ describe('generateSavingsRecommendations', () => {
 
   it('recommends increasing savings rate when below 20%', () => {
     const state = {
-      liquidBalanceCents: 3000000,  // enough runway
-      monthlyIncomeCents: 600000,   // $6,000
-      monthlyBurnCents: 540000,     // $5,400 → 10% savings rate
+      liquidBalanceCents: 3000000, // enough runway
+      monthlyIncomeCents: 600000, // $6,000
+      monthlyBurnCents: 540000, // $5,400 → 10% savings rate
       currency: 'USD',
       recurringCommitments: [] as ReturnType<typeof makeCommitment>[],
       categorySpend: [] as ReturnType<typeof makeCategorySpend>[],
@@ -820,8 +897,8 @@ describe('generateSavingsRecommendations', () => {
   it('does NOT recommend savings rate increase when already at 20%+', () => {
     const state = {
       liquidBalanceCents: 3000000,
-      monthlyIncomeCents: 600000,   // $6,000
-      monthlyBurnCents: 480000,     // $4,800 → exactly 20% savings rate
+      monthlyIncomeCents: 600000, // $6,000
+      monthlyBurnCents: 480000, // $4,800 → exactly 20% savings rate
       currency: 'USD',
       recurringCommitments: [] as ReturnType<typeof makeCommitment>[],
       categorySpend: [] as ReturnType<typeof makeCategorySpend>[],
@@ -833,9 +910,9 @@ describe('generateSavingsRecommendations', () => {
 
   it('returns empty when state is healthy', () => {
     const state = {
-      liquidBalanceCents: 5000000,  // $50,000
+      liquidBalanceCents: 5000000, // $50,000
       monthlyIncomeCents: 600000,
-      monthlyBurnCents: 400000,     // 33% savings rate, 12.5 months runway
+      monthlyBurnCents: 400000, // 33% savings rate, 12.5 months runway
       currency: 'USD',
       recurringCommitments: [] as ReturnType<typeof makeCommitment>[],
       categorySpend: [] as ReturnType<typeof makeCategorySpend>[],
@@ -851,8 +928,8 @@ describe('generateIncomeRecommendations', () => {
   it('recommends closing income gap when spending > income', () => {
     const state = {
       liquidBalanceCents: 500000,
-      monthlyIncomeCents: 300000,   // $3,000
-      monthlyBurnCents: 400000,     // $4,000
+      monthlyIncomeCents: 300000, // $3,000
+      monthlyBurnCents: 400000, // $4,000
       currency: 'USD',
       recurringCommitments: [] as ReturnType<typeof makeCommitment>[],
       categorySpend: [] as ReturnType<typeof makeCategorySpend>[],
@@ -881,12 +958,12 @@ describe('generateIncomeRecommendations', () => {
   it('flags high fixed-cost burden when recurring > 50% of income', () => {
     const state = {
       liquidBalanceCents: 500000,
-      monthlyIncomeCents: 400000,   // $4,000
+      monthlyIncomeCents: 400000, // $4,000
       monthlyBurnCents: 300000,
       currency: 'USD',
       recurringCommitments: [
-        makeCommitment('Rent', 150000),     // $1,500
-        makeCommitment('Car', 50000),       // $500
+        makeCommitment('Rent', 150000), // $1,500
+        makeCommitment('Car', 50000), // $500
         makeCommitment('Insurance', 20000), // $200
         // Total: $2,200 = 55% of $4,000
       ],
@@ -901,12 +978,12 @@ describe('generateIncomeRecommendations', () => {
   it('does NOT flag fixed costs when recurring <= 50% of income', () => {
     const state = {
       liquidBalanceCents: 500000,
-      monthlyIncomeCents: 600000,   // $6,000
+      monthlyIncomeCents: 600000, // $6,000
       monthlyBurnCents: 400000,
       currency: 'USD',
       recurringCommitments: [
-        makeCommitment('Rent', 150000),  // $1,500
-        makeCommitment('Car', 50000),    // $500
+        makeCommitment('Rent', 150000), // $1,500
+        makeCommitment('Car', 50000), // $500
         // Total: $2,000 = 33% of $6,000
       ],
       categorySpend: [] as ReturnType<typeof makeCategorySpend>[],
@@ -922,18 +999,23 @@ describe('generateIncomeRecommendations', () => {
 describe('generateAllRecommendations', () => {
   it('combines recommendations from all categories', () => {
     const state = {
-      liquidBalanceCents: 100000,     // $1,000 — low runway
-      monthlyIncomeCents: 300000,     // $3,000
-      monthlyBurnCents: 400000,       // $4,000 — income gap
+      liquidBalanceCents: 100000, // $1,000 — low runway
+      monthlyIncomeCents: 300000, // $3,000
+      monthlyBurnCents: 400000, // $4,000 — income gap
       currency: 'USD',
       recurringCommitments: [
-        makeCommitment('Hulu', 1800, 100),  // unused subscription
+        makeCommitment('Hulu', 1800, 100), // unused subscription
       ],
       categorySpend: [
-        makeCategorySpend('Dining', 40000, 25000),  // over budget
+        makeCategorySpend('Dining', 40000, 25000), // over budget
       ],
       debts: [
-        { name: 'Visa', balanceCents: 500000, annualInterestRate: 0.22, minimumPaymentCents: 10000 },
+        {
+          name: 'Visa',
+          balanceCents: 500000,
+          annualInterestRate: 0.22,
+          minimumPaymentCents: 10000,
+        },
       ],
     };
     const recs = generateAllRecommendations(state);
@@ -968,14 +1050,15 @@ describe('generateAllRecommendations', () => {
       monthlyIncomeCents: 300000,
       monthlyBurnCents: 400000,
       currency: 'USD',
-      recurringCommitments: [
-        makeCommitment('Hulu', 1800, 100),
-      ],
-      categorySpend: [
-        makeCategorySpend('Dining', 40000, 25000),
-      ],
+      recurringCommitments: [makeCommitment('Hulu', 1800, 100)],
+      categorySpend: [makeCategorySpend('Dining', 40000, 25000)],
       debts: [
-        { name: 'Visa', balanceCents: 500000, annualInterestRate: 0.22, minimumPaymentCents: 10000 },
+        {
+          name: 'Visa',
+          balanceCents: 500000,
+          annualInterestRate: 0.22,
+          minimumPaymentCents: 10000,
+        },
       ],
     };
     const recs = generateAllRecommendations(state);
@@ -998,14 +1081,24 @@ describe('rankByImpactFeasibility', () => {
 
   it('promotes high-feasibility items over lower-feasibility items with same savings', () => {
     const subscription = {
-      id: 'sub', monthlySavings: createMoney(1000, 'USD'), annualSavings: createMoney(12000, 'USD'),
-      confidence: 'high' as const, title: 'Cancel sub', description: '',
-      category: 'subscription_cancellation' as const, sourceTransactionIds: [] as string[],
+      id: 'sub',
+      monthlySavings: createMoney(1000, 'USD'),
+      annualSavings: createMoney(12000, 'USD'),
+      confidence: 'high' as const,
+      title: 'Cancel sub',
+      description: '',
+      category: 'subscription_cancellation' as const,
+      sourceTransactionIds: [] as string[],
     };
     const income = {
-      id: 'inc', monthlySavings: createMoney(1000, 'USD'), annualSavings: createMoney(12000, 'USD'),
-      confidence: 'high' as const, title: 'Increase income', description: '',
-      category: 'income_optimization' as const, sourceTransactionIds: [] as string[],
+      id: 'inc',
+      monthlySavings: createMoney(1000, 'USD'),
+      annualSavings: createMoney(12000, 'USD'),
+      confidence: 'high' as const,
+      title: 'Increase income',
+      description: '',
+      category: 'income_optimization' as const,
+      sourceTransactionIds: [] as string[],
     };
 
     const ranked = rankByImpactFeasibility([income, subscription]);
@@ -1015,14 +1108,24 @@ describe('rankByImpactFeasibility', () => {
 
   it('high-savings low-feasibility can outrank low-savings high-feasibility', () => {
     const smallSub = {
-      id: 'small-sub', monthlySavings: createMoney(100, 'USD'), annualSavings: createMoney(1200, 'USD'),
-      confidence: 'high' as const, title: 'Cancel tiny sub', description: '',
-      category: 'subscription_cancellation' as const, sourceTransactionIds: [] as string[],
+      id: 'small-sub',
+      monthlySavings: createMoney(100, 'USD'),
+      annualSavings: createMoney(1200, 'USD'),
+      confidence: 'high' as const,
+      title: 'Cancel tiny sub',
+      description: '',
+      category: 'subscription_cancellation' as const,
+      sourceTransactionIds: [] as string[],
     };
     const bigDebt = {
-      id: 'big-debt', monthlySavings: createMoney(5000, 'USD'), annualSavings: createMoney(60000, 'USD'),
-      confidence: 'high' as const, title: 'Pay extra on debt', description: '',
-      category: 'debt_payoff' as const, sourceTransactionIds: [] as string[],
+      id: 'big-debt',
+      monthlySavings: createMoney(5000, 'USD'),
+      annualSavings: createMoney(60000, 'USD'),
+      confidence: 'high' as const,
+      title: 'Pay extra on debt',
+      description: '',
+      category: 'debt_payoff' as const,
+      sourceTransactionIds: [] as string[],
     };
 
     const ranked = rankByImpactFeasibility([smallSub, bigDebt]);
@@ -1031,14 +1134,24 @@ describe('rankByImpactFeasibility', () => {
 
   it('confidence affects feasibility multiplier', () => {
     const highConf = {
-      id: 'high', monthlySavings: createMoney(1000, 'USD'), annualSavings: createMoney(12000, 'USD'),
-      confidence: 'high' as const, title: 'A', description: '',
-      category: 'spending_reduction' as const, sourceTransactionIds: [] as string[],
+      id: 'high',
+      monthlySavings: createMoney(1000, 'USD'),
+      annualSavings: createMoney(12000, 'USD'),
+      confidence: 'high' as const,
+      title: 'A',
+      description: '',
+      category: 'spending_reduction' as const,
+      sourceTransactionIds: [] as string[],
     };
     const lowConf = {
-      id: 'low', monthlySavings: createMoney(1000, 'USD'), annualSavings: createMoney(12000, 'USD'),
-      confidence: 'low' as const, title: 'B', description: '',
-      category: 'spending_reduction' as const, sourceTransactionIds: [] as string[],
+      id: 'low',
+      monthlySavings: createMoney(1000, 'USD'),
+      annualSavings: createMoney(12000, 'USD'),
+      confidence: 'low' as const,
+      title: 'B',
+      description: '',
+      category: 'spending_reduction' as const,
+      sourceTransactionIds: [] as string[],
     };
 
     const ranked = rankByImpactFeasibility([lowConf, highConf]);
@@ -1060,10 +1173,14 @@ describe('summarizeWithProvider', () => {
 
   const sampleRecs = [
     {
-      id: 'r1', title: 'Cancel unused subscriptions', description: 'Cancel Hulu.',
+      id: 'r1',
+      title: 'Cancel unused subscriptions',
+      description: 'Cancel Hulu.',
       category: 'subscription_cancellation' as const,
-      monthlySavings: createMoney(1800, 'USD'), annualSavings: createMoney(21600, 'USD'),
-      confidence: 'high' as const, sourceTransactionIds: [] as string[],
+      monthlySavings: createMoney(1800, 'USD'),
+      annualSavings: createMoney(21600, 'USD'),
+      confidence: 'high' as const,
+      sourceTransactionIds: [] as string[],
     },
   ];
 
@@ -1161,12 +1278,18 @@ describe('summarizeWithProvider', () => {
 
     await summarizeWithProvider(baseState, sampleRecs, capturingProvider);
     // Prompt should contain key financial figures
-    assert.ok(capturedPrompt.includes('6,000') || capturedPrompt.includes('6000'),
-      'Prompt should include income figure');
-    assert.ok(capturedPrompt.includes('4,000') || capturedPrompt.includes('4000'),
-      'Prompt should include expense figure');
-    assert.ok(capturedPrompt.includes('Cancel unused subscriptions'),
-      'Prompt should include recommendation titles');
+    assert.ok(
+      capturedPrompt.includes('6,000') || capturedPrompt.includes('6000'),
+      'Prompt should include income figure'
+    );
+    assert.ok(
+      capturedPrompt.includes('4,000') || capturedPrompt.includes('4000'),
+      'Prompt should include expense figure'
+    );
+    assert.ok(
+      capturedPrompt.includes('Cancel unused subscriptions'),
+      'Prompt should include recommendation titles'
+    );
   });
 });
 
@@ -1204,7 +1327,9 @@ describe('createSummaryProvider', () => {
   });
 
   it('falls back to template when created provider throws', async () => {
-    const provider = createSummaryProvider(async () => { throw new Error('boom'); });
+    const provider = createSummaryProvider(async () => {
+      throw new Error('boom');
+    });
 
     const state = {
       liquidBalanceCents: 2000000,
@@ -1235,10 +1360,14 @@ describe('buildSummaryPrompt', () => {
 
   const recs = [
     {
-      id: 'r1', title: 'Reduce Groceries spending', description: 'Over budget.',
+      id: 'r1',
+      title: 'Reduce Groceries spending',
+      description: 'Over budget.',
       category: 'spending_reduction' as const,
-      monthlySavings: createMoney(10000, 'USD'), annualSavings: createMoney(120000, 'USD'),
-      confidence: 'high' as const, sourceTransactionIds: [] as string[],
+      monthlySavings: createMoney(10000, 'USD'),
+      annualSavings: createMoney(120000, 'USD'),
+      confidence: 'high' as const,
+      sourceTransactionIds: [] as string[],
     },
   ];
 
@@ -1249,25 +1378,35 @@ describe('buildSummaryPrompt', () => {
 
   it('contains financial figures from the state', () => {
     const prompt = buildSummaryPrompt(state, recs);
-    assert.ok(prompt.includes('4,000') || prompt.includes('4000'),
-      'Prompt should include income figure');
-    assert.ok(prompt.includes('3,500') || prompt.includes('3500'),
-      'Prompt should include expense figure');
-    assert.ok(prompt.includes('5,000') || prompt.includes('5000'),
-      'Prompt should include liquid balance');
+    assert.ok(
+      prompt.includes('4,000') || prompt.includes('4000'),
+      'Prompt should include income figure'
+    );
+    assert.ok(
+      prompt.includes('3,500') || prompt.includes('3500'),
+      'Prompt should include expense figure'
+    );
+    assert.ok(
+      prompt.includes('5,000') || prompt.includes('5000'),
+      'Prompt should include liquid balance'
+    );
   });
 
   it('contains recommendation details when supplied', () => {
     const prompt = buildSummaryPrompt(state, recs);
-    assert.ok(prompt.includes('Reduce Groceries spending'),
-      'Prompt should include recommendation title');
+    assert.ok(
+      prompt.includes('Reduce Groceries spending'),
+      'Prompt should include recommendation title'
+    );
   });
 
   it('works with empty recommendations', () => {
     const prompt = buildSummaryPrompt(state, []);
     assert.ok(typeof prompt === 'string' && prompt.length > 0);
-    assert.ok(!prompt.includes('Recommendations:'),
-      'Prompt should not include Recommendations section when none supplied');
+    assert.ok(
+      !prompt.includes('Recommendations:'),
+      'Prompt should not include Recommendations section when none supplied'
+    );
   });
 
   it('matches the prompt that summarizeWithProvider sends to the LLM', async () => {
@@ -1275,20 +1414,29 @@ describe('buildSummaryPrompt', () => {
     const capturingProvider = createSummaryProvider(async (prompt: string) => {
       capturedPrompt = prompt;
       return JSON.stringify({
-        headline: 'T', overview: 'T', highlights: ['T'], topAction: 'T',
+        headline: 'T',
+        overview: 'T',
+        highlights: ['T'],
+        topAction: 'T',
       });
     });
 
     await summarizeWithProvider(state, recs, capturingProvider);
     const publicPrompt = buildSummaryPrompt(state, recs);
-    assert.strictEqual(capturedPrompt, publicPrompt,
-      'buildSummaryPrompt output should match what the LLM provider receives');
+    assert.strictEqual(
+      capturedPrompt,
+      publicPrompt,
+      'buildSummaryPrompt output should match what the LLM provider receives'
+    );
   });
 
   it('instructs the LLM not to invent numbers', () => {
     const prompt = buildSummaryPrompt(state, recs);
-    assert.ok(prompt.toLowerCase().includes('do not invent') || prompt.toLowerCase().includes('do not change'),
-      'Prompt should instruct the LLM not to invent numbers');
+    assert.ok(
+      prompt.toLowerCase().includes('do not invent') ||
+        prompt.toLowerCase().includes('do not change'),
+      'Prompt should instruct the LLM not to invent numbers'
+    );
   });
 });
 
@@ -1647,8 +1795,10 @@ describe('buildFinancialStateSnapshot', () => {
     // Should use subscription items, not recurring items
     assert.strictEqual(state.recurringCommitments.length, 1);
     assert.strictEqual(state.recurringCommitments[0].label, 'Subscription Item');
-    assert.ok(state.recurringCommitments[0].daysSinceLastTransaction !== undefined,
-      'Should have daysSinceLastTransaction from subscription data');
+    assert.ok(
+      state.recurringCommitments[0].daysSinceLastTransaction !== undefined,
+      'Should have daysSinceLastTransaction from subscription data'
+    );
   });
 
   it('converts categoryVariances to categorySpend', () => {

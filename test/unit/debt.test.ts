@@ -19,10 +19,7 @@
 import { describe, it } from 'mocha';
 import * as assert from 'assert';
 
-import {
-  computeDebtPayoff,
-  comparePayoffStrategies,
-} from '../../packages/analytics/dist/debt.js';
+import { computeDebtPayoff, comparePayoffStrategies } from '../../packages/analytics/dist/debt.js';
 import { createMoney } from '../../packages/domain/dist/money.js';
 
 // ─── computeDebtPayoff ────────────────────────────────────────────────────────
@@ -32,11 +29,11 @@ describe('computeDebtPayoff', () => {
     const debt = {
       id: 'd-1',
       name: 'Credit Card',
-      balance: createMoney(100000, 'USD'),       // $1 000
-      annualInterestRate: 0.20,
-      minimumPayment: createMoney(5000, 'USD'),  // $50/month
+      balance: createMoney(100000, 'USD'), // $1 000
+      annualInterestRate: 0.2,
+      minimumPayment: createMoney(5000, 'USD'), // $50/month
     };
-    const payment = createMoney(20000, 'USD');   // $200/month
+    const payment = createMoney(20000, 'USD'); // $200/month
 
     const result = computeDebtPayoff(debt, payment);
 
@@ -48,36 +45,33 @@ describe('computeDebtPayoff', () => {
     const debt = {
       id: 'd-2',
       name: 'Personal Loan',
-      balance: createMoney(500000, 'USD'),       // $5 000
+      balance: createMoney(500000, 'USD'), // $5 000
       annualInterestRate: 0.12,
       minimumPayment: createMoney(10000, 'USD'),
     };
-    const payment = createMoney(50000, 'USD');   // $500/month
+    const payment = createMoney(50000, 'USD'); // $500/month
 
     const result = computeDebtPayoff(debt, payment);
 
-    assert.strictEqual(
-      result.totalPaid.cents,
-      debt.balance.cents + result.totalInterest.cents,
-    );
+    assert.strictEqual(result.totalPaid.cents, debt.balance.cents + result.totalInterest.cents);
   });
 
   it('accumulates more total interest at a higher annual rate', () => {
     const makeDebt = (rate: number) => ({
       id: 'd-rate',
       name: 'Card',
-      balance: createMoney(300000, 'USD'),       // $3 000
+      balance: createMoney(300000, 'USD'), // $3 000
       annualInterestRate: rate,
       minimumPayment: createMoney(5000, 'USD'),
     });
-    const payment = createMoney(25000, 'USD');   // $250/month
+    const payment = createMoney(25000, 'USD'); // $250/month
 
-    const lowRate  = computeDebtPayoff(makeDebt(0.06), payment);
+    const lowRate = computeDebtPayoff(makeDebt(0.06), payment);
     const highRate = computeDebtPayoff(makeDebt(0.24), payment);
 
     assert.ok(
       highRate.totalInterest.cents > lowRate.totalInterest.cents,
-      'higher rate should accumulate more interest',
+      'higher rate should accumulate more interest'
     );
   });
 
@@ -101,11 +95,11 @@ describe('computeDebtPayoff', () => {
     const debt = {
       id: 'd-date',
       name: 'Loan',
-      balance: createMoney(50000, 'USD'),        // $500
-      annualInterestRate: 0.10,
+      balance: createMoney(50000, 'USD'), // $500
+      annualInterestRate: 0.1,
       minimumPayment: createMoney(2000, 'USD'),
     };
-    const payment = createMoney(15000, 'USD');   // $150/month
+    const payment = createMoney(15000, 'USD'); // $150/month
 
     const result = computeDebtPayoff(debt, payment);
 
@@ -116,7 +110,7 @@ describe('computeDebtPayoff', () => {
     const debt = {
       id: 'd-seq',
       name: 'Card',
-      balance: createMoney(30000, 'USD'),        // $300
+      balance: createMoney(30000, 'USD'), // $300
       annualInterestRate: 0.15,
       minimumPayment: createMoney(2000, 'USD'),
     };
@@ -145,7 +139,7 @@ describe('computeDebtPayoff', () => {
       assert.strictEqual(
         entry.payment.cents,
         entry.principal.cents + entry.interest.cents,
-        `month ${entry.month}: payment should equal principal + interest`,
+        `month ${entry.month}: payment should equal principal + interest`
       );
     }
   });
@@ -173,10 +167,7 @@ describe('computeDebtPayoff', () => {
       annualInterestRate: 0.15,
       minimumPayment: createMoney(3000, 'USD'),
     };
-    assert.throws(
-      () => computeDebtPayoff(debt, createMoney(10000, 'EUR')),
-      /Currency mismatch/,
-    );
+    assert.throws(() => computeDebtPayoff(debt, createMoney(10000, 'EUR')), /Currency mismatch/);
   });
 
   it('throws when monthlyPayment is zero', () => {
@@ -189,7 +180,7 @@ describe('computeDebtPayoff', () => {
     };
     assert.throws(
       () => computeDebtPayoff(debt, createMoney(0, 'USD')),
-      /monthlyPayment must be positive/,
+      /monthlyPayment must be positive/
     );
   });
 });
@@ -201,14 +192,14 @@ describe('comparePayoffStrategies', () => {
     {
       id: 'debt-small-high-rate',
       name: 'Small High-Rate Card',
-      balance: createMoney(100000, 'USD'),    // $1 000 — lower balance, higher rate
+      balance: createMoney(100000, 'USD'), // $1 000 — lower balance, higher rate
       annualInterestRate: 0.24,
       minimumPayment: createMoney(3000, 'USD'),
     },
     {
       id: 'debt-large-low-rate',
       name: 'Large Low-Rate Loan',
-      balance: createMoney(500000, 'USD'),   // $5 000 — higher balance, lower rate
+      balance: createMoney(500000, 'USD'), // $5 000 — higher balance, lower rate
       annualInterestRate: 0.08,
       minimumPayment: createMoney(10000, 'USD'),
     },
@@ -228,13 +219,13 @@ describe('comparePayoffStrategies', () => {
     // Avalanche should never result in more total interest than snowball.
     assert.ok(
       result.avalanche.totalInterest.cents <= result.snowball.totalInterest.cents,
-      'avalanche total interest should be less than or equal to snowball',
+      'avalanche total interest should be less than or equal to snowball'
     );
 
     // Derived summary field should be non-negative (implementation clamps it).
     assert.ok(
       result.interestSavedByAvalanche.cents >= 0,
-      'interestSavedByAvalanche should be non-negative',
+      'interestSavedByAvalanche should be non-negative'
     );
   });
 
@@ -244,7 +235,7 @@ describe('comparePayoffStrategies', () => {
     // Avalanche should never take more months than snowball.
     assert.ok(
       result.avalanche.months <= result.snowball.months,
-      'avalanche should complete in no more months than snowball',
+      'avalanche should complete in no more months than snowball'
     );
 
     // Derived summary field should be non-negative (implementation clamps it).
@@ -258,11 +249,11 @@ describe('comparePayoffStrategies', () => {
 
     assert.strictEqual(
       result.snowball.totalPaid.cents - result.snowball.totalInterest.cents,
-      totalPrincipal,
+      totalPrincipal
     );
     assert.strictEqual(
       result.avalanche.totalPaid.cents - result.avalanche.totalInterest.cents,
-      totalPrincipal,
+      totalPrincipal
     );
   });
 

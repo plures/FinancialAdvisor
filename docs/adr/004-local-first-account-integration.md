@@ -17,6 +17,7 @@ FinancialAdvisor needs automated account synchronization to compete with industr
 ### The Middleman Problem
 
 Traditional solutions (Plaid, Yodlee, MX) position themselves as middlemen:
+
 - They have access to user bank credentials
 - They aggregate user transaction data
 - They monetize user data through analytics
@@ -60,21 +61,21 @@ Only for users who explicitly choose convenience over privacy, with full transpa
 ✅ **Privacy**: Bank never knows about our app  
 ✅ **User Ownership**: User controls the files  
 ✅ **No Middlemen**: Direct download from bank  
-✅ **Free**: Zero API costs at any scale  
+✅ **Free**: Zero API costs at any scale
 
 #### Universal Coverage
 
 ✅ **Works with ANY Bank**: If a bank exists, it likely exports OFX/CSV  
 ✅ **No API Needed**: Banks have been exporting files for decades  
 ✅ **Proven Standard**: OFX is 25+ year old open standard  
-✅ **Future-Proof**: File exports won't go away  
+✅ **Future-Proof**: File exports won't go away
 
 #### Competitive Advantages
 
 ✅ **Cost**: $0 vs. Plaid's $0.30-0.60/account/month  
 ✅ **Privacy**: Maximum privacy vs. third-party access  
 ✅ **Control**: Users control timing and what data to import  
-✅ **Trust**: No black box, users see the files  
+✅ **Trust**: No black box, users see the files
 
 #### User Experience
 
@@ -95,7 +96,7 @@ For users who want automation but still value privacy:
 ✅ **Open Source**: AGPL licensed, fully auditable  
 ✅ **No Fees**: Free forever  
 ✅ **Privacy**: Data never leaves user's network  
-✅ **Control**: User configures and controls everything  
+✅ **Control**: User configures and controls everything
 
 ### Why Plaid is Optional, Not Primary
 
@@ -105,9 +106,10 @@ Plaid contradicts our values:
 ❌ **Privacy Risk**: Third-party has credentials and data  
 ❌ **Cost**: Expensive at scale ($600+/month at 2,000 accounts)  
 ❌ **Lock-in**: Hard to migrate away once users depend on it  
-❌ **Trust**: Users must trust Plaid with everything  
+❌ **Trust**: Users must trust Plaid with everything
 
 **Plaid is only offered**:
+
 - As an explicitly opt-in option
 - With full disclosure of privacy trade-offs
 - For users who prioritize convenience over privacy
@@ -120,12 +122,14 @@ Plaid contradicts our values:
 **Approach**: Use Plaid as primary method, with migration to OBP later.
 
 **Pros**:
+
 - Fast time-to-market (1-2 weeks)
 - Familiar UX (Plaid Link)
 - 12,000+ institutions
 - Automatic sync
 
 **Cons**:
+
 - ❌ Contradicts ADR-003 (Privacy by Design)
 - ❌ Makes us dependent on middleman
 - ❌ Expensive at scale
@@ -139,11 +143,13 @@ Plaid contradicts our values:
 **Approach**: Screen-scrape bank websites directly.
 
 **Pros**:
+
 - No third-party dependency
 - Automated sync
 - Free
 
 **Cons**:
+
 - ❌ Extremely fragile (breaks when banks update sites)
 - ❌ Requires storing user credentials
 - ❌ Legal/ToS risks
@@ -158,11 +164,13 @@ Plaid contradicts our values:
 **Approach**: Wait for banks to offer direct APIs.
 
 **Pros**:
+
 - Standardized APIs
 - No middlemen
 - Direct bank relationship
 
 **Cons**:
+
 - ❌ Years away in US (Europe has PSD2, US doesn't)
 - ❌ Can't wait that long
 - ❌ Banks may charge for API access
@@ -175,11 +183,13 @@ Plaid contradicts our values:
 **Approach**: Users enter all transactions manually.
 
 **Pros**:
+
 - Maximum privacy
 - Simple implementation
 - Zero dependencies
 
 **Cons**:
+
 - ❌ Too much manual work
 - ❌ Error-prone
 - ❌ Not competitive with Quicken/Mint
@@ -192,6 +202,7 @@ Plaid contradicts our values:
 ### Phase 1: File-Based Import (2-3 weeks)
 
 **Week 1: OFX/QFX Import**
+
 ```typescript
 class OFXImporter {
   async import(filePath: string): Promise<Transaction[]> {
@@ -203,6 +214,7 @@ class OFXImporter {
 ```
 
 **Week 2: CSV Import with Templates**
+
 ```typescript
 interface CSVTemplate {
   name: string; // "Chase Checking"
@@ -220,10 +232,11 @@ class CSVImporter {
 ```
 
 **Week 3: Auto-Import**
+
 ```typescript
 class DirectoryWatcher {
   watch(directory: string) {
-    chokidar.watch(directory).on('add', async (file) => {
+    chokidar.watch(directory).on('add', async file => {
       if (isFinancialFile(file)) {
         await this.autoImport(file);
       }
@@ -292,14 +305,14 @@ interface ImportSource {
     watchFolder?: string;
     autoImport?: boolean;
     archiveAfterImport?: boolean;
-    
+
     // CSV-specific
     template?: CSVTemplate;
-    
+
     // OBP (self-hosted)
     obpUrl?: string;
     obpApiKey?: string; // User's own server
-    
+
     // Plaid (optional, user opt-in)
     plaidAccessToken?: string; // Encrypted, with warning
   };
@@ -357,7 +370,7 @@ This decision perfectly aligns with ADR-003:
 ✅ **Explicit Consent**: User explicitly downloads and imports  
 ✅ **Minimal Data**: Only user-chosen files imported  
 ✅ **Transparency**: User sees exactly what's imported  
-✅ **User Control**: User controls timing and data flow  
+✅ **User Control**: User controls timing and data flow
 
 ## Success Metrics
 
@@ -462,19 +475,19 @@ When US banks offer standardized APIs:
 ```typescript
 const templates = {
   chase_checking: {
-    name: "Chase Checking",
-    dateColumn: "Posting Date",
-    descriptionColumn: "Description",
-    amountColumn: "Amount",
-    dateFormat: "MM/DD/YYYY"
+    name: 'Chase Checking',
+    dateColumn: 'Posting Date',
+    descriptionColumn: 'Description',
+    amountColumn: 'Amount',
+    dateFormat: 'MM/DD/YYYY',
   },
   bankofamerica: {
-    name: "Bank of America",
+    name: 'Bank of America',
     dateColumn: 0,
     descriptionColumn: 2,
     amountColumn: 3,
-    dateFormat: "MM/DD/YYYY"
-  }
+    dateFormat: 'MM/DD/YYYY',
+  },
   // ... 50+ more
 };
 ```
@@ -483,12 +496,12 @@ const templates = {
 
 **At 10,000 active users (20,000 accounts)**:
 
-| Approach | Monthly Cost |
-|----------|--------------|
-| File-Based (Ours) | $0 |
-| Self-Hosted OBP | $0 (users pay for own servers) |
-| Plaid | $6,000 - $12,000 |
-| Yodlee | $10,000 - $20,000 |
+| Approach          | Monthly Cost                   |
+| ----------------- | ------------------------------ |
+| File-Based (Ours) | $0                             |
+| Self-Hosted OBP   | $0 (users pay for own servers) |
+| Plaid             | $6,000 - $12,000               |
+| Yodlee            | $10,000 - $20,000              |
 
 **Savings over 3 years**: $216,000 - $432,000 (vs. Plaid)
 

@@ -27,12 +27,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/256x256.png",
-      "icons/icon.ico"
-    ],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/256x256.png", "icons/icon.ico"],
     "publisher": "Plures",
     "copyright": "Copyright © 2025 Plures Team",
     "category": "Finance",

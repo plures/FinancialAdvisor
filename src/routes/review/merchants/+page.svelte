@@ -1,13 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { derived } from 'svelte/store';
-  import { Badge, Button, Input, Toast, EmptyState } from '@plures/design-dojo';
+  import { Badge, Toast } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import Input from '$lib/components/Input.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
   import {
     merchantMergeStore,
     seedMerchantMerge,
     type MerchantMergeItem,
   } from '$lib/stores/review';
-  import { dojoFade } from '@plures/design-dojo';
+  import { fade } from 'svelte/transition';
 
   let search = $state('');
   let toastMessage = $state('');
@@ -102,7 +105,7 @@
       description="All merchants have been resolved."
     />
   {:else}
-    <div class="table-wrap" transition:dojoFade>
+    <div class="table-wrap" transition:fade>
       <table class="merchant-table">
         <thead>
           <tr>
@@ -165,7 +168,7 @@
 </div>
 
 {#if showToast}
-  <div class="toast-region" transition:dojoFade>
+  <div class="toast-region" transition:fade>
     <Toast message={toastMessage} variant={toastVariant} onclose={() => (showToast = false)} />
   </div>
 {/if}

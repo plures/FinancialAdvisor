@@ -59,10 +59,7 @@ export function failed(
 // ─── Triggers ────────────────────────────────────────────────────────────────
 
 /** A typed domain event carrying a payload, used to drive reactive triggers. */
-export interface TriggerEvent<
-  TType extends string = string,
-  TPayload = unknown,
-> {
+export interface TriggerEvent<TType extends string = string, TPayload = unknown> {
   readonly type: TType;
   readonly payload: TPayload;
   readonly timestamp: Date;
@@ -111,16 +108,12 @@ export class PraxisEngine {
   evaluate<T>(expectationName: string, data: T): ExpectationResult {
     const expectation = this.expectations.get(expectationName);
     if (!expectation) {
-      return failed(expectationName, [
-        `Expectation "${expectationName}" is not registered`,
-      ]);
+      return failed(expectationName, [`Expectation "${expectationName}" is not registered`]);
     }
     return (expectation as Expectation<T>).evaluate(data);
   }
 
-  evaluateAll(
-    getDataFor: (expectationName: string) => unknown
-  ): ExpectationResult[] {
+  evaluateAll(getDataFor: (expectationName: string) => unknown): ExpectationResult[] {
     return Array.from(this.expectations.values()).map(exp =>
       (exp as Expectation<unknown>).evaluate(getDataFor(exp.name))
     );
@@ -136,9 +129,7 @@ export class PraxisEngine {
     await Promise.all(handlers.map(h => h.handle(event)));
   }
 
-  logDecision(
-    entry: Omit<DecisionEntry, 'id' | 'timestamp'>
-  ): DecisionEntry {
+  logDecision(entry: Omit<DecisionEntry, 'id' | 'timestamp'>): DecisionEntry {
     const decision: DecisionEntry = {
       ...entry,
       id: randomUUID(),

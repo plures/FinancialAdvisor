@@ -34,10 +34,7 @@ import {
 } from '../../packages/ledger/dist/balances.js';
 
 // ─── Transfers ────────────────────────────────────────────────────────────────
-import {
-  createTransfer,
-  detectTransfers,
-} from '../../packages/ledger/dist/transfers.js';
+import { createTransfer, detectTransfers } from '../../packages/ledger/dist/transfers.js';
 
 // ─── Snapshots ────────────────────────────────────────────────────────────────
 import {
@@ -48,9 +45,7 @@ import {
 } from '../../packages/ledger/dist/snapshots.js';
 
 // ─── Reconciliation ───────────────────────────────────────────────────────────
-import {
-  reconcile,
-} from '../../packages/ledger/dist/reconciliation.js';
+import { reconcile } from '../../packages/ledger/dist/reconciliation.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -98,7 +93,10 @@ describe('LedgerAccount', () => {
     });
 
     it('throws when currency is empty', () => {
-      assert.throws(() => createLedgerAccount('x', 'Cash', 'asset', ''), /currency must not be empty/);
+      assert.throws(
+        () => createLedgerAccount('x', 'Cash', 'asset', ''),
+        /currency must not be empty/
+      );
     });
 
     it('supports all LedgerAccountType values', () => {
@@ -122,15 +120,23 @@ describe('LedgerAccount', () => {
     it('returns single-element path for root account', () => {
       const root = createLedgerAccount('root', 'Assets', 'asset', 'USD');
       const path = accountAncestors('root', [root]);
-      assert.deepStrictEqual(path.map(a => a.id), ['root']);
+      assert.deepStrictEqual(
+        path.map(a => a.id),
+        ['root']
+      );
     });
 
     it('returns full path from root to leaf', () => {
       const root = createLedgerAccount('root', 'Assets', 'asset', 'USD');
       const child = createLedgerAccount('child', 'Cash', 'asset', 'USD', { parentId: 'root' });
-      const grandchild = createLedgerAccount('gc', 'Petty Cash', 'asset', 'USD', { parentId: 'child' });
+      const grandchild = createLedgerAccount('gc', 'Petty Cash', 'asset', 'USD', {
+        parentId: 'child',
+      });
       const path = accountAncestors('gc', [root, child, grandchild]);
-      assert.deepStrictEqual(path.map(a => a.id), ['root', 'child', 'gc']);
+      assert.deepStrictEqual(
+        path.map(a => a.id),
+        ['root', 'child', 'gc']
+      );
     });
 
     it('throws on cycle', () => {
@@ -336,8 +342,8 @@ describe('Balances', () => {
         createJournalEntry('a2', makeDate(2025, 1, 1), 'cash', 'revenue', 7500, 'USD'),
       ];
       const bals = computeAllBalances(accounts, entries);
-      assert.strictEqual(bals[0]?.balance, 7500);  // asset debit-normal → positive
-      assert.strictEqual(bals[1]?.balance, 7500);  // income credit-normal → -netDebit = +7500
+      assert.strictEqual(bals[0]?.balance, 7500); // asset debit-normal → positive
+      assert.strictEqual(bals[1]?.balance, 7500); // income credit-normal → -netDebit = +7500
     });
   });
 
@@ -373,27 +379,37 @@ describe('Transfers', () => {
         currency: 'USD',
         date: makeDate(2025, 4, 1),
       });
-      assert.strictEqual(je.debitAccountId, 'savings');    // receiving
-      assert.strictEqual(je.creditAccountId, 'checking');  // sending
+      assert.strictEqual(je.debitAccountId, 'savings'); // receiving
+      assert.strictEqual(je.creditAccountId, 'checking'); // sending
       assert.strictEqual(je.amountCents, 25000);
     });
 
     it('throws when from and to accounts are the same', () => {
       assert.throws(
-        () => createTransfer({
-          id: 'tr-2', fromAccountId: 'x', toAccountId: 'x',
-          amountCents: 100, currency: 'USD', date: new Date(),
-        }),
+        () =>
+          createTransfer({
+            id: 'tr-2',
+            fromAccountId: 'x',
+            toAccountId: 'x',
+            amountCents: 100,
+            currency: 'USD',
+            date: new Date(),
+          }),
         /must differ/
       );
     });
 
     it('throws for negative amounts', () => {
       assert.throws(
-        () => createTransfer({
-          id: 'tr-3', fromAccountId: 'a', toAccountId: 'b',
-          amountCents: -500, currency: 'USD', date: new Date(),
-        }),
+        () =>
+          createTransfer({
+            id: 'tr-3',
+            fromAccountId: 'a',
+            toAccountId: 'b',
+            amountCents: -500,
+            currency: 'USD',
+            date: new Date(),
+          }),
         /non-negative/
       );
     });
@@ -432,8 +448,12 @@ describe('Transfers', () => {
 
     it('preserves balance after a detected transfer', () => {
       const je = createTransfer({
-        id: 'bltr', fromAccountId: 'checking', toAccountId: 'savings',
-        amountCents: 15000, currency: 'USD', date: makeDate(2025, 3, 1),
+        id: 'bltr',
+        fromAccountId: 'checking',
+        toAccountId: 'savings',
+        amountCents: 15000,
+        currency: 'USD',
+        date: makeDate(2025, 3, 1),
       });
       const accounts = [checking, savings];
       const imbalance = computeTrialBalance(accounts, [je]);
@@ -550,8 +570,22 @@ describe('Reconciliation', () => {
   const DATE = makeDate(2025, 4, 15);
 
   const externalItems = [
-    { externalId: 'ext-1', date: DATE, accountId: ACCOUNT, amountCents: 10000, currency: 'USD', description: 'Salary' },
-    { externalId: 'ext-2', date: DATE, accountId: ACCOUNT, amountCents: -3000, currency: 'USD', description: 'Groceries' },
+    {
+      externalId: 'ext-1',
+      date: DATE,
+      accountId: ACCOUNT,
+      amountCents: 10000,
+      currency: 'USD',
+      description: 'Salary',
+    },
+    {
+      externalId: 'ext-2',
+      date: DATE,
+      accountId: ACCOUNT,
+      amountCents: -3000,
+      currency: 'USD',
+      description: 'Groceries',
+    },
   ];
 
   const matchingEntries = [
@@ -591,7 +625,13 @@ describe('Reconciliation', () => {
 
   it('respects dateTolerance option', () => {
     const futureDate = makeDate(2025, 4, 17);
-    const item = { externalId: 'ext-d', date: futureDate, accountId: ACCOUNT, amountCents: 5000, currency: 'USD' };
+    const item = {
+      externalId: 'ext-d',
+      date: futureDate,
+      accountId: ACCOUNT,
+      amountCents: 5000,
+      currency: 'USD',
+    };
     const entry = createJournalEntry('je-d', DATE, ACCOUNT, 'x', 5000, 'USD');
     // 2-day gap — no tolerance → mismatch
     const r1 = reconcile(ACCOUNT, [item], [entry]);
@@ -602,7 +642,13 @@ describe('Reconciliation', () => {
   });
 
   it('filters by currency option', () => {
-    const eurItem = { externalId: 'ext-eur', date: DATE, accountId: ACCOUNT, amountCents: 5000, currency: 'EUR' };
+    const eurItem = {
+      externalId: 'ext-eur',
+      date: DATE,
+      accountId: ACCOUNT,
+      amountCents: 5000,
+      currency: 'EUR',
+    };
     const eurEntry = createJournalEntry('je-eur', DATE, ACCOUNT, 'x', 5000, 'EUR');
     // Only reconcile USD — EUR item should be ignored
     const r = reconcile(ACCOUNT, [eurItem], [eurEntry], { currency: 'USD' });

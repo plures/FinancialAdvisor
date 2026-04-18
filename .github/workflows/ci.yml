@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [main, "copilot/**", "feature/**"]
+    branches: [main, 'copilot/**', 'feature/**']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -9,4 +9,3 @@ permissions:
 jobs:
   ci:
     uses: plures/.github/.github/workflows/ci-reusable.yml@main
-

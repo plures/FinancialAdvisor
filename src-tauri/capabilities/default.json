@@ -3,8 +3,5 @@
   "identifier": "default",
   "description": "Default permissions for the Financial Advisor app",
   "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "store:default"
-  ]
+  "permissions": ["core:default", "store:default"]
 }

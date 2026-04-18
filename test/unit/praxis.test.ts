@@ -254,9 +254,7 @@ describe('ledgerIntegrityExpectation', () => {
 
   it('fails for self-posting entries', () => {
     const result = ledgerIntegrityExpectation.evaluate({
-      entries: [
-        makeJournalEntry({ debitAccountId: 'acct-a', creditAccountId: 'acct-a' }),
-      ],
+      entries: [makeJournalEntry({ debitAccountId: 'acct-a', creditAccountId: 'acct-a' })],
     });
     assert.strictEqual(result.passed, false);
     assert.ok(result.violations.some(v => v.includes('same')));
@@ -399,10 +397,7 @@ describe('budgetComplianceExpectation', () => {
   });
 
   it('computes budgetComplianceStatus correctly', () => {
-    const status = budgetComplianceStatus(
-      makeBudget({ spent: 450, remaining: 50 }),
-      0.9
-    );
+    const status = budgetComplianceStatus(makeBudget({ spent: 450, remaining: 50 }), 0.9);
     assert.strictEqual(status.isOverBudget, false);
     assert.strictEqual(status.isAtRisk, true);
     assert.ok(Math.abs(status.percentageUsed - 90) < 0.01);
@@ -441,7 +436,9 @@ describe('createDataEventTriggers', () => {
       },
     });
     const engine = new PraxisEngine();
-    for (const t of triggers) { engine.registerTrigger(t); }
+    for (const t of triggers) {
+      engine.registerTrigger(t);
+    }
     await engine.emit('import.completed', {
       session: makeSession(),
       transactions: [makeRawTx()],
@@ -463,8 +460,7 @@ describe('createPraxisEngine / lifecycle', () => {
       () => {
         getPraxisEngine();
       },
-      (err: unknown) =>
-        err instanceof Error && err.message.includes('not been initialized'),
+      (err: unknown) => err instanceof Error && err.message.includes('not been initialized')
     );
   });
 

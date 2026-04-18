@@ -230,7 +230,7 @@ export function rankRecommendations(recommendations: readonly Recommendation[]):
  */
 export function generateDebtRecommendations(
   debts: readonly DebtSnapshot[],
-  highInterestThreshold: number = 0.10,
+  highInterestThreshold: number = 0.1,
   currency: Currency = 'USD'
 ): Recommendation[] {
   if (debts.length === 0) {
@@ -246,7 +246,7 @@ export function generateDebtRecommendations(
 
   for (const debt of highInterest) {
     // Suggest paying 20% more than the minimum as a conservative starting point
-    const extraCents = Math.round(debt.minimumPaymentCents * 0.20);
+    const extraCents = Math.round(debt.minimumPaymentCents * 0.2);
     if (extraCents <= 0) {
       continue;
     }
@@ -256,7 +256,10 @@ export function generateDebtRecommendations(
     // amortisation — intentionally conservative for recommendation purposes.
     // Exact calculations are handled by computeDebtPayoff in the analytics package.
     const annualInterestOnExtra = Math.round(extraCents * 12 * debt.annualInterestRate);
-    const monthly = createMoney(annualInterestOnExtra > 0 ? Math.round(annualInterestOnExtra / 12) : extraCents, currency);
+    const monthly = createMoney(
+      annualInterestOnExtra > 0 ? Math.round(annualInterestOnExtra / 12) : extraCents,
+      currency
+    );
     const annual = multiplyMoney(monthly, 12);
     const ratePct = (debt.annualInterestRate * 100).toFixed(1);
 
@@ -295,16 +298,18 @@ export function generateSavingsRecommendations(
   const { monthlyIncomeCents, monthlyBurnCents, liquidBalanceCents } = state;
 
   const monthlySurplusCents = monthlyIncomeCents - monthlyBurnCents;
-  const savingsRatePct = monthlyIncomeCents > 0 ? (monthlySurplusCents / monthlyIncomeCents) * 100 : 0;
+  const savingsRatePct =
+    monthlyIncomeCents > 0 ? (monthlySurplusCents / monthlyIncomeCents) * 100 : 0;
   const runway = monthlyBurnCents > 0 ? liquidBalanceCents / monthlyBurnCents : Infinity;
 
   // Emergency fund recommendation — runway < 3 months
   if (isFinite(runway) && runway < 3) {
     const targetCents = monthlyBurnCents * 3;
     const shortfallCents = Math.max(0, targetCents - liquidBalanceCents);
-    const monthlySavingsSuggestion = monthlySurplusCents > 0
-      ? Math.min(monthlySurplusCents, shortfallCents)
-      : Math.round(monthlyBurnCents * 0.10); // suggest saving 10% of expenses if no surplus
+    const monthlySavingsSuggestion =
+      monthlySurplusCents > 0
+        ? Math.min(monthlySurplusCents, shortfallCents)
+        : Math.round(monthlyBurnCents * 0.1); // suggest saving 10% of expenses if no surplus
 
     const monthly = createMoney(monthlySavingsSuggestion, currency);
     const annual = multiplyMoney(monthly, 12);
@@ -327,7 +332,7 @@ export function generateSavingsRecommendations(
 
   // Savings rate improvement — below 20% target
   if (savingsRatePct >= 0 && savingsRatePct < 20 && monthlyIncomeCents > 0) {
-    const targetSavingsCents = Math.round(monthlyIncomeCents * 0.20);
+    const targetSavingsCents = Math.round(monthlyIncomeCents * 0.2);
     const currentSavingsCents = Math.max(0, monthlySurplusCents);
     const additionalCents = Math.max(0, targetSavingsCents - currentSavingsCents);
 
@@ -392,9 +397,7 @@ export function generateIncomeRecommendations(
   }
 
   // Recurring commitments eat > 50% of income
-  const totalRecurring = state.recurringCommitments.reduce(
-    (s, c) => s + c.monthlyAmountCents, 0
-  );
+  const totalRecurring = state.recurringCommitments.reduce((s, c) => s + c.monthlyAmountCents, 0);
 
   if (monthlyIncomeCents > 0 && totalRecurring > monthlyIncomeCents * 0.5) {
     const overCommitCents = totalRecurring - Math.round(monthlyIncomeCents * 0.5);
@@ -437,7 +440,7 @@ export function generateAllRecommendations(
   const all: Recommendation[] = [
     ...generateSubscriptionRecommendations(state.recurringCommitments, 90, 100, currency),
     ...generateSpendingRecommendations(state.categorySpend, 3, currency),
-    ...generateDebtRecommendations(state.debts ?? [], 0.10, currency),
+    ...generateDebtRecommendations(state.debts ?? [], 0.1, currency),
     ...generateSavingsRecommendations(state, currency),
     ...generateIncomeRecommendations(state, currency),
   ];
@@ -456,7 +459,9 @@ export function generateAllRecommendations(
  * relative to lower-feasibility actions (e.g. income optimisation) even when
  * the raw savings amount is lower.
  */
-export function rankByImpactFeasibility(recommendations: readonly Recommendation[]): Recommendation[] {
+export function rankByImpactFeasibility(
+  recommendations: readonly Recommendation[]
+): Recommendation[] {
   return [...recommendations].sort((a, b) => {
     const scoreA = _impactFeasibilityScore(a);
     const scoreB = _impactFeasibilityScore(b);

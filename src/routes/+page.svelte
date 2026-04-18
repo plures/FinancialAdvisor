@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Button, Card } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import Card from '$lib/components/Card.svelte';
   import { accounts } from '$lib/stores/financial';
 
   let greeting = $state('Financial Advisor');

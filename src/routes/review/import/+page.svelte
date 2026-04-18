@@ -1,9 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { derived } from 'svelte/store';
-  import { Badge, Button, Input, Dialog, Toast, EmptyState } from '@plures/design-dojo';
+  import { Badge, Dialog, Toast } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import Input from '$lib/components/Input.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
   import { importReviewStore, seedImportReview, type ImportReviewItem } from '$lib/stores/review';
-  import { dojoFade } from '@plures/design-dojo';
+  import { fade } from 'svelte/transition';
 
   const total = derived(importReviewStore, $s => $s.length);
   const errors = derived(importReviewStore, $s => $s.filter(i => !!i.error).length);
@@ -114,7 +117,7 @@
     <EmptyState icon="📥" title="No import data" description="Import a CSV file to begin review." />
   {:else}
     {#each [...$sessions.entries()] as [sessionId, items]}
-      <section class="session-section" transition:dojoFade>
+      <section class="session-section" transition:fade>
         <h2 class="session-heading">
           Session <code>{sessionId}</code>
           <Badge variant="neutral">{items.length} rows</Badge>
@@ -196,7 +199,7 @@
 </Dialog>
 
 {#if showToast}
-  <div class="toast-region" transition:dojoFade>
+  <div class="toast-region" transition:fade>
     <Toast message={toastMessage} variant={toastVariant} onclose={() => (showToast = false)} />
   </div>
 {/if}

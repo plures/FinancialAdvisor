@@ -49,10 +49,12 @@ VSCode Extension ←→ MCP Server ←→ AI Models
 ### Direct AI API Integration
 
 **Pros:**
+
 - Simpler architecture
 - Direct control over API calls
 
 **Cons:**
+
 - Tight coupling between extension and AI providers
 - Difficult to switch between providers
 - No standardized tool interface
@@ -60,10 +62,12 @@ VSCode Extension ←→ MCP Server ←→ AI Models
 ### Custom Protocol
 
 **Pros:**
+
 - Full control over design
 - Optimized for our use case
 
 **Cons:**
+
 - Reinventing the wheel
 - No ecosystem benefits
 - More maintenance overhead
@@ -71,10 +75,12 @@ VSCode Extension ←→ MCP Server ←→ AI Models
 ### LangChain Integration
 
 **Pros:**
+
 - Rich ecosystem of tools
 - Proven in production
 
 **Cons:**
+
 - Heavy dependency
 - Potential bloat for our use case
 - Python-centric ecosystem
@@ -104,16 +110,19 @@ VSCode Extension ←→ MCP Server ←→ AI Models
 ## Implementation Plan
 
 ### Phase 1: Basic MCP Server
+
 - [ ] Set up MCP server with basic financial tools
 - [ ] Implement budget analysis tool
 - [ ] Add investment recommendation tool
 
 ### Phase 2: Advanced Features
+
 - [ ] Add market data resources
 - [ ] Implement goal tracking tools
 - [ ] Add risk assessment capabilities
 
 ### Phase 3: Multi-Provider Support
+
 - [ ] Local LLM integration (Ollama)
 - [ ] OpenAI API integration
 - [ ] Provider selection mechanism
@@ -121,6 +130,7 @@ VSCode Extension ←→ MCP Server ←→ AI Models
 ## Monitoring
 
 We will monitor:
+
 - MCP server performance and reliability
 - AI model response quality
 - User satisfaction with AI-generated advice

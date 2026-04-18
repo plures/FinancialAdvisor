@@ -2,7 +2,7 @@
   import { accounts, transactions, totalBalance } from '$lib/stores/financial';
   import { onMount, onDestroy } from 'svelte';
   import { Chart, registerables } from 'chart.js';
-  import { Card } from '@plures/design-dojo';
+  import Card from '$lib/components/Card.svelte';
 
   Chart.register(...registerables);
 

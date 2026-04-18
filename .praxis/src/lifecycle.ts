@@ -29,9 +29,7 @@ import type { DataEventCallbacks } from './triggers/data-events.js';
  *   When omitted the engine still runs expectations on demand; triggers
  *   are simply not registered.
  */
-export function createPraxisEngine(
-  callbacks: DataEventCallbacks = {}
-): PraxisEngine {
+export function createPraxisEngine(callbacks: DataEventCallbacks = {}): PraxisEngine {
   const engine = new PraxisEngine();
 
   // Register all financial expectations
@@ -75,7 +73,7 @@ export function getPraxisEngine(): PraxisEngine {
   if (!_sharedEngine) {
     throw new Error(
       'Praxis engine has not been initialized. ' +
-      'Call initializePraxisEngine() during application startup.'
+        'Call initializePraxisEngine() during application startup.'
     );
   }
   return _sharedEngine;

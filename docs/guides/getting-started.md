@@ -31,11 +31,13 @@ code --install-extension financial-advisor-1.0.0.vsix
 Choose one of the following:
 
 #### Option A: OpenAI
+
 ```bash
 export OPENAI_API_KEY="sk-your-api-key"
 ```
 
 #### Option B: Ollama (Local)
+
 ```bash
 # Install Ollama (https://ollama.ai)
 ollama pull llama2
@@ -114,29 +116,34 @@ cp .env.example .env
 ## Features Overview
 
 ### 🏦 Account Management
+
 - Track multiple accounts (checking, savings, investment, etc.)
 - Monitor balances and account status
 - Categorize by financial institution
 
 ### 💳 Transaction Tracking
+
 - Manual transaction entry
 - Automatic categorization using AI
 - Support for recurring transactions
 - Merchant and location tracking
 
 ### 📊 Financial Analysis
+
 - AI-powered spending analysis
 - Budget vs. actual comparisons
 - Trend identification
 - Savings rate calculations
 
 ### 🎯 Goal Setting
+
 - Set financial goals with target dates
 - Track progress automatically
 - Receive recommendations for achieving goals
 - Emergency fund analysis
 
 ### 🔐 Security & Privacy
+
 - Local data storage only
 - Optional encryption for sensitive data
 - Secure credential management
@@ -154,11 +161,13 @@ cp .env.example .env
 ### AI Provider Issues
 
 #### OpenAI
+
 - Verify API key is correct and has credits
 - Check internet connection
 - Ensure model name is valid (e.g., "gpt-4", "gpt-3.5-turbo")
 
 #### Ollama
+
 - Verify Ollama is running: `ollama list`
 - Check base URL is correct (usually `http://localhost:11434`)
 - Ensure model is downloaded: `ollama pull llama2`

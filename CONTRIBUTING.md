@@ -38,20 +38,20 @@ This project follows a Code of Conduct. By participating, you agree to uphold th
 ### Setup Development Environment
 
 1. **Fork and Clone**
-   
+
    ```bash
    git clone https://github.com/your-username/FinancialAdvisor.git
    cd FinancialAdvisor
    ```
 
 2. **Install Dependencies**
-   
+
    ```bash
    npm run bootstrap
    ```
 
 3. **Verify Setup**
-   
+
    ```bash
    make check-all
    ```
@@ -61,7 +61,7 @@ This project follows a Code of Conduct. By participating, you agree to uphold th
 ```text
 ├── src/
 │   ├── extension/          # VSCode extension code
-│   ├── mcp-server/        # MCP server implementation  
+│   ├── mcp-server/        # MCP server implementation
 │   └── shared/            # Shared types and utilities
 ├── test/                  # Test files
 ├── docs/                  # Documentation
@@ -83,7 +83,7 @@ Avoid long-lived integration branches. Prefer incremental, reviewable PRs.
 ### Development Process (roadmap-driven)
 
 1. **Create a Feature Branch**
-   
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -95,7 +95,7 @@ Avoid long-lived integration branches. Prefer incremental, reviewable PRs.
    - Update docs when behavior changes (README, ROADMAP, guides)
 
 3. **Test Your Changes**
-   
+
    ```bash
    npm run check:all
    ```
@@ -103,18 +103,18 @@ Avoid long-lived integration branches. Prefer incremental, reviewable PRs.
    - If MCP tools changed, run a minimal manual smoke (e.g., add_account ➜ analyze_spending)
 
 4. **Commit Changes**
-   
+
    ```bash
    git add .
    git commit -m "feat: concise description (refs: ROADMAP MVP/1.0)"
    ```
 
 5. **Push and Create PR**
-   
+
    ```bash
    git push origin feature/your-feature-name
    ```
-   
+
    - Include acceptance evidence (screenshots or output) for user-visible changes
 
 ## Coding Standards
@@ -169,7 +169,7 @@ function calculateGoalProgress(goal: FinancialGoal): number {
 }
 
 // Avoid
-const calc = (g: any) => g.current / g.target * 100;
+const calc = (g: any) => (g.current / g.target) * 100;
 ```
 
 ## Testing Guidelines
@@ -274,7 +274,7 @@ BREAKING CHANGE: The calculateBudget function now returns a Promise
 ### Before Submitting
 
 1. **Rebase on Latest Main**
-   
+
    ```bash
    git checkout main
    git pull origin main
@@ -283,7 +283,7 @@ BREAKING CHANGE: The calculateBudget function now returns a Promise
    ```
 
 2. **Run Quality Checks**
-   
+
    ```bash
    make check-all
    ```
@@ -327,20 +327,17 @@ We use [Semantic Versioning](https://semver.org/):
 ### Release Workflow
 
 1. **Prepare Release**
-   
    - Update version in package.json
    - Update CHANGELOG.md
    - Test release candidate
 
 2. **Create Release**
-   
    - Create release branch
    - Final testing
    - Merge to main
    - Tag release
 
 3. **Deploy**
-   
    - Automated deployment via GitHub Actions
    - Publish to VS Code Marketplace
    - Update documentation

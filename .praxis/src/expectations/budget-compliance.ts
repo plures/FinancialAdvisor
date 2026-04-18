@@ -65,14 +65,14 @@ export const budgetComplianceExpectation: Expectation<BudgetComplianceData> = {
       if (!Number.isFinite(budget.amount) || budget.amount < 0) {
         violations.push(
           `Budget "${budget.id}" ("${budget.name}"): ` +
-          `amount must be a non-negative finite number (got ${budget.amount}).`
+            `amount must be a non-negative finite number (got ${budget.amount}).`
         );
         continue;
       }
       if (!Number.isFinite(budget.spent) || budget.spent < 0) {
         violations.push(
           `Budget "${budget.id}" ("${budget.name}"): ` +
-          `spent must be a non-negative finite number (got ${budget.spent}).`
+            `spent must be a non-negative finite number (got ${budget.spent}).`
         );
         continue;
       }
@@ -84,17 +84,17 @@ export const budgetComplianceExpectation: Expectation<BudgetComplianceData> = {
         overBudgetCount++;
         violations.push(
           `Budget "${budget.name}" (category: ${budget.category}) is over budget: ` +
-          `spent ${budget.spent.toFixed(2)} of ${budget.amount.toFixed(2)} ` +
-          `(${status.percentageUsed.toFixed(1)}% used, ` +
-          `${Math.abs(budget.remaining).toFixed(2)} over limit).`
+            `spent ${budget.spent.toFixed(2)} of ${budget.amount.toFixed(2)} ` +
+            `(${status.percentageUsed.toFixed(1)}% used, ` +
+            `${Math.abs(budget.remaining).toFixed(2)} over limit).`
         );
       } else if (status.isAtRisk) {
         atRiskCount++;
         violations.push(
           `Budget "${budget.name}" (category: ${budget.category}) is at risk: ` +
-          `${status.percentageUsed.toFixed(1)}% used ` +
-          `(threshold: ${(alertThreshold * 100).toFixed(0)}%). ` +
-          `Only ${budget.remaining.toFixed(2)} remaining.`
+            `${status.percentageUsed.toFixed(1)}% used ` +
+            `(threshold: ${(alertThreshold * 100).toFixed(0)}%). ` +
+            `Only ${budget.remaining.toFixed(2)} remaining.`
         );
       }
     }

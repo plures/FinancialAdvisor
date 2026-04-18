@@ -153,17 +153,17 @@ All packages use **ES2020 modules** (`"type": "module"`, explicit `.js` import e
 
 Each workspace package under `packages/` is published as a scoped npm module with full TypeScript declarations. All public exports have JSDoc documentation.
 
-| Package | Scope | Description |
-|---------|-------|-------------|
-| `domain` | `@financialadvisor/domain` | Core value objects: `Money`, `Account`, `Transaction`, `Budget`, `Goal`, `Period` |
-| `storage` | `@financialadvisor/storage` | Persistence layer for accounts, transactions, postings, merchants |
-| `ledger` | `@financialadvisor/ledger` | Double-entry journal, balances, reconciliation |
-| `ingestion` | `@financialadvisor/ingestion` | CSV + OFX/QFX file import and deduplication |
-| `resolution` | `@financialadvisor/resolution` | Keyword-based transaction categorization |
-| `analytics` | `@financialadvisor/analytics` | Budget, investment, and predictive analytics |
-| `advice` | `@financialadvisor/advice` | Recommendation engine, scenarios, plan generation |
-| `ai-providers` | `@financialadvisor/ai-providers` | OpenAI, Ollama, and Copilot provider abstractions |
-| `mcp-server` | `@financialadvisor/mcp-server` | Model Context Protocol server with secure storage |
+| Package        | Scope                            | Description                                                                       |
+| -------------- | -------------------------------- | --------------------------------------------------------------------------------- |
+| `domain`       | `@financialadvisor/domain`       | Core value objects: `Money`, `Account`, `Transaction`, `Budget`, `Goal`, `Period` |
+| `storage`      | `@financialadvisor/storage`      | Persistence layer for accounts, transactions, postings, merchants                 |
+| `ledger`       | `@financialadvisor/ledger`       | Double-entry journal, balances, reconciliation                                    |
+| `ingestion`    | `@financialadvisor/ingestion`    | CSV + OFX/QFX file import and deduplication                                       |
+| `resolution`   | `@financialadvisor/resolution`   | Keyword-based transaction categorization                                          |
+| `analytics`    | `@financialadvisor/analytics`    | Budget, investment, and predictive analytics                                      |
+| `advice`       | `@financialadvisor/advice`       | Recommendation engine, scenarios, plan generation                                 |
+| `ai-providers` | `@financialadvisor/ai-providers` | OpenAI, Ollama, and Copilot provider abstractions                                 |
+| `mcp-server`   | `@financialadvisor/mcp-server`   | Model Context Protocol server with secure storage                                 |
 
 See each package's `src/index.ts` for the full list of exported types and functions.
 

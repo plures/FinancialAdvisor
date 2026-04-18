@@ -46,6 +46,7 @@ const plan = await agent.generatePlan(context, goals);
 ```
 
 Features:
+
 - Personalized goal-based planning
 - Timeline and milestone generation
 - Risk assessment and mitigation
@@ -64,6 +65,7 @@ const category = await aiCategorizer.categorize('Whole Foods Market');
 ```
 
 Features:
+
 - 12+ standard financial categories
 - Learning from user corrections
 - Vector similarity search
@@ -79,6 +81,7 @@ const budgets = await agent.generateBudgetRecommendations(context, goals);
 ```
 
 Features:
+
 - Goal-aligned budget creation
 - Spending pattern analysis
 - Realistic allocation suggestions
@@ -95,6 +98,7 @@ console.log(`Health Score: ${assessment.healthScore}/100`);
 ```
 
 Features:
+
 - Financial health scoring (0-100)
 - Strength and weakness identification
 - Early warning system
@@ -108,13 +112,14 @@ Scenario analysis for financial decisions:
 ```typescript
 const scenarios = [
   { name: 'Job Change', changes: { monthlyIncome: -500 } },
-  { name: 'Move to New City', changes: { rent: +300 } }
+  { name: 'Move to New City', changes: { rent: +300 } },
 ];
 
 const results = await agent.generateWhatIfScenarios(context, scenarios);
 ```
 
 Features:
+
 - Impact prediction
 - Goal timeline adjustments
 - Cash flow modeling
@@ -126,14 +131,14 @@ Features:
 AI-powered innovative financial strategies:
 
 ```typescript
-const solutions = await agent.createFinancialSolutions(
-  context, 
-  goals, 
-  ['Must stay in current job', 'No high-risk investments']
-);
+const solutions = await agent.createFinancialSolutions(context, goals, [
+  'Must stay in current job',
+  'No high-risk investments',
+]);
 ```
 
 Features:
+
 - Income optimization ideas
 - Expense reduction strategies
 - Investment recommendations
@@ -146,11 +151,13 @@ Features:
 #### Quick Setup (All Platforms)
 
 **Linux/macOS:**
+
 ```bash
 ./scripts/setup.sh
 ```
 
 **Windows:**
+
 ```powershell
 .\scripts\setup.ps1
 ```
@@ -158,11 +165,13 @@ Features:
 #### Manual Setup
 
 1. **Install Dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Build Packages:**
+
    ```bash
    npm run build
    ```
@@ -170,6 +179,7 @@ Features:
 3. **Configure AI Provider:**
 
    Create `~/.financial-advisor/config.json`:
+
    ```json
    {
      "aiProvider": {
@@ -212,11 +222,13 @@ Features:
 ```
 
 **Authentication:**
+
 - OAuth 2.0 via Microsoft Entra ID
 - Enterprise SSO support
 - API key authentication
 
 **Features:**
+
 - MCP protocol integration
 - Enterprise governance
 - Audit trail
@@ -249,6 +261,7 @@ Features:
 ```
 
 **Setup Ollama:**
+
 ```bash
 # Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
@@ -276,6 +289,7 @@ npm run test:unit -- test/unit/ai-provider.test.ts
 ```
 
 **Test Coverage:**
+
 - Unit tests for all AI providers
 - Integration tests for agent workflows
 - Edge case handling
@@ -351,10 +365,7 @@ import { AIProviderFactory, FinancialPlanningAgent } from '@financialadvisor/ai-
 import { AIProviderType } from '@financialadvisor/shared';
 
 // 1. Initialize AI provider
-const provider = AIProviderFactory.createProvider(
-  AIProviderType.COPILOT,
-  { model: 'gpt-4' }
-);
+const provider = AIProviderFactory.createProvider(AIProviderType.COPILOT, { model: 'gpt-4' });
 
 // 2. Create planning agent
 const agent = new FinancialPlanningAgent(provider);
@@ -366,10 +377,9 @@ const plan = await agent.generatePlan(financialContext, userGoals);
 const assessment = await agent.conductProactiveAssessment(financialContext);
 
 // 5. Run what-if scenarios
-const scenarios = await agent.generateWhatIfScenarios(
-  financialContext,
-  [{ name: 'Early Retirement', changes: { retirementAge: 55 } }]
-);
+const scenarios = await agent.generateWhatIfScenarios(financialContext, [
+  { name: 'Early Retirement', changes: { retirementAge: 55 } },
+]);
 
 // 6. Generate creative solutions
 const solutions = await agent.createFinancialSolutions(
@@ -420,6 +430,7 @@ MIT License - See LICENSE file for details
 ---
 
 **Built with:**
+
 - Model Context Protocol (MCP)
 - Microsoft Copilot integration
 - OpenAI GPT-4

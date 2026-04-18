@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { Button, Select, Card, Alert, Input, Toggle, Dialog } from '@plures/design-dojo';
+  import { Callout, Toggle, Dialog } from '@plures/design-dojo';
+  import Button from '$lib/components/Button.svelte';
+  import Input from '$lib/components/Input.svelte';
+  import Select from '$lib/components/Select.svelte';
+  import Card from '$lib/components/Card.svelte';
 
   let currency = $state('USD');
   let aiProvider = $state('none');
@@ -166,7 +170,7 @@
       </div>
 
       {#if showExportSuccess}
-        <Alert variant="success">Data exported successfully!</Alert>
+        <Callout tone="tip">Data exported successfully!</Callout>
       {/if}
     </Card>
 

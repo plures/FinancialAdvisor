@@ -37,9 +37,7 @@ export const importQualityExpectation: Expectation<ImportQualityData> = {
     const violations: string[] = [];
 
     if (transactions.length === 0) {
-      violations.push(
-        `Import session "${session.id}" contains no transactions.`
-      );
+      violations.push(`Import session "${session.id}" contains no transactions.`);
       return failed(this.name, violations, { sessionId: session.id, count: 0 });
     }
 
@@ -48,8 +46,8 @@ export const importQualityExpectation: Expectation<ImportQualityData> = {
     if (errorRate > maxErrorRate) {
       violations.push(
         `Session "${session.id}" error rate ${(errorRate * 100).toFixed(1)}% ` +
-        `exceeds threshold of ${(maxErrorRate * 100).toFixed(1)}% ` +
-        `(${session.errorCount} errors out of ${session.rowCount} rows).`
+          `exceeds threshold of ${(maxErrorRate * 100).toFixed(1)}% ` +
+          `(${session.errorCount} errors out of ${session.rowCount} rows).`
       );
     }
 
@@ -63,9 +61,7 @@ export const importQualityExpectation: Expectation<ImportQualityData> = {
       }
 
       if (!Number.isFinite(tx.amount) || tx.amount === 0) {
-        violations.push(
-          `${prefix}: amount must be a non-zero finite value (got ${tx.amount}).`
-        );
+        violations.push(`${prefix}: amount must be a non-zero finite value (got ${tx.amount}).`);
       }
 
       if (!tx.date || tx.date.trim() === '') {
@@ -73,9 +69,7 @@ export const importQualityExpectation: Expectation<ImportQualityData> = {
       }
 
       if (seenIds.has(tx.id)) {
-        violations.push(
-          `${prefix}: duplicate transaction ID within session "${session.id}".`
-        );
+        violations.push(`${prefix}: duplicate transaction ID within session "${session.id}".`);
       } else {
         seenIds.add(tx.id);
       }
