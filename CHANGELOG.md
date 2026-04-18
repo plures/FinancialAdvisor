@@ -1,3 +1,7 @@
+## [0.23.2] — 2026-04-18
+
+- fix(analytics): stabilize forecastSpending against outlier latest-month data (#170) (f8c5e30)
+
 ## [0.23.1] — 2026-04-18
 
 - refactor: remove vendored design-dojo fork, import from @plures/design-dojo (#168) (bcae7b3)
