@@ -1,3 +1,7 @@
+## [0.24.0] — 2026-04-18
+
+- feat(lifecycle v12): auto-release when milestone completes (029ec8a)
+
 ## [0.23.2] — 2026-04-18
 
 - fix(analytics): stabilize forecastSpending against outlier latest-month data (#170) (f8c5e30)
