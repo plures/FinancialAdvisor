@@ -119,6 +119,24 @@ describe('PredictiveAnalytics', () => {
       });
     });
 
+    it('should keep forecasts positive when latest month is an outlier low', () => {
+      const transactions: Transaction[] = [
+        createTransaction(-1200, 'Food', 150),
+        createTransaction(-1200, 'Food', 120),
+        createTransaction(-1200, 'Food', 90),
+        createTransaction(-1200, 'Food', 60),
+        createTransaction(-1200, 'Food', 30),
+        createTransaction(-100, 'Food', 0),
+      ];
+
+      const forecasts = PredictiveAnalytics.forecastSpending(transactions, 3);
+
+      expect(forecasts).to.have.length(3);
+      forecasts.forEach(forecast => {
+        expect(forecast.predictedSpending).to.be.greaterThan(0);
+      });
+    });
+
     it('should return empty array for insufficient data', () => {
       const transactions: Transaction[] = [createTransaction(-100, 'Food', 1)];
 
