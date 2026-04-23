@@ -1,6 +1,6 @@
 {
   "name": "@financialadvisor/ai-integration",
-  "version": "1.0.0",
+  "version": "0.25.0",
   "description": "AI provider integration for financial analysis and advice",
   "type": "module",
   "main": "dist/index.js",

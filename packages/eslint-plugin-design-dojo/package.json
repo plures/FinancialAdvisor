@@ -1,6 +1,6 @@
 {
   "name": "@plures/eslint-plugin-design-dojo",
-  "version": "0.1.0",
+  "version": "0.25.0",
   "description": "ESLint plugin enforcing @plures/design-dojo component adoption",
   "type": "commonjs",
   "main": "src/index.js",

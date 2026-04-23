@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0",
   "productName": "Financial Advisor",
-  "version": "0.2.0",
+  "version": "0.25.0",
   "identifier": "com.plures.financial-advisor",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -27,7 +27,12 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/256x256.png", "icons/icon.ico"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/256x256.png",
+      "icons/icon.ico"
+    ],
     "publisher": "Plures",
     "copyright": "Copyright © 2025 Plures Team",
     "category": "Finance",

@@ -2,7 +2,7 @@
   "name": "financial-advisor",
   "displayName": "Financial Advisor",
   "description": "AI-powered personal financial advisor with secure local storage",
-  "version": "1.0.0",
+  "version": "0.25.0",
   "publisher": "financialadvisor",
   "engines": {
     "vscode": "^1.74.0"
