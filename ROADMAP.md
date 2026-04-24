@@ -1,43 +1,37 @@
-# FinancialAdvisor Roadmap
+# ROADMAP — FinancialAdvisor
 
-## Current: Pre-release
+## Role in OASIS
+FinancialAdvisor is a **showcase OASIS application**: a local-first financial intelligence agent that demonstrates PluresDB storage, Praxis inference, and design-dojo UX patterns. It proves how privacy-preserving commerce can deliver real, high‑trust decisions without sending sensitive data to the cloud.
 
-## Phase 1: Wire Backend to UI (v0.1)
+## Current State
+- Backend domain, ledger, ingestion, analytics, advice, and MCP server are implemented
+- Frontend (SvelteKit) and Tauri shell exist but are not wired to backend services
+- P2P sync and OASIS-grade governance are not yet implemented
 
-- [ ] Tauri IPC bridge — connect SvelteKit frontend to Rust backend packages
-- [ ] Account CRUD — create/edit/delete accounts through UI backed by storage package
-- [ ] Transaction import — file upload → ingestion package → display in UI
-- [ ] Balance display — real-time balance from ledger package
-- [ ] Category assignment — UI for transaction categorization using resolution package
+## Phase 1 — End-to-End Local-First App
+**Goal:** A fully functional desktop app backed by the real domain/ledger stack.
+- Wire SvelteKit UI to backend packages via Tauri IPC
+- Account/transaction CRUD, import, balance, and categorization
+- Budget + goal tracking dashboards using analytics
+- Local encrypted storage as the default
 
-## Phase 2: Core Financial Features (v0.2)
+## Phase 2 — OASIS Intelligence + Governance
+**Goal:** Bring Praxis rules and MCP interfaces into the user workflow.
+- Embedded advice panel driven by Praxis expectations
+- MCP tools for agent workflows (analysis, projections, reporting)
+- Audit log for financial decisions and edits
+- Explainable recommendations with evidence trail
 
-- [ ] Budget dashboard — budget creation and variance tracking via analytics package
-- [ ] Spending reports — charts showing spending by category, time period
-- [ ] Recurring transactions — auto-detect and display recurring charges
-- [ ] Goal tracking — savings goals with progress visualization
-- [ ] Multi-account overview — aggregate view across all accounts
+## Phase 3 — Privacy-Preserving Collaboration
+**Goal:** Demonstrate OASIS-grade sharing without data leakage.
+- P2P sync with PluresDB replication and policy filters
+- Export packages with proof of integrity
+- Optional ZK proofs for aggregated insights
+- Controlled sharing for advisors or teams
 
-## Phase 3: AI Integration (v0.3)
-
-- [ ] Advice panel — display recommendations from advice engine in UI
-- [ ] AI chat — conversational interface for financial questions via MCP server
-- [ ] Smart categorization — use AI providers to categorize uncategorized transactions
-- [ ] Spending predictions — show trend forecasts from predictive analytics
-- [ ] What-if scenarios — interactive scenario planning with AI insights
-
-## Phase 4: Data & Security (v0.4)
-
-- [ ] Encrypted storage — AES-256 at rest for all financial data
-- [ ] Bank sync — Plaid/MX integration for automatic transaction import
-- [ ] Export — CSV/OFX/PDF export of any data view
-- [ ] Backup/restore — full data backup with encryption
-- [ ] Audit log — track all data modifications via Chronos
-
-## Phase 5: Polish (v1.0)
-
-- [ ] Replace vendored design-dojo — migrate to @plures/design-dojo package (#167)
-- [ ] Accessibility audit — keyboard navigation, screen reader support
-- [ ] Multi-currency — support international currencies with exchange rates
-- [ ] Tax reporting — generate tax-relevant summaries
-- [ ] Mobile companion — read-only mobile view via pares-agens
+## Phase 4 — Production Hardening
+**Goal:** Ship as an OASIS reference app.
+- Security review + threat modeling
+- Accessibility and UX polish
+- Multi-currency and internationalization
+- Mobile companion (read-only) for secure access
