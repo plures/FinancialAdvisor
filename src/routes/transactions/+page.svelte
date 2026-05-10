@@ -95,12 +95,17 @@
 <div class="page">
   <header class="page-header">
     <h1 class="page-title">Transactions</h1>
-    <Button
-      variant={showAddForm ? 'secondary' : 'primary'}
-      onclick={() => (showAddForm = !showAddForm)}
-    >
-      {showAddForm ? 'Cancel' : 'Add Transaction'}
-    </Button>
+    <div class="header-actions">
+      <Button variant="secondary" onclick={() => (window.location.href = '/transactions/import')}>
+        Import CSV
+      </Button>
+      <Button
+        variant={showAddForm ? 'secondary' : 'primary'}
+        onclick={() => (showAddForm = !showAddForm)}
+      >
+        {showAddForm ? 'Cancel' : 'Add Transaction'}
+      </Button>
+    </div>
   </header>
 
   {#if showAddForm}
@@ -237,6 +242,11 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space-6);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: var(--space-3);
   }
 
   .page-title {
