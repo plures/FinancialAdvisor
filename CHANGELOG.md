@@ -1,3 +1,9 @@
+## [0.26.0] — 2026-05-10
+
+- feat: add CSV import page with file upload and preview (735f0da)
+- docs: refresh ROADMAP.md with OASIS strategic alignment (3826b66)
+- docs: update copilot-instructions with praxis, design-dojo, automation rules (2b34d92)
+
 ## [0.25.0] — 2026-04-23
 
 - feat(release): add target_version input for milestone-driven releases (93bbf58)
