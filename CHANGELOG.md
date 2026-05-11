@@ -1,3 +1,7 @@
+## [0.26.1] — 2026-05-11
+
+- refactor: replace inline lifecycle with reusable workflow call (b2d8a5b)
+
 ## [0.26.0] — 2026-05-10
 
 - feat: add CSV import page with file upload and preview (735f0da)
