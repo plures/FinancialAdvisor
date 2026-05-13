@@ -127,7 +127,7 @@
       "prettier --write"
     ]
   },
-  "license": "BSL-1.1",
+  "license": "(BSL-1.1 OR MIT)",
   "homepage": "https://github.com/plures/FinancialAdvisor#readme",
   "bugs": {
     "url": "https://github.com/plures/FinancialAdvisor/issues"
