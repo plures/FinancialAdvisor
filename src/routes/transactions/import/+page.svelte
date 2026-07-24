@@ -5,6 +5,7 @@
   import { Badge, Callout, Toast } from '@plures/design-dojo';
   import Button from '$lib/components/Button.svelte';
   import Select from '$lib/components/Select.svelte';
+  import Input from '$lib/components/Input.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
   import Card from '$lib/components/Card.svelte';
   import { slide } from 'svelte/transition';
@@ -345,7 +346,7 @@
           <p class="upload-hint">or</p>
         {/if}
         <label class="file-input-label">
-          <input
+          <Input
             type="file"
             accept=".csv,.txt"
             onchange={handleFileInput}
