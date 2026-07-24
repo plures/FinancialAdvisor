@@ -1,6 +1,6 @@
 {
   "name": "@financialadvisor/financial-tools",
-  "version": "0.26.1",
+  "version": "0.26.2",
   "description": "Core financial calculation and analysis tools — deprecated, use analytics/resolution/ledger",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

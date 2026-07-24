@@ -1,6 +1,6 @@
 {
   "name": "@financialadvisor/shared",
-  "version": "0.26.1",
+  "version": "0.26.2",
   "description": "Shared utilities and types for FinancialAdvisor — deprecated, use domain/ledger/ingestion",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
